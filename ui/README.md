@@ -1,4 +1,10 @@
-# ui
+# ravel/ui
+
+This boots up the Ravel Labs UI 
+
+## Stack 
+- Vue
+- Buefy
 
 ## Project setup
 ```

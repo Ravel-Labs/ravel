@@ -3,6 +3,9 @@
     <button @click="$router.push('/new')">Add Quote</button>
     <hr />
     <div class="container">
+        <section>
+            <b-button @click="clickMe">Login</b-button>
+        </section>
       <div class="quote" v-for="quote in quotes" :key="quote.id" :quote="quote">
         <p>
           <em>"{{quote.quote}}"</em>
