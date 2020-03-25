@@ -13,6 +13,8 @@ services:
       - MYSQL_ROOT_PASSWORD=password
       - MYSQL_DATABASE=quotes_db
       - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - 3306:3306
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin

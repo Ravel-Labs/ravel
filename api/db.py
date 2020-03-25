@@ -1,14 +1,17 @@
 from datetime import date, datetime
 from decimal import Decimal
+from os import environ
 
 from sqlalchemy import create_engine
 
+## TODO: Make this handle environment configs better
+LOCAL="mysql+pymysql://dbuser:dbpassword@localhost:3306/quotes_db"
+DOCKER="mysql+pymysql://dbuser:dbpassword@db/quotes_db"
 
 class Db():
     def __init__(self):
-        db_url = "mysql+pymysql://dbuser:dbpassword@db/quotes_db"
-
-        engine = create_engine(db_url)
+        conn = ConnectionString().get_url()
+        engine = create_engine(conn)
         self.connection = engine.connect()
 
     def __del__(self):
@@ -32,3 +35,19 @@ class Db():
         for row in data:
             result_data.append(self.clean_select_row(row, keys))
         return result_data
+
+
+class ConnectionString():
+    def __init__(self):
+        self.environment = environ.get('FLASK_ENV')
+        self.db_url = environ.get('FLASK_DB_URL')
+
+    def get_url(self):
+        if self.db_url != None:
+            return self.db_url
+        if self.environment == "development":
+            return LOCAL
+        if self.environment == "production":
+            return DOCKER
+        else:
+            return DOCKER

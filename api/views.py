@@ -39,3 +39,31 @@ class Quote(Resource):
             return True
         except:
             return False
+
+class User(Resource):
+    """ The Users view """
+
+    def __init__(self):
+        self.db = Db()
+
+    ## TODO
+    def post(self):
+        """ Adds a user  """
+        return { 'message': 'not implemented' }, 500
+
+    ## TODO
+    def get(self, user_id):
+        return { 'message': 'not implemented' }, 500
+
+class Track(Resource):
+    """ The Tracks View """
+    def __init__(self):
+        self.db = Db()
+
+    def post(self):
+        return { 'message': 'not implemented' }, 500
+
+    def get(self, track_id):
+        self.db = Db()
+
+        return { 'message': 'not implemented' }, 500

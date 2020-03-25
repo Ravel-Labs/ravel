@@ -14,3 +14,9 @@ Stop instances :: docker-compose down
 Stop and Delete all containers :: `docker container stop $(docker container ls -aq) && docker container rm $(docker container ls -aq)`
 
 _Cheers!_
+
+# Libraries & Resources 
+> A concise list of some of the more important frameworks we use in this app
+
+### Python / Flask app: 
+*Flask RESTful: https://flask-restful.readthedocs.io/en/latest/
