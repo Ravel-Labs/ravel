@@ -55,6 +55,14 @@ class User(Resource):
     def get(self, user_id):
         return { 'message': 'not implemented' }, 500
 
+    ## TODO
+    def update(self, user_id):
+        return { 'message': 'not implemented' }, 500
+
+    ## TODO
+    def delete(self, user_id):
+        return { 'message': 'not implemented' }, 500
+
 class Track(Resource):
     """ The Tracks View """
     def __init__(self):
