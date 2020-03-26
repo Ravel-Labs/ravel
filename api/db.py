@@ -4,9 +4,10 @@ from os import environ
 
 from sqlalchemy import create_engine
 
-## TODO: Make this handle environment configs better
-LOCAL="mysql+pymysql://dbuser:dbpassword@localhost:3306/quotes_db"
-DOCKER="mysql+pymysql://dbuser:dbpassword@db/quotes_db"
+# Todo: Make this handle environment configs better
+LOCAL = "mysql+pymysql://dbuser:dbpassword@localhost:3306/quotes_db"
+DOCKER = "mysql+pymysql://dbuser:dbpassword@db/quotes_db"
+
 
 class Db():
     def __init__(self):

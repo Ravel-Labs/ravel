@@ -9,7 +9,7 @@ we won't need it for development.
 ## Python 3.7
 
 Make sure you have the most up to date version of Python.
-`python -V` should output `3.7.x` or higher. 
+`python -V` should output `3.7.x` or higher.
 
 Follow this guide to make sure you have Python setup correctly.
 https://opensource.com/article/19/5/python-3-default-mac
@@ -44,7 +44,7 @@ Build and run :: `docker-compose up --build`
 Build and run in the background and view logs for all the instances ::
 `docker-compose up --build -d && docker-compose logs --tail=all -f`
 
-Stop instances :: docker-compose down
+Stop instances :: `docker-compose down`
 
 Stop and Delete all containers :: `docker container stop $(docker container ls -aq) && docker container rm $(docker container ls -aq)`
 
