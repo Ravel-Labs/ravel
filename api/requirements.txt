@@ -10,7 +10,6 @@ Flask-RESTful==0.3.7
 itsdangerous==1.1.0
 Jinja2==2.10.1
 MarkupSafe==1.1.1
-mercurial==4.8.2
 pipenv==2018.11.26
 PyMySQL==0.9.3
 pytz==2019.2
