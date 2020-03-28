@@ -55,3 +55,8 @@ _Cheers!_
 
 ### Python / Flask app:
 *Flask RESTful: https://flask-restful.readthedocs.io/en/latest/
+
+
+### Models / Flask-SQL-Alchemy
+*Defining Models: https://flask-sqlalchemy.palletsprojects.com/en/2.x/models/
+*Methods on Models: https://flask-sqlalchemy.palletsprojects.com/en/2.x/queries/
