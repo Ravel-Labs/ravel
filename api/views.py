@@ -1,4 +1,4 @@
-from db import Db
+# from db import Db
 from flask import request
 from flask_restful import Resource
 from sqlalchemy import text as sql_text
@@ -6,9 +6,6 @@ from sqlalchemy import text as sql_text
 
 class Quote(Resource):
     """ The quotes View """
-
-    def __init__(self):
-        self.db = Db()
 
     def get(self):
         """ Returns a list of quotes """
@@ -43,9 +40,6 @@ class Quote(Resource):
 class User(Resource):
     """ The Users view """
 
-    def __init__(self):
-        self.db = Db()
-
     ## TODO
     def post(self):
         """ Adds a user  """
@@ -58,12 +52,10 @@ class User(Resource):
 class Track(Resource):
     """ The Tracks View """
     def __init__(self):
-        self.db = Db()
 
     def post(self):
         return { 'message': 'not implemented' }, 500
 
     def get(self, track_id):
-        self.db = Db()
 
         return { 'message': 'not implemented' }, 500
