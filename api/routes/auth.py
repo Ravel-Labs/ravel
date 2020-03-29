@@ -11,12 +11,12 @@ base_auth_url = '/api/auth'
 '''
     Server side rendering
 '''
-@auth.route('%s/login', base_auth_url)
+@auth.route('%s/login'% base_auth_url)
 def login():
     return "Login"
     # return render_template('login.html')
 
-@auth.route('%s/signup', base_auth_url)
+@auth.route('%s/signup'% base_auth_url)
 def signup():
     return "Signup"
     # return render_template('signup.html')
@@ -28,21 +28,6 @@ def signup():
         # request.json
         # request.form.get
 '''
-@auth.route('%s/login'% base_auth_url, methods=['POST'])
-def login_post():
-    email = request.json.get('email')
-    password = request.json.get('password')
-    remember = True if request.json.get('remember') else False
-
-    user = User.query.filter_by(email=email).first()
-
-    if not user and not check_password_hash(user.password, password):
-        return "Please check your login details and try again."
-        # return redirect(url_for('auth.login'))
-
-    login_user(user, remember=remember)
-    return "login_post"
-    # return redirect(url_for('main.profile'))
 
 @auth.route('%s/signup'% base_auth_url, methods=['POST'])
 def signup_post():
@@ -62,6 +47,22 @@ def signup_post():
     db.session.commit()
     return "signup_post"
     # return redirect(url_for('auth.login'))
+
+@auth.route('%s/login'% base_auth_url, methods=['POST'])
+def login_post():
+    email = request.json.get('email')
+    password = request.json.get('password')
+    remember = True if request.json.get('remember') else False
+
+    user = User.query.filter_by(email=email).first()
+
+    if not user and not check_password_hash(user.password, password):
+        return "Please check your login details and try again."
+        # return redirect(url_for('auth.login'))
+
+    login_user(user, remember=remember)
+    return "login_post"
+    # return redirect(url_for('main.profile'))
 
 @auth.route('%s/logout'% base_auth_url)
 @login_required

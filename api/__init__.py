@@ -7,12 +7,28 @@ from os import environ
 db = SQLAlchemy()
 
 def create_app():
+    # Todo: Make this handle environment configs better
+    environment = environ.get('FLASK_ENV')
+    db_url = environ.get('FLASK_DB_URL')
+
+    LOCAL = "mysql+pymysql://dbuser:dbpassword@localhost:3306/quotes_db"
+    DOCKER = "mysql+pymysql://dbuser:dbpassword@db/quotes_db"
+    
+    if db_url != None:
+        url=db_url
+    if environment == "development":
+        url=LOCAL
+    if environment == "production":
+        url=DOCKER
+    else:
+        url=DOCKER
+
     app = Flask(__name__)
     app.config["SECRET_KEY"] = "THISISASECRETKEY"
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite" # url
     app.config['FLASK_ENV'] = environ.get('FLASK_ENV')
     CORS(app)
-    
+
     from .models import User
     '''
         db methods
