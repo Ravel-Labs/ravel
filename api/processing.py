@@ -34,7 +34,7 @@ class Compress():
         pass
 
 
-class Handler(Processor):
+class Handler():
     """
     The Handler is responsible for queueing and building the effects for each
     track.
