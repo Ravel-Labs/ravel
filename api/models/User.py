@@ -1,6 +1,5 @@
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
-from passlib.apps import custom_app_context as pwd_context
 from flask_login import UserMixin
 from ravel.api import db
 
