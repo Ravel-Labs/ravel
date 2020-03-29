@@ -7,7 +7,6 @@ from ravel.api import db
 auth = Blueprint('auth', __name__)
 
 base_auth_url = '/api/auth'
-base_user_url = '/api/users'
 
 '''
     Server side rendering
