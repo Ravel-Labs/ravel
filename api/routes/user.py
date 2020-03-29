@@ -8,14 +8,14 @@ user = Blueprint('user', __name__)
 
 base_user_url = '/api/users'
 
-@user.route('%s/<int:id>', base_user_url)
+@user.route('%s/<int:id>'% base_user_url)
 def get_user_by_id(id):
     user = User.query.get(id)
     if not user:
         abort(400)
     return jsonify({'username': user.username})
 
-@user.route('%s/delete/<int:id>', base_user_url) #, method={'DELETE'}
+@user.route('%s/delete/<int:id>'% base_user_url) #, method={'DELETE'}
 def delete_user_by_id(id):
     user = User.query.get(id)
     if not user:
@@ -24,6 +24,6 @@ def delete_user_by_id(id):
     db.session.commit()
     return jsonify({'action': "deleted"})
 
-@user.route('%s/<int:id>', base_user_url, methods=['PUT'])
+@user.route('%s/<int:id>'% base_user_url, methods=['PUT'])
 def update_user(id):
     return "Please develop me"

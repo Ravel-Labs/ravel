@@ -28,7 +28,7 @@ def signup():
         # request.json
         # request.form.get
 '''
-@auth.route('%s/login', base_auth_url, methods=['POST'])
+@auth.route('%s/login'% base_auth_url, methods=['POST'])
 def login_post():
     email = request.json.get('email')
     password = request.json.get('password')
@@ -44,7 +44,7 @@ def login_post():
     return "login_post"
     # return redirect(url_for('main.profile'))
 
-@auth.route('%s/signup', base_auth_url, methods=['POST'])
+@auth.route('%s/signup'% base_auth_url, methods=['POST'])
 def signup_post():
 
     email = request.json.get('email')
@@ -63,7 +63,7 @@ def signup_post():
     return "signup_post"
     # return redirect(url_for('auth.login'))
 
-@auth.route('%s/logout',base_auth_url)
+@auth.route('%s/logout'% base_auth_url)
 @login_required
 def logout():
     logout_user()
