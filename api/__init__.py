@@ -54,13 +54,13 @@ def create_app():
     from .routes.auth import auth as auth_blueprint
     app.register_blueprint(auth_blueprint)
 
-    from .routes import main as main_blueprint
+    from .routes.main import main as main_blueprint
     app.register_blueprint(main_blueprint)
 
-    from .routes import user as user_blueprint
+    from .routes.user import user as user_blueprint
     app.register_blueprint(user_blueprint)
     
-    from .routes import errors as errors_blueprint
+    from .routes.errors import errors as errors_blueprint
     app.register_blueprint(errors_blueprint)
     
     return app
