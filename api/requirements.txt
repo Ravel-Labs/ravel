@@ -8,6 +8,7 @@ Flask-SQLAlchemy==2.4.1
 itsdangerous==1.1.0
 Jinja2==2.11.1
 MarkupSafe==1.1.1
+pipenv==2018.11.26
 pycparser==2.20
 PyMySQL==0.9.3
 pytz==2019.3

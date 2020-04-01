@@ -1,32 +1,6 @@
 version: "3"
 
 services:
-  db:
-    image: mysql:5.7
-    volumes:
-      - ./db:/docker-entrypoint-initdb.d
-      - ./db/data:/var/lib/mysql
-    restart: always
-    environment:
-      - MYSQL_USER=dbuser
-      - MYSQL_PASSWORD=dbpassword
-      - MYSQL_ROOT_PASSWORD=password
-      - MYSQL_DATABASE=quotes_db
-      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-    ports:
-      - 3306:3306
-
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    restart: always
-    depends_on:
-      - db
-    environment:
-      - PMA_HOST=db
-      - MYSQL_ROOT_PASSWORD=root
-    ports:
-      - 8080:80
-
   api:
     build: ./api
     container_name: api

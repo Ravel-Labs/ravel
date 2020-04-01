@@ -1,20 +1,31 @@
 <template>
   <div class="home">
-    <button @click="$router.push('/new')">Add Quote</button>
-    <hr />
-    <div class="container">
-        <section>
-            <b-button @click="clickMe">Login</b-button>
-        </section>
-      <div class="quote" v-for="quote in quotes" :key="quote.id" :quote="quote">
-        <p>
-          <em>"{{quote.quote}}"</em>
-          by {{quote.quote_by}}
-        </p>
-
-        <span class="added-by">added by {{quote.added_by}}</span>
+    <section class="hero is-large is-primary">
+      <div class="hero-body">
+        <div class="container">
+          <h1 class="title has-text-centered is-size-1">
+            The future of audio processing
+          </h1>
+          <h2 class="subtitle has-text-centered is-size-4">
+            Try Ravel Labs now for free.
+          </h2>
+          <div class="level">
+            <div class="level-item has-text-centered">
+              <div>
+                <p><button class="button is-medium is-white heading">Sign up now</button></p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
+    <footer class="footer">
+      <div class="content has-text-centered">
+        <p>
+          <strong>Ravel</strong> by Ravel Labs.
+        </p>
+      </div>
+    </footer>
   </div>
 </template>
 
@@ -22,62 +33,11 @@
 export default {
   name: "home",
   data: () => ({
-    quotes: []
-  }),
-  created() {
-    fetch("http://localhost:8000")
-      .then(res => res.json())
-      .then(response => {
-        this.quotes = response.quotes;
-      })
-      .catch(e => {
-        console.error(e.message);
-      });
-  }
+    user: {},
+  })
 };
 </script>
 
 
 <style  scoped>
-.home {
-  width: 100%;
-}
-
-button {
-  cursor: pointer;
-  border: 1px solid steelblue;
-  border-radius: 5px;
-  background: white;
-  color: steelblue;
-  height: 2em;
-}
-
-button:hover {
-  background: steelblue;
-  color: white;
-}
-
-.container {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-}
-
-.quote {
-  width: 29%;
-  padding: 0.5rem;
-  margin: 1%;
-  border-radius: 10px;
-  border: 1px solid steelblue;
-  color: black;
-}
-
-.quote span.by {
-  text-decoration: underline;
-}
-
-.quote .added-by {
-  color: rgba(0, 0, 0, 0.6);
-  margin-top: 3em;
-}
 </style>
