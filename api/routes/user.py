@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, abort
-from ravel.api.models.User import User
+from ravel.api.models.user import User
 from ravel.api import db
 
 user = Blueprint('user', __name__)

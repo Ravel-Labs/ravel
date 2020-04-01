@@ -8,9 +8,9 @@ db = SQLAlchemy()
 
 def create_app():
     # Todo: Make this handle environment configs better
+    app = Flask(__name__)
     environment = environ.get('FLASK_ENV')
     db_url = environ.get('FLASK_DB_URL')
-
     LOCAL = "mysql+pymysql://dbuser:dbpassword@localhost:3306/quotes_db"
     DOCKER = "mysql+pymysql://dbuser:dbpassword@db/quotes_db"
     
@@ -29,7 +29,7 @@ def create_app():
     app.config['FLASK_ENV'] = environ.get('FLASK_ENV')
     CORS(app)
 
-    from .models import User
+    from .models import user, track
     '''
         db methods
         # db.drop_all()
@@ -49,7 +49,7 @@ def create_app():
     # TODO Remove this comment once confirmed working with UI
     @login_manager.user_loader
     def load_user(user_id):
-        return User.query.get(int(user_id))
+        return db.session.query(user).filter_by(int(user_id))
 
     from .routes.auth import auth as auth_blueprint
     app.register_blueprint(auth_blueprint)
@@ -59,5 +59,8 @@ def create_app():
 
     from .routes.user import user as user_blueprint
     app.register_blueprint(user_blueprint)
+
+    from .routes.track import track as track_blueprint
+    app.register_blueprint(track_blueprint)
     
     return app
