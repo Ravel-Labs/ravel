@@ -60,4 +60,7 @@ def create_app():
     from .routes.user import user as user_blueprint
     app.register_blueprint(user_blueprint)
     
+    from .routes.errors import errors as errors_blueprint
+    app.register_blueprint(errors_blueprint)
+    
     return app
