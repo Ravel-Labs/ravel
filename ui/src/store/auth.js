@@ -13,14 +13,12 @@ const auth = {
   },
   mutations: {
      'LOGIN_REQUEST' (state, user) {
-      state.user.email = user.email
-      state.user.name = user.name
-      state.loading = true
+        state.user.email = user.email
+        state.loading = true
     },
-     'LOGIN_SUCCESS' (state, user) {
+     'LOGIN_SUCCESS' (state, data) {
        state.loading = false
-       state.user.email = user.email
-       state.user.name = user.name
+       state.error = undefined
     },
     'LOGIN_FAILURE' (state, error) {
       state.loading = false
@@ -31,7 +29,7 @@ const auth = {
       state.user = {}
       state.isAuthenticated = false
     },
-    'LOGOUT_SUCCESS' (state) {
+    'LOGOUT_SUCCESS' (state, user) {
       state.loading = false
     },
     'LOGOUT_FAILURE' (state, error) {
@@ -54,12 +52,20 @@ const auth = {
     }
   },
   actions: {
-    async login ({ commit, state }, credentials) {
+    async login ({ commit, state }, user) {
       try {
-        commit('LOGIN_REQUEST')
-        let { data } = await api.post('/auth/login', data)
-        commit('LOGIN_SUCCESS', data)
-        console.log('login: ', data)
+        commit('LOGIN_REQUEST', user)
+        let { data, code } = await api.post('/auth/login', {
+          email: user.email,
+          password: user.password
+        })
+        if (data == 'logged in successfully') {
+          commit('LOGIN_SUCCESS', data)
+        } else if (data == 'user not found') {
+          commit('LOGIN_FAILURE', 'User not found. Please try a different email.')
+        } else {
+          commit('LOGIN_FAILURE', 'Error: Failed to login.')
+        }
       } catch (error) {
         commit('LOGIN_FAILURE', error)
       }
@@ -68,7 +74,6 @@ const auth = {
       try {
         commit('LOGOUT_REQUEST')
         let { data } = await api.post('/auth/logout')
-        console.log('logout: ', data)
         commit('LOGOUT_SUCCESS')
       } catch (error) {
         commit('LOGOUT_FAILURE', error)

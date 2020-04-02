@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify, abort
+from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify, abort, Response
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, login_required
 from ravel.api.models.user import User
@@ -23,7 +23,7 @@ def signup():
 
 '''
     Authentication methods
-    
+
     Known request object attributes
         # request.json
         # request.form.get
@@ -38,31 +38,29 @@ def signup_post():
 
     user = User.query.filter_by(email=email).first()
     if user:
-        return "User email already exists"
-        # return redirect(url_for('auth.signup'))
+        return Response("User email already exists", status=404)
 
     new_user = User(email=email, name=name, password_hash=generate_password_hash(password, method='sha256'))
 
     db.session.add(new_user)
     db.session.commit()
-    return "signup_post"
-    # return redirect(url_for('auth.login'))
+    return "signup_post", 201
 
 @auth.route('%s/login'% base_auth_url, methods=['POST'])
 def login_post():
     email = request.json.get('email')
     password = request.json.get('password')
     remember = True if request.json.get('remember') else False
-
     user = User.query.filter_by(email=email).first()
+
+    if user == None:
+        return "No user found", 404
 
     if not user and not check_password_hash(user.password, password):
         return "Please check your login details and try again."
-        # return redirect(url_for('auth.login'))
 
     login_user(user, remember=remember)
-    return "login_post"
-    # return redirect(url_for('main.profile'))
+    return Response("logged in successfully", 200)
 
 @auth.route('%s/logout'% base_auth_url)
 @login_required
