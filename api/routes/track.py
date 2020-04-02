@@ -6,6 +6,21 @@ track = Blueprint('track', __name__)
 
 base_track_url = '/api/track'
 
+@track.route('%s'% base_track_url, methods=['POST'])
+def create_track():
+
+    email = request.json.get('email')
+    name = request.json.get('name')
+    password = request.json.get('password')
+    track = Track.query.filter_by(email=email).first()
+    if track:
+        return "User email already exists"
+        # return redirect(url_for('auth.signup'))
+    new_track = Track(email=email, name=name, password_hash=password)
+    db.session.add(new_track)
+    db.session.commit()
+    return "Created"
+
 @track.route(base_track_url, methods={'GET'})
 def get_tracks():
     tracks = Track.query.all()
@@ -32,26 +47,6 @@ def delete_track_by_id(id):
 
 @track.route('%s/<int:id>'% base_track_url, methods=['PUT'])
 def update_track(id):
-    # Try catch here 
     db.session.query(Track).filter_by(id=id).update(request.json)
     db.session.commit()
     return jsonify({'action': "updated"})
-
-
-@track.route('%s'% base_track_url, methods=['POST'])
-def create_track():
-
-    email = request.json.get('email')
-    name = request.json.get('name')
-    password = request.json.get('password')
-
-    track = Track.query.filter_by(email=email).first()
-    if track:
-        return "User email already exists"
-        # return redirect(url_for('auth.signup'))
-
-    new_track = Track(email=email, name=name, password_hash=password)
-
-    db.session.add(new_track)
-    db.session.commit()
-    return "Created"

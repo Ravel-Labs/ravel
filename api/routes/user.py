@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, abort
+from flask import Blueprint, jsonify, abort, request
 from ravel.api.models.user import User
 from ravel.api import db
 
@@ -32,4 +32,6 @@ def delete_user_by_id(id):
 
 @user.route('%s/<int:id>'% base_user_url, methods=['PUT'])
 def update_user(id):
-    return "Please develop me"
+    db.session.query(User).filter_by(id=id).update(request.json)
+    db.session.commit()
+    return jsonify({'action': "updated"})
