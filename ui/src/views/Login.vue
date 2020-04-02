@@ -21,7 +21,7 @@
                 </div>
 
                 <div class="field level-item">
-                  <button class="button is-medium" @click="submit()">Login</button>
+                  <button class="button is-medium" @click="login()">Login</button>
                 </div>
               </article>
             </div>
@@ -33,27 +33,24 @@
 </template>
 
 <script>
+import { mapActions } from 'vuex'
+
 export default {
   name: "home",
   data: () => ({
     user: {
       username: "",
-      password: "",
+      password: ""
     }
   }),
-  created() {
-    // fetch("http://localhost:8000")
-    //   .then(res => res.json())
-    //   .then(response => {
-    //     this.quotes = response.quotes;
-    //   })
-    //   .catch(e => {
-    //     console.error(e.message);
-    //   });
+  methods: {
+    ...mapActions('auth', [
+      'login',
+      'logout'
+    ])
   }
 };
 </script>
-
 
 <style  scoped>
 </style>
