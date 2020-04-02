@@ -29,7 +29,7 @@ def create_app():
     app.config['FLASK_ENV'] = environ.get('FLASK_ENV')
     CORS(app)
 
-    from .models import user, track
+    from .models import user, track, trackOuts
     '''
         db methods
         # db.drop_all()
@@ -62,6 +62,9 @@ def create_app():
 
     from .routes.track import track as track_blueprint
     app.register_blueprint(track_blueprint)
+
+    from .routes.trackOuts import trackOuts as trackOuts_blueprint
+    app.register_blueprint(trackOuts_blueprint)
     
     from .routes.errors import errors as errors_blueprint
     app.register_blueprint(errors_blueprint)
