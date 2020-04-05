@@ -7,8 +7,7 @@ from os import environ
 db = SQLAlchemy()
 
 def create_app():
-    # Todo: Make this handle environment configs better
-    app = Flask(__name__)
+    # TODO: Make this handle environment configs better
     environment = environ.get('FLASK_ENV')
     db_url = environ.get('FLASK_DB_URL')
     LOCAL = "mysql+pymysql://dbuser:dbpassword@localhost:3306/quotes_db"
@@ -29,7 +28,7 @@ def create_app():
     app.config['FLASK_ENV'] = environ.get('FLASK_ENV')
     CORS(app)
 
-    from .models import user, track, trackOuts
+    from .models import user, track, trackOuts, wavFile
     '''
         db methods
         # db.drop_all()
@@ -66,6 +65,9 @@ def create_app():
     from .routes.trackOuts import trackOuts as trackOuts_blueprint
     app.register_blueprint(trackOuts_blueprint)
     
+    from .routes.wavFile import wav as wav_blueprint
+    app.register_blueprint(wav_blueprint)
+
     from .routes.errors import errors as errors_blueprint
     app.register_blueprint(errors_blueprint)
     
