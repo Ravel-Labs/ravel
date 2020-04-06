@@ -1,6 +1,8 @@
 <template>
   <div id="app">
-    <Navbar user="user"></Navbar>
+    <Navbar user="user"
+      isAuthenticated="isAuthenticated"
+    ></Navbar>
     <router-view />
   </div>
 </template>
@@ -13,9 +15,16 @@ export default {
   components: {
     Navbar,
   },
+  created () {
+    const t = this.$cookies.get('token')
+    console.log(t)
+  },
   computed: mapState({
     user: state => state.user,
     isAuthenticated: state => state.user.isAuthenticated
-  })
+  }),
+  created () {
+    this.$store.dispatch('auth/check')
+  }
 }
 </script>

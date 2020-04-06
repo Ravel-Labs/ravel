@@ -21,7 +21,7 @@
 
         <template slot="end">
             <b-navbar-item tag="div">
-                <div class="buttons">
+                <div v-if="(isAuthenticated)" class="buttons">
                     <a href="/signup" class="button is-primary">
                         <strong>Sign up</strong>
                     </a>
@@ -36,5 +36,6 @@
 <script>
 export default {
     name: 'Navbar',
+    props: [ 'user', 'isAuthenticated' ]
 }
 </script>

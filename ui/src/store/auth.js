@@ -1,12 +1,15 @@
-import api from '@/api'
+import API from '@/api'
+import Cookies from 'js-cookie'
+
+const api = API()
 
 const auth = {
   namespaced: true,
   state: {
     loading: false,
     user: {
-      email: "",
-      name: ""
+      email: '',
+      name: ''
     },
     isAuthenticated: false,
     error: undefined
@@ -19,18 +22,20 @@ const auth = {
      'LOGIN_SUCCESS' (state, data) {
        state.loading = false
        state.error = undefined
+       state.isAuthenticated = true
     },
     'LOGIN_FAILURE' (state, error) {
       state.loading = false
       state.error = error
+      state.isAuthenticated = false
     },
     'LOGOUT_REQUEST' (state) {
       state.loading = true
-      state.user = {}
-      state.isAuthenticated = false
     },
     'LOGOUT_SUCCESS' (state, user) {
       state.loading = false
+      state.user = {}
+      state.isAuthenticated = false
     },
     'LOGOUT_FAILURE' (state, error) {
       state.loading = false
@@ -57,9 +62,11 @@ const auth = {
         commit('LOGIN_REQUEST', user)
         let { data, code } = await api.post('/auth/login', {
           email: user.email,
-          password: user.password
+          password: user.password,
+          remember: true
         })
         if (data == 'logged in successfully') {
+          console.log('response: ', )
           commit('LOGIN_SUCCESS', data)
         } else if (data == 'user not found') {
           commit('LOGIN_FAILURE', 'User not found. Please try a different email.')
@@ -90,6 +97,16 @@ const auth = {
         commit('SIGNUP_SUCCESS', user)
       } catch (error) {
         commit('SIGNUP_FAILURE', error)
+      }
+    },
+    async check ({ commit, state }) {
+      try {
+        let { data } = await api.post('/auth/check')
+        console.log('check response: ', data)
+      } catch(error) {
+        if (error = 'Request failed with status code 405') {
+          console.log('USER NOT LOGGED IN: ', error)
+        }
       }
     }
   }

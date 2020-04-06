@@ -53,15 +53,18 @@ export default {
   computed: mapState({
     isLoading: state => state.auth.loading,
     error: state => state.auth.error,
-    showError: state => !!(state.auth.error)
+    showError: state => !!(state.auth.error),
+    isAuthenticated: state => state.auth.isAuthenticated
   }),
+  created () {
+  },
   methods: {
     login (user) {
       this.$store.dispatch('auth/login', user)
       .then(() => {
         console.log('error: ', this.error)
         if (!this.error) {
-          this.$router.push('/')
+          this.$router.push('/tracks')
         }
       })
     }
