@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify, abort, Response
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_user, logout_user, login_required
-from ravel.api.models.user import User
+from flask_login import login_user, logout_user, login_required, current_user
+from ravel.api.models.User import User
 from ravel.api import db
 
 auth = Blueprint('auth', __name__)
@@ -67,4 +67,12 @@ def login_post():
 def logout():
     logout_user()
     return "logout"
+    # return redirect(url_for('main.index'))
+
+
+@auth.route('%s/check'% base_auth_url)
+@login_required
+def check():
+    user = current_user()
+    return Response(jsonify(user), 200)
     # return redirect(url_for('main.index'))

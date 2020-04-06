@@ -13,7 +13,7 @@ def create_app():
     db_url = environ.get('FLASK_DB_URL')
     LOCAL = "mysql+pymysql://dbuser:dbpassword@localhost:3306/quotes_db"
     DOCKER = "mysql+pymysql://dbuser:dbpassword@db/quotes_db"
-    
+
     if db_url != None:
         url=db_url
     if environment == "development":
@@ -27,9 +27,10 @@ def create_app():
     app.config["SECRET_KEY"] = "THISISASECRETKEY"
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite" # url
     app.config['FLASK_ENV'] = environ.get('FLASK_ENV')
-    CORS(app)
+    CORS(app, {supports_credentials=True, origins="*"})
 
-    from .models import user, track
+    # TLALKJADSFLKJADSFL:KJSADFljk
+    from .models import User, track
     '''
         db methods
         # db.drop_all()
@@ -44,12 +45,15 @@ def create_app():
     # When not authenticated client will be redirected to auth.login route
     login_manager.login_view = 'auth.login'
     login_manager.init_app(app)
-    
+
     # Connection between browser cookie user id and db user object
     # TODO Remove this comment once confirmed working with UI
     @login_manager.user_loader
     def load_user(user_id):
-        return db.session.query(user).filter_by(int(user_id))
+        user = db.session.query(User.User).filter_by(id=int(user_id)).first()
+        if user == None:
+            return None
+        return user
 
     from .routes.auth import auth as auth_blueprint
     app.register_blueprint(auth_blueprint)
@@ -62,8 +66,8 @@ def create_app():
 
     from .routes.track import track as track_blueprint
     app.register_blueprint(track_blueprint)
-    
+
     from .routes.errors import errors as errors_blueprint
     app.register_blueprint(errors_blueprint)
-    
+
     return app
