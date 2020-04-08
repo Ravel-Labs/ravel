@@ -30,21 +30,6 @@ def signup_post():
     return Response("created", 201)
 
 
-@auth.route('%s/login' % base_auth_url, methods=['POST'])
-def login_post():
-    email = request.json.get('email')
-    password = request.json.get('password')
-    user = User.query.filter_by(email=email).first()
-
-    if user is None:
-        return "No user found", 404
-
-    if user and not check_password_hash(user.password_hash, password):
-        return "Please check your login details and try again."
-
-    return Response(user.api_token, 200)
-
-
 @auth.route('%s/check' % base_auth_url)
 @jwt_required()
 def check():
