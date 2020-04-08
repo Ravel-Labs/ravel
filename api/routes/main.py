@@ -1,6 +1,8 @@
 from flask import Blueprint, render_template
-from flask_login import login_required, current_user
+from flask_jwt import jwt_required
+
 main = Blueprint("main", __name__)
+
 '''
     Server rendered components
 '''
@@ -12,7 +14,7 @@ def index():
 
 # Restricted page
 @main.route('/profile')
-@login_required
+@jwt_required()
 def profile():
     return "Render profile"
     # return render_template('profile.html', name=current_user.name)
