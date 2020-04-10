@@ -4,7 +4,7 @@ from ravel.api import db
 
 trackOuts = Blueprint('trackOuts', __name__)
 
-base_trackOut_url = '/api/trackout'
+base_trackOut_url = '/api/trackouts'
 
 @trackOuts.route('%s'% base_trackOut_url, methods=['POST'])
 def create_trackOut():

@@ -36,6 +36,7 @@ def create_app():
     '''
     with app.app_context():
         db.init_app(app)
+        # db.drop_all()
         db.create_all()
         db.session.commit()
 

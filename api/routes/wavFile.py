@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, abort, request, send_file
 from ravel.api.models.wavFile import WavFile
 from ravel.api import db
 from io import BytesIO
-
+from hashlib import md5
 wav = Blueprint('wav', __name__)
 wav.config = {}
 base_wavFile_url = '/api/wav'
@@ -12,11 +12,12 @@ def create_wavFile():
 
     wavFile = request.files['file']
     binary = wavFile.read()
-    wavFile = WavFile.query.filter_by(binary=binary).first()
+    binary_byte_hash = md5(binary).digest()
+    wavFile = WavFile.query.filter_by(wav_hash=binary_byte_hash).first()
     if wavFile:
         return "Already exists"
         # return redirect(url_for('auth.signup'))
-    new_wavFile = WavFile(binary=binary)
+    new_wavFile = WavFile(binary=binary, wav_hash=binary_byte_hash)
     db.session.add(new_wavFile)
     db.session.commit()
     return "Created"
@@ -27,7 +28,7 @@ def get_wavFile():
     json_returnable = [wavFile.create_obj() for wavFile in wavFiles]
     if not json_returnable:
         abort(400)
-    return jsonify({'users': json_returnable})
+    return jsonify({'payload': json_returnable})
 
 @wav.route('%s/<int:id>'% base_wavFile_url, methods={'GET'})
 def get_track_by_id(id):
