@@ -1,16 +1,25 @@
 <template>
   <div id="app">
-    <Navbar></Navbar>
+    <Navbar
+      user="user"
+    ></Navbar>
     <router-view />
   </div>
 </template>
 <script>
-import Navbar from './components/Navbar.vue'
+import { mapState } from 'vuex'
+import Navbar from '@/components/Navbar.vue'
 
 export default {
   name: "home",
   components: {
     Navbar,
   },
+  computed: mapState({
+    user: state => state.user
+  }),
+  created () {
+    this.$store.dispatch('auth/check')
+  }
 }
 </script>

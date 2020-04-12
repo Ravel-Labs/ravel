@@ -1,72 +1,54 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify, abort
+from flask import Blueprint, request, Response
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_user, logout_user, login_required
-from ravel.api.models.user import User
+from flask_jwt import jwt_required
+from ravel.api.models.User import User
 from ravel.api import db
 
 auth = Blueprint('auth', __name__)
 
 base_auth_url = '/api/auth'
 
-'''
-    Server side rendering
-'''
-@auth.route('%s/login'% base_auth_url)
-def login():
-    return "Login"
-    # return render_template('login.html')
 
-@auth.route('%s/signup'% base_auth_url)
-def signup():
-    return "Signup"
-    # return render_template('signup.html')
-
-'''
-    Authentication methods
-    
-    Known request object attributes
-        # request.json
-        # request.form.get
-'''
-
-@auth.route('%s/signup'% base_auth_url, methods=['POST'])
+@auth.route('%s/signup' % base_auth_url, methods=['POST'])
 def signup_post():
-
     email = request.json.get('email')
     name = request.json.get('name')
     password = request.json.get('password')
 
     user = User.query.filter_by(email=email).first()
     if user:
-        return "User email already exists"
-        # return redirect(url_for('auth.signup'))
+        return Response("User email already exists", status=404)
 
-    new_user = User(email=email, name=name, password_hash=generate_password_hash(password, method='sha256'))
+    new_user = User(
+        email=email,
+        name=name,
+        password_hash=generate_password_hash(password, method='sha256'))
 
     db.session.add(new_user)
     db.session.commit()
-    return "signup_post"
-    # return redirect(url_for('auth.login'))
 
-@auth.route('%s/login'% base_auth_url, methods=['POST'])
-def login_post():
-    email = request.json.get('email')
-    password = request.json.get('password')
-    remember = True if request.json.get('remember') else False
+    return Response("created", 201)
 
+
+@auth.route('%s/check' % base_auth_url)
+@jwt_required()
+def check():
+    return Response("OK", 200)
+
+
+def authentication_handler(email, password):
     user = User.query.filter_by(email=email).first()
 
-    if not user and not check_password_hash(user.password, password):
-        return "Please check your login details and try again."
-        # return redirect(url_for('auth.login'))
+    if user is None:
+        return None
 
-    login_user(user, remember=remember)
-    return "login_post"
-    # return redirect(url_for('main.profile'))
+    if check_password_hash(user.password_hash, password):
+        return user
 
-@auth.route('%s/logout'% base_auth_url)
-@login_required
-def logout():
-    logout_user()
-    return "logout"
-    # return redirect(url_for('main.index'))
+    return None
+
+
+def identity_handler(payload):
+    user_id = payload['identity']
+    user = User.query.filter_by(id=user_id).first()
+    return user
