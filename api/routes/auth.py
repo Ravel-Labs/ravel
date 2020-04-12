@@ -1,9 +1,10 @@
 from flask import Blueprint, request, abort
+from flask_jwt import jwt_required
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_user, logout_user, login_required
-from ravel.api.models.user import User
 from ravel.api.models.apiresponse import APIResponse
+from ravel.api.models.user import User
 from ravel.api import db
+
 
 auth_bp = Blueprint('auth_bp', __name__)
 base_auth_url = '/api/auth'
@@ -51,24 +52,24 @@ def signup_users():
     except Exception as e:
         abort(500, e)
 
-@auth_bp.route('%s/login'% base_auth_url, methods=['POST'])
-def login_users():
-    try:
-        email = request.json.get('email')
-        password = request.json.get('password')
-        remember = True if request.json.get('remember') else False
-        raw_user = User.query.filter_by(email=email).first()
+@auth_bp.route('%s/check'% base_auth_url)
+@jwt_required()
+def check():
+    return APIResponse("OK", 200).response
 
-        if not raw_user and not check_password_hash(raw_user.password, password):
-            abort(401, "Invalid credentials")
 
-        login_user(raw_user, remember=remember)
-        return "login_post"
-    except Exception as e:
-        abort(500, e)
+def authentication_handler(email, password):
+    user = User.query.filter_by(email=email).first()
 
-@auth_bp.route('%s/logout'% base_auth_url)
-@login_required
-def logout_users():
-    logout_user()
-    return "logout"
+    if user is None:
+        return None
+
+    if check_password_hash(user.password_hash, password):
+        return user
+
+    return None
+
+def identity_handler(payload):
+    user_id = payload['identity']
+    user = User.query.filter_by(id=user_id).first()
+    return user

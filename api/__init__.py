@@ -1,34 +1,24 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
 from flask_cors import CORS
+from flask_jwt import JWT
 from os import environ
 
 db = SQLAlchemy()
 
-def create_app():
-    # TODO: Make this handle environment configs better
-    environment = environ.get('FLASK_ENV')
-    db_url = environ.get('FLASK_DB_URL')
-    LOCAL = "mysql+pymysql://dbuser:dbpassword@localhost:3306/quotes_db"
-    DOCKER = "mysql+pymysql://dbuser:dbpassword@db/quotes_db"
-    
-    if db_url != None:
-        url=db_url
-    if environment == "development":
-        url=LOCAL
-    if environment == "production":
-        url=DOCKER
-    else:
-        url=DOCKER
 
+def create_app():
+    # Todo: Make this handle environment configs better
     app = Flask(__name__)
     app.config["SECRET_KEY"] = "THISISASECRETKEY"
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite" # url
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"  # url
     app.config['FLASK_ENV'] = environ.get('FLASK_ENV')
     CORS(app)
 
     from .models import user, track, trackout, wavfile
+    from .routes.auth import authentication_handler, identity_handler
+    JWT(app, authentication_handler, identity_handler)
+
     '''
         db methods
         # db.drop_all()
@@ -39,17 +29,6 @@ def create_app():
         # db.drop_all()
         db.create_all()
         db.session.commit()
-
-    login_manager = LoginManager()
-    # When not authenticated client will be redirected to auth.login route
-    login_manager.login_view = 'auth.login'
-    login_manager.init_app(app)
-    
-    # Connection between browser cookie user id and db user object
-    # TODO Remove this comment once confirmed working with UI
-    @login_manager.user_loader
-    def load_user(user_id):
-        return db.session.query(user).filter_by(int(user_id))
 
     '''
     WebServer Rendering Routes
