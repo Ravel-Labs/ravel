@@ -10,18 +10,18 @@ db = SQLAlchemy()
 def create_app():
     # Todo: Make this handle environment configs better
     app = Flask(__name__)
+    app.config["SECRET_KEY"] = "thisshouldbesetforproduction"
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
+    app.config["FLASK_ENV"] = environ.get("FLASK_ENV")
+    app.config["JWT_AUTH_URL_RULE"] = "/api/auth/login"
+    app.config["JWT_SECRET_KEY"] = "thisshouldbesetforproduction"
 
-    app = Flask(__name__)
-    app.config["SECRET_KEY"] = "THISISASECRETKEY"
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"  # url
-    app.config['FLASK_ENV'] = environ.get('FLASK_ENV')
     CORS(app)
 
     from .routes.auth import authentication_handler, identity_handler
     JWT(app, authentication_handler, identity_handler)
 
     '''
-        db methods
         # db.drop_all()
         # db.create_all() only creates models within scope
     '''

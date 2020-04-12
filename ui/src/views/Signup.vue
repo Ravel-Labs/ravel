@@ -8,9 +8,15 @@
             <div class="tile is-parent is-vertical">
               <article class="tile is-child notification is-primary">
                 <div class="field">
+                  <label class="label has-text-white">Name</label>
+                  <div class="control">
+                    <input class="input" v-model="user.name" type="text" placeholder="name">
+                  </div>
+                </div>
+                <div class="field">
                   <label class="label has-text-white">Email</label>
                   <div class="control">
-                    <input class="input" v-model="user.username" type="text" placeholder="email">
+                    <input class="input" v-model="user.email" type="text" placeholder="email">
                   </div>
                 </div>
                 <div class="field">
@@ -21,7 +27,7 @@
                 </div>
 
                 <div class="field level-item">
-                  <button class="button is-medium" @click="submit()">Sign up</button>
+                  <button class="button is-medium" @click="signup(user)">Sign up</button>
                 </div>
               </article>
             </div>
@@ -32,20 +38,22 @@
   </section>
 </template>
 <script>
+import { mapActions } from 'vuex'
+
 export default {
   data () {
     return {
       user: {
-        username: "",
+        email: "",
         password: "",
+        name: ""
       }
     }
   },
   methods: {
-    submit () {
-      console.log(this.user.username, this.user.password)
-      return
-    }
+    ...mapActions('auth', [
+      'signup'
+    ])
   }
 }
 </script>
