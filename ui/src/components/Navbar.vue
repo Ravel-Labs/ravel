@@ -13,20 +13,25 @@
                 <b-navbar-item href="/about">
                     About
                 </b-navbar-item>
-                <b-navbar-item href="/contact">
-                    Contact
-                </b-navbar-item>
             </b-navbar-dropdown>
         </template>
 
         <template slot="end">
             <b-navbar-item tag="div">
-                <div class="buttons">
+                <div v-if="(user.isAuthenticated)" class="buttons">
                     <a href="/signup" class="button is-primary">
                         <strong>Sign up</strong>
                     </a>
                     <a class="button is-light" href="/login">
                         Log in
+                    </a>
+                </div>
+                <div class="" v-else>
+                    <a href="/profile" class="button is-light">
+                      <strong>Account {{ user.email }}</strong>
+                    </a>
+                    <a class="button is-primary" href="/login">
+                        Log out
                     </a>
                 </div>
             </b-navbar-item>
@@ -36,5 +41,6 @@
 <script>
 export default {
     name: 'Navbar',
+    props: [ 'user' ]
 }
 </script>
