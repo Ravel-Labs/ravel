@@ -7,7 +7,7 @@ class Track(db.Model):
     name = db.Column(db.String(1000))
 
     # TODO Fix this hack, used to return user as json valid back to client
-    def create_obj(self):
+    def to_dict(self):
         return {
             "id": self.id,
             "name": self.name,

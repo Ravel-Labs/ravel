@@ -1,52 +1,100 @@
 from flask import Blueprint, jsonify, abort, request
-from ravel.api.models.trackOuts import TrackOut
+from ravel.api.models.trackout import TrackOut
+from ravel.api.models.apiresponse import APIResponse
 from ravel.api import db
 
-trackOuts = Blueprint('trackOuts', __name__)
+trackouts_bp = Blueprint('trackouts_bp', __name__)
+base_trackouts_url = '/api/trackouts'
 
-base_trackOut_url = '/api/trackouts'
+'''
+    POST
+'''
+@trackouts_bp.route(base_trackouts_url, methods=['POST'])
+def create_trackout():
+    try:
+        email = request.json.get('email')
+        name = request.json.get('name')
+        password = request.json.get('password')
+        raw_trackout_search = TrackOut.query.filter_by(email=email).first()
+        
+        if raw_trackout_search:
+            return "User email already exists"
+        raw_trackout = TrackOut(email=email, name=name, password_hash=password)
+        trackout = raw_trackout.to_dict()
+        
+        db.session.add(raw_trackout)
+        db.session.commit()
+        response = APIResponse(trackout, 201).response
+        return response
+    except Exception as e:
+        abort(500, e)
 
-@trackOuts.route('%s'% base_trackOut_url, methods=['POST'])
-def create_trackOut():
+'''
+    GET all
+'''
+@trackouts_bp.route(base_trackouts_url, methods={'GET'})
+def get_trackouts():
+    try:
+        raw_trackouts = TrackOut.query.all()
+        trackouts = [raw_trackout.to_dict() for raw_trackout in raw_trackouts]
+        if not trackouts:
+            abort(400, "No trackouts have been created yet")
+        response = APIResponse(trackouts, 200).response
+        return response
+    except Exception as e:
+        abort(500, e)
 
-    email = request.json.get('email')
-    name = request.json.get('name')
-    password = request.json.get('password')
-    trackOut = TrackOut.query.filter_by(email=email).first()
-    if trackOut:
-        return "User email already exists"
-        # return redirect(url_for('auth.signup'))
-    new_trackOut = TrackOut(email=email, name=name, password_hash=password)
-    db.session.add(new_trackOut)
-    db.session.commit()
-    return "Created"
+'''
+    GET by ID
+    TODO test if dict is worth it here
+'''
+@trackouts_bp.route('%s/<int:id>'% base_trackouts_url, methods={'GET'})
+def get_trackout_by_id(id):
+    try:
+        raw_trackout = TrackOut.query.get(id)
+        if not raw_trackout:
+            abort(400, "A trackout with id %s does not exist"%id)
+        trackout = raw_trackout.to_dict()
+        response = APIResponse(trackout, 200).response
+        return response
+    except Exception as e:
+        abort(500, e)
 
-@trackOuts.route(base_trackOut_url, methods={'GET'})
-def get_trackOuts():
-    trackOuts = TrackOut.query.all()
-    json_returnable = [trackOut.create_obj() for trackOut in trackOuts]
-    if not json_returnable:
-        abort(400)
-    return jsonify({'users': json_returnable})
+'''
+    DELETE
+'''
+@trackouts_bp.route('%s/delete/<int:id>'% base_trackouts_url, methods={'GET'})
+def delete_trackout_by_id(id):
+    try:
+        raw_trackout = TrackOut.query.get(id)
+        if not raw_trackout:
+            abort(404, "A trackout with id %s does not exist"%id)
+        db.session.delete(raw_trackout)
+        db.session.commit()
+        payload = {
+            "action": "delete",
+            "table": "trackouts",
+            "id": id
+        }
+        response = APIResponse(payload, 200).response
+        return response
+    except Exception as e:
+        abort(500, e)
 
-@trackOuts.route('%s/<int:id>'% base_trackOut_url, methods={'GET'})
-def get_track_by_id(id):
-    trackOut = trackOuts.query.get(id)
-    if not trackOut:
-        abort(400)
-    return jsonify({'payload': trackOuts.name})
-
-@trackOuts.route('%s/delete/<int:id>'% base_trackOut_url, methods={'DELETE'})
-def delete_track_by_id(id):
-    trackOut = TrackOut.query.get(id)
-    if not trackOut:
-        abort(404)
-    db.session.delete(trackOut)
-    db.session.commit()
-    return jsonify({'action': "deleted"})
-
-@trackOuts.route('%s/<int:id>'% base_trackOut_url, methods=['PUT'])
-def update_track(id):
-    db.session.query(TrackOut).filter_by(id=id).update(request.json)
-    db.session.commit()
-    return jsonify({'action': "updated"})
+'''
+    PUT TODO check if user exists first
+'''
+@trackouts_bp.route('%s/<int:id>'% base_trackouts_url, methods=['PUT'])
+def update_trackout(id):
+    try:
+        db.session.query(TrackOut).filter_by(id=id).update(request.json)
+        db.session.commit()
+        payload = {
+            "action": "update",
+            "table": "trackouts",
+            "id": id
+        }
+        response = APIResponse(payload, 200).response
+        return response
+    except Exception as e:
+        abort(500, e)
