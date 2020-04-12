@@ -28,7 +28,7 @@ def create_app():
     app.config['FLASK_ENV'] = environ.get('FLASK_ENV')
     CORS(app)
 
-    from .models import user, track, trackOuts, wavFile
+    from .models import user, track, trackout, wavfile
     '''
         db methods
         # db.drop_all()
@@ -51,25 +51,31 @@ def create_app():
     def load_user(user_id):
         return db.session.query(user).filter_by(int(user_id))
 
-    from .routes.auth import auth as auth_blueprint
-    app.register_blueprint(auth_blueprint)
+    '''
+    WebServer Rendering Routes
+    '''
+    from .routes.main import main_bp
+    app.register_blueprint(main_bp)
 
-    from .routes.main import main as main_blueprint
-    app.register_blueprint(main_blueprint)
+    '''
+    Database Interactive Routes 
+    '''
+    from .routes.auth import auth_bp
+    app.register_blueprint(auth_bp)
 
-    from .routes.user import user as user_blueprint
-    app.register_blueprint(user_blueprint)
+    from .routes.users import users_bp
+    app.register_blueprint(users_bp)
 
-    from .routes.track import track as track_blueprint
-    app.register_blueprint(track_blueprint)
+    from .routes.tracks import tracks_bp
+    app.register_blueprint(tracks_bp)
 
-    from .routes.trackOuts import trackOuts as trackOuts_blueprint
-    app.register_blueprint(trackOuts_blueprint)
+    from .routes.trackouts import trackouts_bp
+    app.register_blueprint(trackouts_bp)
     
-    from .routes.wavFile import wav as wav_blueprint
-    app.register_blueprint(wav_blueprint)
+    from .routes.wavfiles import wavfiles_bp
+    app.register_blueprint(wavfiles_bp)
 
-    from .routes.errors import errors as errors_blueprint
-    app.register_blueprint(errors_blueprint)
+    from .routes.errors import errors_bp
+    app.register_blueprint(errors_bp)
     
     return app

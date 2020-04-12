@@ -1,16 +1,20 @@
-from flask import render_template, Blueprint
-from ravel.api import db
+from flask import Blueprint
+from ravel.api.models.errors import BaseException
 
+errors_bp = Blueprint('errors_bp', __name__)
 
-errors = Blueprint('errors', __name__)
-
-@errors.errorhandler(404)
+@errors_bp.app_errorhandler(404)
 def not_found_error(error):
-    return "404"
-    # return render_template('404.html'), 404
+    return BaseException(error,404).to_dict()
 
-@errors.errorhandler(500)
+@errors_bp.app_errorhandler(403)
+def already_exists(error):
+    return BaseException(error,403).to_dict()
+
+@errors_bp.app_errorhandler(401)
+def invalid_credentials(error):
+    return BaseException(error,401).to_dict()
+
+@errors_bp.app_errorhandler(500)
 def internal_error(error):
-    return "505"
-    # db.session.rollback()
-    # return render_template('500.html'), 500
+    return BaseException(error,500).to_dict()
