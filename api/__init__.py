@@ -38,7 +38,7 @@ def create_app():
     app.register_blueprint(main_bp)
 
     '''
-    Database Interactive Routes 
+    Database Interactive Routes
     '''
     from .routes.auth import auth_bp
     app.register_blueprint(auth_bp)
@@ -51,11 +51,11 @@ def create_app():
 
     from .routes.trackouts import trackouts_bp
     app.register_blueprint(trackouts_bp)
-    
+
     from .routes.wavfiles import wavfiles_bp
     app.register_blueprint(wavfiles_bp)
 
     from .routes.errors import errors_bp
     app.register_blueprint(errors_bp)
-    
+
     return app
