@@ -1,9 +1,11 @@
 from ravel.api import db
-from hashlib import md5
+
+
 class WavFile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     file_binary = db.Column(db.LargeBinary)
     file_hash = db.Column(db.LargeBinary, unique=True)
+
     def to_dict(self):
         wavfile = {
             "id": self.id,

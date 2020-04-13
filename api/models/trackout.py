@@ -1,18 +1,23 @@
+import datetime
 from ravel.api import db
+
 
 class TrackOut(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(100), unique=True)
-    password_hash = db.Column(db.String(64))
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    user_id = db.Column(db.Integer)
     name = db.Column(db.String(1000))
+    type = db.Column(db.String(50))
+    instrument = db.Column(db.String(50))
+    settings = db.Column(db.String(1000))
+    wavefile = db.Column(db.Integer)
 
-    # TODO Fix this hack, used to return user as json valid back to client
     def to_dict(self):
         user = {
             "id": self.id,
+            "user": self.user,
             "name": self.name,
-            "email": self.email,
-            "password_hash": self.password_hash
+            "settings": self.settings,
         }
         if not user.get("id"):
             del user['id']
