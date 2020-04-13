@@ -29,4 +29,17 @@
   </section>
 </template>
 <script>
+import { mapActions } from 'vuex'
+
+export default {
+  data () {
+    return {
+      valid: false,
+      track: {}
+    }
+  },
+  methods: {
+    ...mapActions(['tracks/create'])
+  }
+}
 </script>
