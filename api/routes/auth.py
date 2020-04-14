@@ -12,23 +12,26 @@ base_auth_url = '/api/auth'
 '''
     Server side rendering
 '''
-@auth_bp.route('%s/login'% base_auth_url)
+@auth_bp.route('%s/login' % base_auth_url)
 def login():
     return "Login"
 
-@auth_bp.route('%s/signup'% base_auth_url)
+
+@auth_bp.route('%s/signup' % base_auth_url)
 def signup():
     return "Signup"
 
+
 '''
     Authentication methods
-    
+
     Known request object attributes
         # request.json
         # request.form.get
 '''
 
-@auth_bp.route('%s/signup'% base_auth_url, methods=['POST'])
+
+@auth_bp.route('%s/signup' % base_auth_url, methods=['POST'])
 def signup_users():
     try:
         email = request.json.get('email')
@@ -47,12 +50,13 @@ def signup_users():
         user = raw_user.to_dict()
         db.session.add(raw_user)
         db.session.commit()
-        response = APIResponse(user, 201).response
+        response = APIResponse(user, 201, message="Created").response
         return response
     except Exception as e:
         abort(500, e)
 
-@auth_bp.route('%s/check'% base_auth_url)
+
+@auth_bp.route('%s/check' % base_auth_url)
 @jwt_required()
 def check():
     return APIResponse("OK", 200).response
@@ -68,6 +72,7 @@ def authentication_handler(email, password):
         return user
 
     return None
+
 
 def identity_handler(payload):
     user_id = payload['identity']
