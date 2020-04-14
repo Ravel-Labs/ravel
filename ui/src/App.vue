@@ -16,10 +16,14 @@ export default {
     Navbar,
   },
   computed: mapState({
-    user: state => state.user
+    user: state => state.user,
   }),
   created () {
     this.$store.dispatch('auth/check')
+    .then((data) => {
+      console.log('app.vue data: ', data)
+    })
+    .catch((err) => console.error('error auth check:', err))
   }
 }
 </script>

@@ -1,7 +1,6 @@
 import API from '@/api'
 
 const ls = window.localStorage
-const api = API()
 
 const auth = {
   namespaced: true,
@@ -9,6 +8,7 @@ const auth = {
     loading: false,
     token: "",
     user: {
+      id: '',
       email: '',
       name: ''
     },
@@ -30,6 +30,8 @@ const auth = {
     'LOGIN_FAILURE' (state, error) {
       state.loading = false
       state.error = error
+      ls.setItem('token', undefined)
+      state.token = undefined
       state.isAuthenticated = false
     },
     'LOGOUT_REQUEST' (state) {
@@ -60,11 +62,14 @@ const auth = {
       state.error = error
     }
   },
+  getters: {
+    token: state => state.token,
+  },
   actions: {
     async login ({ commit, state }, user) {
       try {
         commit('LOGIN_REQUEST', user)
-        let { data } = await api.post('/auth/login', {
+        let { data } = await API().post('/auth/login', {
           username: user.email,
           password: user.password,
         })
@@ -84,7 +89,7 @@ const auth = {
     async signup ({ commit, state }, user) {
       try {
         commit('SIGNUP_REQUEST')
-        let { data } = await api.post('/auth/signup', {
+        let { data } = await API().post('/auth/signup', {
           email: user.email,
           password: user.password,
           name: user.name
@@ -96,10 +101,12 @@ const auth = {
     },
     async check ({ commit, state }) {
       try {
-        let { data } = await api.post('/auth/check')
+        let { data } = await API().get('/auth/check')
+        console.log('check response data: ', data)
       } catch(error) {
         if (error = 'Request failed with status code 405') {
           console.log('USER NOT LOGGED IN: ', error)
+          commit('LOGIN_FAILURE')
         }
       }
     }

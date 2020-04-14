@@ -4,6 +4,7 @@ import VueCookies from 'vue-cookies'
 import App from './App.vue'
 import router from './router'
 import store from './store'
+import interceptors from './api/interceptors'
 
 Vue.use(VueCookies)
 
@@ -14,6 +15,9 @@ Vue.use(Buefy)
 
 // Mount Buefy to Vue
 Vue.config.productionTip = false
+
+// Register interceptors
+interceptors(router)
 
 new Vue({
   router,
