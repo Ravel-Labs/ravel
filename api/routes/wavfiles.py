@@ -1,6 +1,6 @@
 from flask import Blueprint, abort, request, send_file
 from ravel.api.models.apiresponse import APIResponse
-from ravel.api.models.wavfile import WavFile
+from ravel.api.models.wavFile import WavFile
 from ravel.api import db
 from hashlib import md5
 from io import BytesIO

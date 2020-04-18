@@ -2,7 +2,7 @@ from flask import Blueprint, request, abort
 from flask_jwt import jwt_required
 from werkzeug.security import generate_password_hash, check_password_hash
 from ravel.api.models.apiresponse import APIResponse
-from ravel.api.models.user import User
+from ravel.api.models.User import User
 from ravel.api import db
 
 
