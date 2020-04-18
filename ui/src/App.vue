@@ -17,13 +17,10 @@ export default {
   },
   computed: mapState({
     user: state => state.user,
+    isAuthenticated: state => state.user.isAuthenticated
   }),
   created () {
     this.$store.dispatch('auth/check')
-    .then((data) => {
-      console.log('app.vue data: ', data)
-    })
-    .catch((err) => console.error('error auth check:', err))
   }
 }
 </script>

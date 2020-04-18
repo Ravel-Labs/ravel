@@ -3,10 +3,22 @@ import API from '@/api'
 const tracks = {
     namespaced: true,
     state: {
-
+      list: [],
+      error: "",
+      loading: false
     },
     mutations: {
+      'TRACK_REQUEST' (state) {
+        state.loading = true
+      },
 
+      'TRACK_SUCCESS' (state, tracks) {
+        state.loading = false
+        state.list = tracks
+      },
+      'TRACK_FAILURE' (state) {
+        state.loading = false
+      }
     },
     actions: {
       async create ({ commit, state }, track) {
@@ -22,6 +34,17 @@ const tracks = {
           commit('TRACK_SUCCESS', data)
         } catch (err) {
           commit('TRACK_FAILURE', err)
+        }
+      },
+
+      async get ({ commit, state }) {
+        try {
+          commit('TRACK_REQUEST')
+          let { data } = await api.get('/tracks')
+          commit('TRACK_SUCCESS')
+        } catch (err) {
+            console.log('error getting tracks: ', err)
+            return err
         }
       }
     }
