@@ -2,22 +2,22 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_jwt import JWT
-from os import environ, os
+from os import environ
 from flask_mail import Mail
 
 db = SQLAlchemy()
-
+sendgrid_api_key = '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'
 # email server
-MAIL_SERVER = 'smtp.googlemail.com'
+MAIL_SERVER = 'smtp.sendgrid.net'
 MAIL_PORT = 465
 MAIL_USE_TLS = False
 MAIL_USE_SSL = True
-MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
-MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+MAIL_USERNAME = "apikey"#os.environ.get('MAIL_USERNAME')
+MAIL_PASSWORD = sendgrid_api_key#os.environ.get('MAIL_PASSWORD')
 
 # administrator list
 ADMINS = ['your-gmail-username@gmail.com']
-
+mail = ""
 def create_app():
     # Todo: Make this handle environment configs better
     app = Flask(__name__)
