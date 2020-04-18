@@ -36,7 +36,6 @@ const tracks = {
           commit('TRACK_FAILURE', err)
         }
       },
-
       async get ({ commit, state }) {
         try {
           commit('TRACK_REQUEST')
@@ -45,6 +44,23 @@ const tracks = {
         } catch (err) {
             console.log('error getting tracks: ', err)
             return err
+        }
+      },
+      async update({ commit, state}, track) {
+        try {
+          commit('TRACK_REQUEST')
+          let { data } = await api.get(`/tracks/${id}`, track)
+          commit('TRACK_SUCCESS')
+        } catch (err) {
+          commit('TRACK_FAILURE')
+          console.log('error updating track: ', err)
+        }
+      },
+      async delete ({commit, state}, track) {
+        try {
+          let { data } = await api.delete(`/tracks/${track.id}`)
+        } catch (e) {
+
         }
       }
     }
