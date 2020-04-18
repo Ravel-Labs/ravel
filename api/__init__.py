@@ -2,10 +2,21 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_jwt import JWT
-from os import environ
+from os import environ, os
+from flask_mail import Mail
 
 db = SQLAlchemy()
 
+# email server
+MAIL_SERVER = 'smtp.googlemail.com'
+MAIL_PORT = 465
+MAIL_USE_TLS = False
+MAIL_USE_SSL = True
+MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+
+# administrator list
+ADMINS = ['your-gmail-username@gmail.com']
 
 def create_app():
     # Todo: Make this handle environment configs better
@@ -15,7 +26,10 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"  # url
     app.config["JWT_AUTH_URL_RULE"] = "/api/auth/login"
     app.config["JWT_SECRET_KEY"] = "thisshouldbesetforproduction"
+
+    mail = Mail(app)
     CORS(app)
+    
 
     from .models import user, track, trackout, wavfile
     from .routes.auth import authentication_handler, identity_handler
