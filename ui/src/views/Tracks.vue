@@ -38,6 +38,15 @@ export default {
       track: {}
     }
   },
+  created () {
+    this['tracks/get']
+  },
+  computed: {
+    ...mapState({
+      tracks: state => state.tracks.list,
+      user: state => state.auth.user
+    })
+  },
   methods: {
     ...mapActions(['tracks/create'])
   }

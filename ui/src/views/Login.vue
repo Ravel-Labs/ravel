@@ -31,6 +31,9 @@
                   <button class="button is-medium" @click="login(user)">Login</button>
                 </div>
               </article>
+              <div class="field level-item">
+              <a href="/signup">Don't have an account? Register here.</a>
+              </div>
             </div>
           </div>
         </div>
@@ -62,7 +65,6 @@ export default {
     login (user) {
       this.$store.dispatch('auth/login', user)
       .then(() => {
-        console.log('error: ', this.error)
         if (!this.error) {
           this.$router.push('/tracks')
         }

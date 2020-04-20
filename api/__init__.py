@@ -31,7 +31,7 @@ def create_app():
     CORS(app)
     
 
-    from .models import user, track, trackout, wavfile
+    from .models import User, track, trackout, wavFile
     from .routes.auth import authentication_handler, identity_handler
     JWT(app, authentication_handler, identity_handler)
 
@@ -63,7 +63,7 @@ def create_app():
     from .routes.tracks import tracks_bp
     app.register_blueprint(tracks_bp)
 
-    from .routes.trackouts import trackouts_bp
+    from .routes.trackOuts import trackouts_bp
     app.register_blueprint(trackouts_bp)
 
     from .routes.wavfiles import wavfiles_bp

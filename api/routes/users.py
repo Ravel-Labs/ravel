@@ -1,7 +1,7 @@
 from flask import Blueprint, abort, request
 from flask_jwt import jwt_required, current_identity
 from ravel.api import db
-from ravel.api.models.user import User
+from ravel.api.models.User import User
 from ravel.api.models.apiresponse import APIResponse
 from ravel.api.services.email import follower_notification
 users_bp = Blueprint('users_bp', __name__)
