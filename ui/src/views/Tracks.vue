@@ -13,12 +13,16 @@
             </span>
           </p>
         </div> -->
-        <a class="panel-block is-active">
+        <a v-for="track in tracks" class="panel-block is-active">
           <span class="panel-icon">
             <i class="fas fa-book" aria-hidden="true"></i>
           </span>
-          Project X
+          {{ track.name }}
         </a>
+        <a v-if="tracks.length === 0" class="panel-block is-active">
+          You haven't creatd any tracks yet. <a href="/tracks/create"> Make one now!</a>
+        </a>
+
         <!-- <div class="panel-block">
           <button class="button is-link is-outlined is-fullwidth">
             Reset all filters
@@ -29,13 +33,14 @@
   </section>
 </template>
 <script>
-import { mapActions } from 'vuex'
+import { mapActions, mapState } from 'vuex'
 
 export default {
   data () {
     return {
+      error: "",
+      showError: false,
       valid: false,
-      track: {}
     }
   },
   created () {

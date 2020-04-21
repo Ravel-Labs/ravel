@@ -30,7 +30,7 @@
                     <a href="/profile" class="button is-light">
                       <strong>Account {{ user.email }}</strong>
                     </a>
-                    <a class="button is-primary" href="/login">
+                    <a @click="logout()" class="button is-primary">
                         Log out
                     </a>
                 </div>
@@ -39,8 +39,18 @@
     </b-navbar>
 </template>
 <script>
+import { mapActions } from 'vuex'
+
 export default {
     name: 'Navbar',
-    props: [ 'user' ]
+    data () {
+      return {}
+    },
+    props: [ 'user' ],
+    computed: {
+      ...mapActions('auth', [
+        'logout'
+      ])
+    }
 }
 </script>

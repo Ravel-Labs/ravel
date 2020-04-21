@@ -14,7 +14,7 @@
         <h1 class="is-size-2 has-text-centered">Login</h1>
           <div class="tile">
             <div class="tile is-parent is-vertical">
-              <article class="tile is-child notification is-primary">
+              <article @keyup.enter="login(user)" class="tile is-child notification is-primary">
                 <div class="field">
                   <label class="label has-text-white">Email</label>
                   <div class="control">
@@ -28,7 +28,8 @@
                   </div>
                 </div>
                 <div class="field level-item">
-                  <button class="button is-medium" @click="login(user)">Login</button>
+                  <button class="button is-medium"
+                  @click="login(user)">Login</button>
                 </div>
               </article>
               <div class="field level-item">
@@ -44,9 +45,10 @@
 
 <script>
 import { mapActions, mapState } from 'vuex'
+import router from '@/router'
 
 export default {
-  name: "home",
+  name: "login",
   data: () => ({
     user: {
       email: "",
@@ -57,17 +59,12 @@ export default {
     isLoading: state => state.auth.loading,
     error: state => state.auth.error,
     showError: state => !!(state.auth.error),
-    isAuthenticated: state => state.auth.isAuthenticated
   }),
-  created () {
-  },
   methods: {
     login (user) {
       this.$store.dispatch('auth/login', user)
       .then(() => {
-        if (!this.error) {
-          this.$router.push('/tracks')
-        }
+        this.$router.push('/tracks')
       })
     }
   }

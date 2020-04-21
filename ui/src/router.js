@@ -39,15 +39,15 @@ const router = new Router({
 
 router.beforeEach((to, from, next) => {
   if (to.meta.requireAuth) {
-    if (store.getters['auth/token'] == "") {
+    const authtoken = store.getters['auth/token']
+    if (!authtoken) {
+      console.log('no auth token')
       router.push('login')
     }
-
   }
 
-  console.log("to: ", to)
-  console.log("from: ", from)
-  next()
+  store.dispatch('auth/check', router)
+  return next()
 })
 
 export default router
