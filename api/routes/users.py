@@ -3,7 +3,7 @@ from flask_jwt import jwt_required, current_identity
 from ravel.api import db
 from ravel.api.models.User import User
 from ravel.api.models.apiresponse import APIResponse
-from ravel.api.services.email import follower_notification
+from ravel.api.services.email.email import email_proxy
 users_bp = Blueprint('users_bp', __name__)
 base_users_url = '/api/users'
 
@@ -69,8 +69,3 @@ def update_user(id):
         return response
     except Exception as e:
         abort(500, e)
-
-@users_bp.route('send/email' % base_users_url, methods=['PUT'])
-def send_email(id):
-    follower_notification()
-    # return redirect(url_for('user', nickname=nickname))

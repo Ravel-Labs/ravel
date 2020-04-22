@@ -6,18 +6,11 @@ from os import environ
 from flask_mail import Mail
 
 db = SQLAlchemy()
-sendgrid_api_key = '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'
-# email server
-MAIL_SERVER = 'smtp.sendgrid.net'
-MAIL_PORT = 465
-MAIL_USE_TLS = False
-MAIL_USE_SSL = True
-MAIL_USERNAME = "apikey"#os.environ.get('MAIL_USERNAME')
-MAIL_PASSWORD = sendgrid_api_key#os.environ.get('MAIL_PASSWORD')
+sendgrid_api_key = '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'
 
 # administrator list
-ADMINS = ['your-gmail-username@gmail.com']
-mail = ""
+ADMINS_FROM_EMAIL_ADDRESS = ['aboy.gabriel@outlook.com']
+mail = Mail()
 def create_app():
     # Todo: Make this handle environment configs better
     app = Flask(__name__)
@@ -27,7 +20,18 @@ def create_app():
     app.config["JWT_AUTH_URL_RULE"] = "/api/auth/login"
     app.config["JWT_SECRET_KEY"] = "thisshouldbesetforproduction"
 
-    mail = Mail(app)
+    # Email configuration
+    app.config.update(dict(
+        DEBUG = True,
+        MAIL_SERVER = 'smtp.sendgrid.net',
+        MAIL_PORT = 465,
+        MAIL_USE_TLS = False,
+        MAIL_USE_SSL = True,
+        MAIL_USERNAME = 'apikey',
+        # API key should be env variable
+        MAIL_PASSWORD = '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',
+    ))
+
     CORS(app)
     
 
@@ -40,6 +44,7 @@ def create_app():
         # db.create_all() only creates models within scope
     '''
     with app.app_context():
+        mail.init_app(app)
         db.init_app(app)
         # db.drop_all()
         db.create_all()
