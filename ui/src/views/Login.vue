@@ -63,9 +63,6 @@ export default {
   methods: {
     login (user) {
       this.$store.dispatch('auth/login', user)
-      .then(() => {
-        this.$router.push('/tracks')
-      })
     }
   }
 };

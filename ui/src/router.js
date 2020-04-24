@@ -53,6 +53,7 @@ const router = new Router({
 
 router.beforeEach((to, from, next) => {
   const authtoken = store.getters['auth/token']
+  store.dispatch('auth/check', router)
   if (to.name === 'login') {
     if (authtoken) {
       router.push('tracks')
@@ -60,12 +61,10 @@ router.beforeEach((to, from, next) => {
   }
   if (to.meta.requireAuth) {
     if (!authtoken) {
-      console.log('no auth token')
       router.push('login')
     }
   }
 
-  store.dispatch('auth/check', router)
   return next()
 })
 

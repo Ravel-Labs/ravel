@@ -6,6 +6,9 @@
             </b-navbar-item>
         </template>
         <template slot="start">
+            <b-navbar-item v-if="token" router-link :to="{name: 'tracks'}">
+               Welcome, {{ user.email }}
+            </b-navbar-item>
             <b-navbar-item href="/signup">
                 Get Started
             </b-navbar-item>
@@ -28,9 +31,9 @@
                 </div>
                 <div class="" v-else>
                     <a href="/profile" class="button is-light">
-                      <strong>Account {{ user.email }}</strong>
+                      <strong>Account</strong>
                     </a>
-                    <a @click="logoutUser()" class="button is-primary">
+                    <a @click="logout()" class="button is-primary">
                         Log out
                     </a>
                 </div>
@@ -48,9 +51,6 @@ export default {
       return {}
     },
     computed: {
-      ...mapActions('auth', [
-        'logout'
-      ]),
       ...mapState({
         user: state => state.auth.user,
         token: state => state.auth.token
@@ -58,10 +58,8 @@ export default {
     },
     methods: {
       logout () {
-        this.logout()
-        .then(() => {
-          router.push('/login')
-        })
+        this.$store.dispatch('auth/logout')
+        this.$router.push('/login')
       }
     }
 }

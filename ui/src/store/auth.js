@@ -1,4 +1,5 @@
 import API from '@/api'
+import router from '@/router'
 
 const ls = window.localStorage
 
@@ -79,17 +80,18 @@ const auth = {
         })
         commit('LOGIN_SUCCESS', data['access_token'])
         commit('SET_USER', user)
+        router.push({ name: 'tracks' })
       } catch (error) {
         commit('LOGIN_FAILURE', error)
       }
     },
-    async logout ({ commit, state}, router) {
+    async logout ({ commit, state}) {
       try {
         commit('LOGOUT_SUCCESS')
-        router.push('/login')
+        router.push({ name: 'login' })
       } catch (error) {
         commit('LOGOUT_FAILURE', error)
-        }
+      }
     },
     async signup ({ commit, state }, user) {
       try {
@@ -104,7 +106,7 @@ const auth = {
         commit('SIGNUP_FAILURE', error)
       }
     },
-    async check ({ commit, state, dispatch }, router) {
+    async check ({ commit, state, dispatch }) {
       try {
         let { data } = await API().get('/auth/check')
         commit('CHECK_SUCCESS')
