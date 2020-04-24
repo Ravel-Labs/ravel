@@ -1,12 +1,15 @@
 <template>
   <section class="section">
-    <b-loading :is-full-page="true" :active.sync="isLoading" :can-cancel="true"></b-loading>
+    <b-loading
+      :is-full-page="true"
+      :active.sync="isLoading">
+    </b-loading>
     <b-notification
-        type="is-danger"
-        v-if="error"
-        :active.sync="showError"
-        aria-close-label="Close notification">
-        {{ error }}
+      type="is-danger"
+      v-if="error"
+      :active.sync="showError"
+      aria-close-label="Close notification">
+      {{ error }}
     </b-notification>
     <div class="level">
       <div class="tile container level-item">

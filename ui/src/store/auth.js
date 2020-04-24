@@ -58,7 +58,7 @@ const auth = {
       state.loading = false
       state.error = error
     },
-    'CHECK_SUCCESS' (state, error) {
+    'CHECK_SUCCESS' (state) {
       state.isAuthenticated = true
     },
     'CHECK_FAILURE' (state, error) {
@@ -115,11 +115,10 @@ const auth = {
           console.log('failed with 401 error: ', error)
           commit('LOGOUT_REQUEST')
           commit('LOGOUT_SUCCESS')
-          router.push('login')
+          router.push({ name: 'login' })
         }
         if (error === 'Request failed with status code 405') {
-          console.log('USER NOT LOGGED IN: ', error)
-          commit('LOGIN_FAILURE')
+          commit('LOGIN_FAILURE', error)
         } else {
           console.log('general auth error: ', error)
         }

@@ -7,16 +7,8 @@
         </template>
         <template slot="start">
             <b-navbar-item v-if="token" router-link :to="{name: 'tracks'}">
-               Welcome, {{ user.email }}
+              Tracks
             </b-navbar-item>
-            <b-navbar-item href="/signup">
-                Get Started
-            </b-navbar-item>
-            <b-navbar-dropdown label="Info">
-                <b-navbar-item href="/about">
-                    About
-                </b-navbar-item>
-            </b-navbar-dropdown>
         </template>
 
         <template slot="end">
@@ -29,7 +21,7 @@
                         Log in
                     </a>
                 </div>
-                <div class="" v-else>
+                <div v-else>
                     <a href="/profile" class="button is-light">
                       <strong>Account</strong>
                     </a>
