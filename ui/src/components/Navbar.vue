@@ -18,7 +18,7 @@
 
         <template slot="end">
             <b-navbar-item tag="div">
-                <div v-if="(user.isAuthenticated)" class="buttons">
+                <div v-if="!token" class="buttons">
                     <a href="/signup" class="button is-primary">
                         <strong>Sign up</strong>
                     </a>
@@ -30,7 +30,7 @@
                     <a href="/profile" class="button is-light">
                       <strong>Account {{ user.email }}</strong>
                     </a>
-                    <a @click="logout()" class="button is-primary">
+                    <a @click="logoutUser()" class="button is-primary">
                         Log out
                     </a>
                 </div>
@@ -39,18 +39,30 @@
     </b-navbar>
 </template>
 <script>
-import { mapActions } from 'vuex'
+import { mapActions, mapState } from 'vuex'
+import router from '@/router'
 
 export default {
     name: 'Navbar',
     data () {
       return {}
     },
-    props: [ 'user' ],
     computed: {
       ...mapActions('auth', [
         'logout'
-      ])
+      ]),
+      ...mapState({
+        user: state => state.auth.user,
+        token: state => state.auth.token
+      })
+    },
+    methods: {
+      logout () {
+        this.logout()
+        .then(() => {
+          router.push('/login')
+        })
+      }
     }
 }
 </script>

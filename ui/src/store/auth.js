@@ -9,12 +9,19 @@ const auth = {
     token: ls.getItem('token'),
     user: {
       id: '',
-      email: '',
-      name: ''
+      email: ls.getItem('user:email'),
     },
     error: undefined
   },
   mutations: {
+    'SET_USER' (state, user) {
+      state.user.email = user.email
+      ls.setItem('user:email', user.email)
+      ls.setItem('user:id', user.id)
+    },
+    'CLEAR_USER' (state) {
+      state.user = {}
+    },
      'LOGIN_REQUEST' (state, user) {
         state.user.email = user.email
         state.loading = true
@@ -28,23 +35,15 @@ const auth = {
     'LOGIN_FAILURE' (state, error) {
       state.loading = false
       state.error = error
-      ls.setItem('token', undefined)
+      ls.setItem('token', '')
       state.token = ''
-    },
-    'LOGOUT_REQUEST' (state) {
-      console.log('logout request hit')
-      state.token = ''
-      state.loading = true
-      ls.setItem('token', undefined)
     },
     'LOGOUT_SUCCESS' (state) {
-      console.log('logout success hit')
-      state.token = ''
-      state.loading = false
+      ls.setItem('token', '')
+      state.user = {}
     },
-    'LOGOUT_FAILURE' (state, error) {
-      state.loading = false
-      state.error = error
+    'LOGOUT_FAILURE' (state, err) {
+      state.error = err
     },
     'SIGNUP_REQUEST' (state, user) {
       state.loading = true
@@ -58,13 +57,17 @@ const auth = {
       state.loading = false
       state.error = error
     },
+    'CHECK_SUCCESS' (state, error) {
+      state.isAuthenticated = true
+    },
     'CHECK_FAILURE' (state, error) {
       state.token = ''
       state.error = error
     }
   },
   getters: {
-    token: state => ls.getItem('token')
+    token: state => ls.getItem('token'),
+    user: state => state.user
   },
   actions: {
     async login ({ commit, state }, user) {
@@ -74,19 +77,19 @@ const auth = {
           username: user.email,
           password: user.password,
         })
-        commit('LOGIN_SUCCESS', data["access_token"])
+        commit('LOGIN_SUCCESS', data['access_token'])
+        commit('SET_USER', user)
       } catch (error) {
         commit('LOGIN_FAILURE', error)
       }
     },
-    async logout ({ commit, state}) {
-      console.log('logout hit')
+    async logout ({ commit, state}, router) {
       try {
-        commit('LOGOUT_REQUEST')
         commit('LOGOUT_SUCCESS')
+        router.push('/login')
       } catch (error) {
         commit('LOGOUT_FAILURE', error)
-      }
+        }
     },
     async signup ({ commit, state }, user) {
       try {
@@ -110,7 +113,7 @@ const auth = {
           console.log('failed with 401 error: ', error)
           commit('LOGOUT_REQUEST')
           commit('LOGOUT_SUCCESS')
-          router.push({ path: '/login' })
+          router.push('login')
         }
         if (error === 'Request failed with status code 405') {
           console.log('USER NOT LOGGED IN: ', error)
