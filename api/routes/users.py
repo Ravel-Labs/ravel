@@ -3,7 +3,6 @@ from flask_jwt import jwt_required, current_identity
 from ravel.api import db
 from ravel.api.models.User import User
 from ravel.api.models.apiresponse import APIResponse
-from ravel.api.services.email.email import email_proxy
 users_bp = Blueprint('users_bp', __name__)
 base_users_url = '/api/users'
 
