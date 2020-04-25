@@ -25,7 +25,7 @@ def email_proxy(
     button_title = "",
     button_link = ""):
 
-    # TODO Update status template with conditions for download links 
+
     try:
         '''
             Default email values
