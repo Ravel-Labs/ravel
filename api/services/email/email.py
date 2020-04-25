@@ -41,6 +41,8 @@ def email_proxy(
 
         '''
             Reconfigureation of the base template
+
+            Thought: we might want to return an error for some templates if broadcast_msg_* are not passed...
         '''
         if template_type is "welcome":
             title = title or "Greetings from Ravel"
@@ -49,13 +51,14 @@ def email_proxy(
             button_title = button_title or "Lets Get Started"
         elif template_type is "broadcast":
             title = title or "Ravel Update"
-            broadcast_msg_one = ""
-            broadcast_msg_two = ""
+            broadcast_msg_one = broadcast_msg_one or "We are excited to provide the best service."
+            broadcast_msg_two = broadcast_msg_two or "Let us know how we can improve!"
             button_title = button_title or "Check it out"
         elif template_type is "status":
             title = title or "Track Status"
-            broadcast_msg_one = ""
-            broadcast_msg_two = ""
+            broadcast_msg_one = broadcast_msg_one or "Our services are spinning fast to process your files."
+            broadcast_msg_two = broadcast_msg_two or "Check it out later"
+            # TODO Download link and conditional html for download button if link exist
             button_title = button_title or "Download"
         else:
             raise ValueError("Template type does not exist")
