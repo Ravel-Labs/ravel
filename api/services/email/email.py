@@ -6,7 +6,7 @@ from flask_mail import Message
 def send_email(title, sender, receivers, html_body):
     msg = Message(title, sender=sender, recipients=receivers)
     msg.html = html_body
-    # mail.send(msg)
+    mail.send(msg)
 
 '''
     Emails can either be custom by definition of the caller or classified by the template_type.
