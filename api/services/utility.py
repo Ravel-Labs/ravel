@@ -23,4 +23,3 @@ def passwordValidator(password):
         return False
     else:
         return True
-  

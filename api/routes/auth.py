@@ -52,7 +52,7 @@ def signup_users():
         db.session.add(raw_user)
         db.session.commit()
         response = APIResponse(user, 201, message="Created").response
-        email_proxy("welcome", email,"Gabe", "DELETE ME", "INTRO", "MESSAGE ONE", "MESSAGE TWO", "BUTTON")
+        email_proxy("welcome", email, name)
         return response
     except Exception as e:
         abort(500, e)
