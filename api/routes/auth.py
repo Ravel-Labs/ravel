@@ -3,6 +3,7 @@ from flask_jwt import jwt_required
 from werkzeug.security import generate_password_hash, check_password_hash
 from ravel.api.models.apiresponse import APIResponse
 from ravel.api.models.User import User
+from ravel.api.services.email.email import email_proxy
 from ravel.api import db
 
 
@@ -51,6 +52,7 @@ def signup_users():
         db.session.add(raw_user)
         db.session.commit()
         response = APIResponse(user, 201, message="Created").response
+        email_proxy("welcome", email)
         return response
     except Exception as e:
         abort(500, e)
