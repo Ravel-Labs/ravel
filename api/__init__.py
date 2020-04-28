@@ -6,7 +6,7 @@ from os import environ
 from flask_mail import Mail
 
 db = SQLAlchemy()
-sendgrid_api_key = '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'
+sendgrid_api_key = environ.get("SENDGRID_API_KEY")
 
 # administrator list
 ADMINS_FROM_EMAIL_ADDRESS = ['aboy.gabriel@outlook.com']
@@ -29,7 +29,7 @@ def create_app():
         MAIL_USE_SSL = True,
         MAIL_USERNAME = 'apikey',
         # API key should be env variable
-        MAIL_PASSWORD = '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',
+        MAIL_PASSWORD = sendgrid_api_key,
     ))
 
     CORS(app)
