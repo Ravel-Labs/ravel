@@ -1,12 +1,14 @@
 aniso8601==8.0.0
 astroid==2.3.3
 autopep8==1.5.1
+blinker==1.4
 cffi==1.14.0
 click==7.1.1
 entrypoints==0.3
 flake8==3.7.9
 Flask==1.1.2
 Flask-Cors==3.0.8
+Flask-Email==1.4.4
 Flask-JWT==0.3.2
 Flask-Login==0.5.0
 Flask-SQLAlchemy==2.4.1
