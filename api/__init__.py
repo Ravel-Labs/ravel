@@ -3,10 +3,13 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_jwt import JWT
 from os import environ
+from flask_mail import Mail
 
 db = SQLAlchemy()
 
-
+# administrator list
+ADMINS_FROM_EMAIL_ADDRESS = ['aboy.gabriel@outlook.com']
+mail = Mail()
 def create_app():
     # Todo: Make this handle environment configs better
     app = Flask(__name__)
@@ -15,7 +18,20 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"  # url
     app.config["JWT_AUTH_URL_RULE"] = "/api/auth/login"
     app.config["JWT_SECRET_KEY"] = "thisshouldbesetforproduction"
+
+    # Email configuration
+    app.config.update(dict(
+        DEBUG = True,
+        MAIL_SERVER = 'smtp.sendgrid.net',
+        MAIL_PORT = 465,
+        MAIL_USE_TLS = False,
+        MAIL_USE_SSL = True,
+        MAIL_USERNAME = 'apikey',
+        MAIL_PASSWORD = environ.get("SENDGRID_API_KEY"),
+    ))
+
     CORS(app)
+    
 
     from .models import User, track, trackout, wavFile
     from .routes.auth import authentication_handler, identity_handler
@@ -26,6 +42,7 @@ def create_app():
         # db.create_all() only creates models within scope
     '''
     with app.app_context():
+        mail.init_app(app)
         db.init_app(app)
         # db.drop_all()
         db.create_all()

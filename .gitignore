@@ -6,3 +6,4 @@ db/data
 db.sqlite
 
 *.pyc
+.DS_Store
