@@ -7,6 +7,8 @@ import queue
 
 Q = queue.Queue()
 
+# TODO I need to create a job tasks for the processing layer
+# Each job coming from some endpoint () will be added to the queue
 
 def worker():
     """

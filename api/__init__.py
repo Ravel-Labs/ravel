@@ -4,7 +4,8 @@ from flask_cors import CORS
 from flask_jwt import JWT
 from os import environ
 from flask_mail import Mail
-
+from redis import Redis
+import rq
 db = SQLAlchemy()
 
 # administrator list
@@ -18,6 +19,10 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"  # url
     app.config["JWT_AUTH_URL_RULE"] = "/api/auth/login"
     app.config["JWT_SECRET_KEY"] = "thisshouldbesetforproduction"
+    app.config["REDIS_URL"] = environ.get('REDIS_URL') or 'redis://127.0.0.1:6379'
+    
+    app.redis = Redis("localhost",6379)
+    app.task_queue = rq.Queue('ravel', connection=app.redis)
 
     # Email configuration
     app.config.update(dict(

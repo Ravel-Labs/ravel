@@ -1,8 +1,9 @@
-from flask import Blueprint, jsonify, abort, request
+from flask import Blueprint, jsonify, abort, request,current_app
 from ravel.api.models.trackout import TrackOut
 from ravel.api.models.apiresponse import APIResponse
+from ravel.api.services.taskQueue.taskQueue import add_task
 from ravel.api import db
-
+import time
 trackouts_bp = Blueprint('trackouts_bp', __name__)
 base_trackouts_url = '/api/trackouts'
 
@@ -96,6 +97,26 @@ def update_trackout(id):
             "action": "update",
             "table": "trackouts",
             "id": id
+        }
+        response = APIResponse(payload, 200).response
+        return response
+    except Exception as e:
+        abort(500, e)
+
+
+
+'''
+    Submit trackOut for processing
+'''
+@trackouts_bp.route('/jobqueue', methods=['GET'])
+def process_trackout():
+    try:
+        x = add_task("hello")
+        print(x)
+        payload = {
+            "action": "update",
+            "table": "trackouts",
+            "id": 2
         }
         response = APIResponse(payload, 200).response
         return response
