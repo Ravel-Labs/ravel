@@ -11,6 +11,7 @@ Flask-Cors==3.0.8
 Flask-Email==1.4.4
 Flask-JWT==0.3.2
 Flask-Login==0.5.0
+Flask-Mail==0.9.1
 Flask-SQLAlchemy==2.4.1
 importlib-metadata==1.6.0
 isort==4.3.21
