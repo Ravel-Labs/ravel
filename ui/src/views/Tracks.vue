@@ -41,7 +41,7 @@ import CreateTrack from '@/components/CreateTrack'
 export default {
   data () {
     return {
-      showModal: true,
+      showModal: false,
       error: '',
       showError: false,
       valid: false,

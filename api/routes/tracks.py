@@ -10,7 +10,6 @@ base_tracks_url = '/api/tracks'
 
 @tracks_bp.route(base_tracks_url, methods=['POST'])
 def create_track():
-    print("#create track hit")
     try:
         name = request.json.get('name')
         # TODO: This should get the user id from the request token instead
@@ -34,11 +33,10 @@ def create_track():
         abort(500, e)
 
 
-@jwt_required()
 @tracks_bp.route(base_tracks_url, methods={'GET'})
+@jwt_required()
 def get_tracks():
     try:
-        print("current identity: ", current_identity)
         raw_tracks = Track.query.filter_by(user_id=current_identity.id)
         tracks = [raw_track.to_dict() for raw_track in raw_tracks]
         if not tracks:
