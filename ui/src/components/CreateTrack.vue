@@ -1,6 +1,6 @@
 <template>
   <div>
-    Create Track
+    <h1>Create Track</h1>
   </div>
 </template>
 <script>

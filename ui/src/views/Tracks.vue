@@ -1,5 +1,6 @@
 <template id="projects">
   <section class="section">
+    <CreateTrack v-if="showModal"></CreateTrack>
     <div class="container">
       <nav class="panel">
         <p class="panel-heading">
@@ -29,22 +30,28 @@
           </button>
         </div> -->
       </nav>
+      <b-button type="is-primary" outlined @click="toggle()">Create a track</b-button>
     </div>
   </section>
 </template>
 <script>
 import { mapActions, mapState } from 'vuex'
+import CreateTrack from '@/components/CreateTrack'
 
 export default {
   data () {
     return {
-      error: "",
+      showModal: true,
+      error: '',
       showError: false,
       valid: false,
     }
   },
+  components: {
+    CreateTrack
+  },
   created () {
-    this['tracks/get']
+    this.$store.dispatch('tracks/get')
   },
   computed: {
     ...mapState({
@@ -53,7 +60,10 @@ export default {
     })
   },
   methods: {
-    ...mapActions(['tracks/create'])
+    ...mapActions(['tracks/create']),
+
+    toggle () {
+    }
   }
 }
 </script>

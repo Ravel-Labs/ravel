@@ -17,4 +17,7 @@ class Track(db.Model):
             "name": self.name,
             "email": self.email,
             "user_id": self.user_id,
+            "artist": self.artist,
+            "info": self.info,
+            "created_at": self.created_at
         }
