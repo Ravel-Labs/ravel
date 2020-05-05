@@ -6,7 +6,8 @@
         <p class="panel-heading">
             Tracks
         </p>
-        <!-- <div class="panel-block">
+        <!-- ### TODO: Make this a simple filter by title ###
+        <div class="panel-block">
           <p class="control has-icons-left">
             <input class="input" type="text" placeholder="Search">
             <span class="icon is-left">
@@ -24,13 +25,14 @@
           You haven't creatd any tracks yet. <a href="/tracks/create"> Make one now!</a>
         </a>
 
-        <!-- <div class="panel-block">
-          <button class="button is-link is-outlined is-fullwidth">
-            Reset all filters
-          </button>
-        </div> -->
       </nav>
-      <b-button type="is-primary" outlined @click="toggle()">Create a track</b-button>
+      <router-link :to="{ name: 'createTrack' }">
+        <b-button
+        type="is-primary"
+        outlined>
+          Create a track
+        </b-button>
+      </router-link>
     </div>
   </section>
 </template>
@@ -58,12 +60,6 @@ export default {
       tracks: state => state.tracks.list,
       user: state => state.auth.user
     })
-  },
-  methods: {
-    ...mapActions(['tracks/create']),
-
-    toggle () {
-    }
   }
 }
 </script>

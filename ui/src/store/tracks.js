@@ -12,7 +12,6 @@ const tracks = {
         console.log('mutation: TRACK_REQUEST', state)
         state.loading = true
       },
-
       'TRACK_SUCCESS' (state, tracks) {
         state.loading = false
         state.list = tracks
@@ -25,12 +24,11 @@ const tracks = {
       async create ({ commit, state }, track) {
         try {
           commit('TRACK_REQUEST')
-          // TODO: Update this with actually getting the user ID
-          const user_id = 1
           let { data } = await API().post('/tracks', {
-            name: track.name,
-            user_id: user_id,
-            artist: track.artist
+          	"name": track.name,
+          	"user_id": track.user_id,
+          	"artist": track.artist,
+          	"info": track.info
           })
           commit('TRACK_SUCCESS', data)
         } catch (err) {

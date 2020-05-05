@@ -9,11 +9,11 @@ base_tracks_url = '/api/tracks'
 
 
 @tracks_bp.route(base_tracks_url, methods=['POST'])
+@jwt_required()
 def create_track():
     try:
         name = request.json.get('name')
-        # TODO: This should get the user id from the request token instead
-        user_id = request.json.get('user_id')
+        user_id = current_identity.id
         artist = request.json.get('artist')
         info = request.json.get('info')
 
