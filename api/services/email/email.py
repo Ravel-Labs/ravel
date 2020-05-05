@@ -1,5 +1,5 @@
 from flask import render_template, abort
-from ravel.api import ADMINS_FROM_EMAIL_ADDRESS, mail
+from ravel.api import ADMINS_FROM_EMAIL_ADDRESS, mail, Q, Job
 from flask_mail import Message
 
 
@@ -44,17 +44,17 @@ def email_proxy(
 
             Thought: we might want to return an error for some templates if broadcast_msg_* are not passed...
         '''
-        if template_type is "welcome":
+        if template_type == "welcome":
             title = title or "Greetings from Ravel"
             broadcast_msg_one = broadcast_msg_one or "Ravel wants to welcome you to the platform."
             broadcast_msg_two = broadcast_msg_two or "Here you can upload tracks and configure your music with trackouts!"
             button_title = button_title or "Lets Get Started"
-        elif template_type is "broadcast":
+        elif template_type == "broadcast":
             title = title or "Ravel Update"
             broadcast_msg_one = broadcast_msg_one or "We are excited to provide the best service."
             broadcast_msg_two = broadcast_msg_two or "Let us know how we can improve!"
             button_title = button_title or "Check it out"
-        elif template_type is "status":
+        elif template_type == "status":
             title = title or "Track Status"
             broadcast_msg_one = broadcast_msg_one or "Our services are spinning fast to process your files."
             broadcast_msg_two = broadcast_msg_two or "Check it out later"
@@ -70,7 +70,12 @@ def email_proxy(
             message_part_one = broadcast_msg_one,
             message_part_two = broadcast_msg_two,
             button_title = button_title)
-
-        send_email(title, ADMINS_FROM_EMAIL_ADDRESS[0], user_to_email_address, template)
+        
+        '''
+            Send email job out into the queue
+        '''
+        function_arguments = (title, ADMINS_FROM_EMAIL_ADDRESS[0], user_to_email_address, template)
+        email_job = Job(send_email, function_arguments)
+        Q.put(email_job)
     except Exception as e:
         abort(500, e)
