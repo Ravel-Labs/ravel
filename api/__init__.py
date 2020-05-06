@@ -4,8 +4,8 @@ from flask_cors import CORS
 from flask_jwt import JWT
 from os import environ
 from flask_mail import Mail
-from ravel.api.queueWorker import Q, Job
-
+from ravel.api.queueWorker import Q, Job, worker
+from flaskthreads import AppContextThread
 db = SQLAlchemy()
 
 # administrator list
@@ -43,9 +43,10 @@ def create_app():
         # db.create_all() only creates models within scope
     '''
     with app.app_context():
+        AppContextThread(target=worker, daemon=True).start()
         mail.init_app(app)
         db.init_app(app)
-        # db.drop_all()
+        db.drop_all()
         db.create_all()
         db.session.commit()
 
