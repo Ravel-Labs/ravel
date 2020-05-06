@@ -3,11 +3,12 @@ Q creates a Queue that we can push jobs into for processing
 and asynchronous handling.
 """
 import threading
+from flaskthreads import AppContextThread
 import queue
 import time
 from datetime import datetime
+from flask import current_app
 Q = queue.Queue()
-
 
 
 class Job():
@@ -26,12 +27,8 @@ class Job():
         self.job_start = datetime.now()
         self.job_end = None
 
-    def wait(self):
-        time.sleep(4)
-
     def execute(self):
         self.function(*self.args)
-        time.sleep(5)
 
 def worker():
     """
@@ -45,6 +42,3 @@ def worker():
         Q.task_done()
         if Q.empty:
             Q.join()
-
-# turn-on the worker thread
-threading.Thread(target=worker, daemon=True).start()
