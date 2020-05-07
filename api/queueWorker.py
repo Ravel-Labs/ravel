@@ -38,7 +38,5 @@ def worker():
         item = Q.get()
         print(f'Working on {item}')
         item.execute()
-        print(f'Finished {item}')
+        print(f'Finished {item}, {Q.qsize()} left')
         Q.task_done()
-        if Q.empty:
-            Q.join()

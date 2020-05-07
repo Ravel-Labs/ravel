@@ -1,13 +1,11 @@
 from flask import render_template, abort, current_app
 from ravel.api import ADMINS_FROM_EMAIL_ADDRESS, mail, Q, Job
 from flask_mail import Message
-# app = current_app.name
+
 
 def send_email(title, sender, receivers, html_body):
     msg = Message(title, sender=sender, recipients=receivers)
     msg.html = html_body
-    # print(f"got to send email {app}")
-    # with current_app.app_context():
     mail.send(msg)
 
 '''

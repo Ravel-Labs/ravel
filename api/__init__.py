@@ -43,12 +43,12 @@ def create_app():
         # db.create_all() only creates models within scope
     '''
     with app.app_context():
-        AppContextThread(target=worker, daemon=True).start()
         mail.init_app(app)
         db.init_app(app)
         db.drop_all()
         db.create_all()
         db.session.commit()
+        AppContextThread(target=worker, daemon=True).start()
 
     '''
     WebServer Rendering Routes
