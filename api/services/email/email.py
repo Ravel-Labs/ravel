@@ -1,4 +1,4 @@
-from flask import render_template, abort, current_app
+from flask import render_template, abort
 from ravel.api import ADMINS_FROM_EMAIL_ADDRESS, mail, Q, Job
 from flask_mail import Message
 
