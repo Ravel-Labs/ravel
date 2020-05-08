@@ -15,11 +15,14 @@
             </span>
           </p>
         </div> -->
-        <a v-for="track in tracks" class="panel-block is-active">
-          <span class="panel-icon">
-            <i class="fas fa-book" aria-hidden="true"></i>
-          </span>
-          {{ track.name }}
+        <a v-for="track in tracks" :key="track.id" class="panel-block is-active">
+          <router-link
+           :to="{ name: 'trackDetail', params: { id: track.id }}">
+            <span class="panel-icon">
+              <i class="fas fa-book" aria-hidden="true"></i>
+            </span>
+            {{ track.name }}
+          </router-link>
         </a>
         <a v-if="tracks.length === 0" class="panel-block is-active">
           You haven't creatd any tracks yet. <a href="/tracks/create"> Make one now!</a>

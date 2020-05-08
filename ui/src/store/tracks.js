@@ -4,6 +4,13 @@ const tracks = {
     namespaced: true,
     state: {
       list: [],
+      current: {
+        id: '',
+        name: '',
+        info: '',
+        user_id: '',
+        trackOuts: [],
+      },
       error: "",
       loading: false
     },
@@ -17,6 +24,18 @@ const tracks = {
         state.list = tracks
       },
       'TRACK_FAILURE' (state) {
+        state.loading = false
+      },
+      'TRACKOUT_REQUEST' (state) {
+        state.loading = true
+      },
+      'TRACKOUT_SUCCESS' (state, trackout) {
+        state.loading = false
+        state.current = trackout
+        state.error = ""
+      },
+      'TRACKOUT_FAILURE' (state, error) {
+        state.error = error
         state.loading = false
       }
     },

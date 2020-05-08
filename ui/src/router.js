@@ -6,6 +6,7 @@ import Login from './views/Login.vue'
 import Signup from './views/Signup.vue'
 import Tracks from './views/Tracks.vue'
 import CreateTrack from './views/CreateTrack.vue'
+import TrackDetail from './views/TrackDetail.vue'
 import store from './store'
 
 Vue.use(Router)
@@ -52,6 +53,14 @@ const router = new Router({
           path: '/tracks/create',
           name: 'createTrack',
           component: CreateTrack,
+          meta: {
+            requireAuth: true
+          }
+        },
+        {
+          path: '/tracks/:id',
+          name: 'trackDetail',
+          component: TrackDetail,
           meta: {
             requireAuth: true
           }
