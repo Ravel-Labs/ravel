@@ -10,7 +10,6 @@ class Track(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     info = db.Column(db.Text)
 
-    # TODO Fix this hack, used to return user as json valid back to client
     def to_dict(self):
         return {
             "id": self.id,
