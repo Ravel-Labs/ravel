@@ -23,6 +23,27 @@ const tracks = {
         state.loading = false
         state.list = tracks
       },
+      'GET_ONE_TRACK_SUCCESS' (state, track) {
+        state.loading = false
+        state.current = {
+          id: track.id,
+          name: track.name,
+          info: track.info,
+          user_id: track.user_id,
+          trackOuts: []
+        }
+      },
+      'GET_TRACKOUTS' (state, trackID) {
+        state.loading = true
+      },
+      'GET_TRACKOUTS_SUCCESS' (state, trackouts) {
+        state.loading = false
+        state.current.trackOuts = trackouts
+      },
+      'GET_TRACKOUTS_FAILURE' (state, err) {
+        state.loading = false
+        state.error = err
+      },
       'TRACK_FAILURE' (state) {
         state.loading = false
       },
@@ -63,6 +84,27 @@ const tracks = {
         } catch (err) {
             console.log('error getting tracks: ', err)
             return err
+        }
+      },
+      async getOne ({ commit, state }, id) {
+        try {
+          commit('TRACK_REQUEST')
+          let { data } = await API().get(`/tracks/${id}`)
+          commit('GET_ONE_TRACK_SUCCESS', data)
+        } catch (err) {
+          console.error(err)
+          return err
+        }
+      },
+      async getTrackouts({ commit, state }, trackID) {
+        try {
+          commit('GET_TRACKOUTS')
+          let { data } = await API().get(`/trackouts/track/${trackID}`)
+          commit('GET_TRACKOUTS_SUCCESS')
+        } catch (err) {
+          commit('GET_TRACKOUTS_FAILURE', err)
+          console.error(err)
+          throw err
         }
       },
       async update({ commit, state}, track) {

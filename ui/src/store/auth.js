@@ -121,6 +121,7 @@ const auth = {
           commit('LOGIN_FAILURE', error)
         } else {
           console.log('general auth error: ', error)
+          dispatch('logout')
         }
       }
     }

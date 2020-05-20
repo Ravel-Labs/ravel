@@ -48,6 +48,7 @@ def get_tracks():
 
 
 @tracks_bp.route('%s/<int:id>' % base_tracks_url, methods={'GET'})
+@jwt_required()
 def get_track_by_id(id):
     try:
         raw_track = Track.query.get(id)
@@ -61,6 +62,7 @@ def get_track_by_id(id):
 
 
 @tracks_bp.route('%s/delete/<int:id>' % base_tracks_url, methods={'DELETE'})
+@jwt_required()
 def delete_track_by_id(id):
     try:
         raw_track = Track.query.get(id)
@@ -80,6 +82,7 @@ def delete_track_by_id(id):
 
 
 @tracks_bp.route('%s/<int:id>' % base_tracks_url, methods=['PUT'])
+@jwt_required()
 def update_track(id):
     try:
         db.session.query(Track).filter_by(id=id).update(request.json)

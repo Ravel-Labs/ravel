@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, abort, request
+from flask_jwt import jwt_required, current_identity
 from ravel.api.models.trackout import TrackOut
 from ravel.api.models.apiresponse import APIResponse
 from ravel.api import db
@@ -10,19 +11,19 @@ base_trackouts_url = '/api/trackouts'
     POST
 '''
 @trackouts_bp.route(base_trackouts_url, methods=['POST'])
+@jwt_required()
 def create_trackout():
     try:
-        email = request.json.get('email')
+        user_id = current_identity.id
+        type = request.json.get('type')
         name = request.json.get('name')
-        raw_trackout_search = TrackOut.query.filter_by(email=email).first()
-
-        if raw_trackout_search:
-            return "User email already exists"
-        raw_trackout = TrackOut(email=email, name=name)
-        trackout = raw_trackout.to_dict()
-
+        raw_trackout = TrackOut(
+            name=name,
+            user_id=user_id,
+            type=type)
         db.session.add(raw_trackout)
         db.session.commit()
+        trackout = raw_trackout.to_dict()
         response = APIResponse(trackout, 201).response
         return response
     except Exception as e:
@@ -35,6 +36,17 @@ def create_trackout():
 @trackouts_bp.route(base_trackouts_url, methods={'GET'})
 def get_trackouts():
     try:
+        track_id = request.args['track_id']
+
+        # get trackouts by track_id
+        if track_id:
+            raw_trackouts = TrackOut.query.filter_by(track_id=track_id).all()
+            trackouts = [rt.to_dict() for rt in raw_trackouts]
+            if not trackouts:
+                abort(400, "No trackouts have been created yet")
+            response = APIResponse(trackouts, 200).response
+            return response
+
         raw_trackouts = TrackOut.query.all()
         trackouts = [raw_trackout.to_dict() for raw_trackout in raw_trackouts]
         if not trackouts:

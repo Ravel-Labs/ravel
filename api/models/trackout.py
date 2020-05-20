@@ -8,16 +8,24 @@ class TrackOut(db.Model):
     user_id = db.Column(db.Integer)
     name = db.Column(db.String(1000))
     type = db.Column(db.String(50))
-    instrument = db.Column(db.String(50))
     settings = db.Column(db.String(1000))
     wavefile = db.Column(db.Integer)
+    track_id = db.Column(db.Integer)
+    # these relate to effect models such as Compressor, Deesser, and EQ
+    compression = db.Column(db.Integer)
+    eq = db.Column(db.Integer)
+    deesser = db.Column(db.Integer)
 
     def to_dict(self):
         user = {
             "id": self.id,
-            "user": self.user,
+            "created_at": self.created_at,
+            "user_id": self.user,
             "name": self.name,
+            "type": self.type,
             "settings": self.settings,
+            "wavefile": self.wavefile,
+            "track_id": self.track_id
         }
         if not user.get("id"):
             del user['id']

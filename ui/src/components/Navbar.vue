@@ -6,8 +6,10 @@
             </b-navbar-item>
         </template>
         <template slot="start">
-            <b-navbar-item v-if="token" router-link :to="{name: 'tracks'}">
-              Tracks
+            <b-navbar-item v-if="token">
+              <a href="#" router-link :to="{name: 'tracks'}">
+                Tracks
+              </a>
             </b-navbar-item>
         </template>
 
