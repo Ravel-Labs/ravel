@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, abort, request
 from flask_jwt import jwt_required, current_identity
 from ravel.api.models.trackout import TrackOut
+from ravel.api.models.User import User
 from ravel.api.models.apiresponse import APIResponse
 from ravel.api import db
 
@@ -10,6 +11,7 @@ base_trackouts_url = '/api/trackouts'
 '''
     POST
 '''
+@jwt_required
 @trackouts_bp.route(base_trackouts_url, methods=['POST'])
 @jwt_required()
 def create_trackout():
@@ -33,6 +35,7 @@ def create_trackout():
 '''
     GET all
 '''
+@jwt_required
 @trackouts_bp.route(base_trackouts_url, methods={'GET'})
 def get_trackouts():
     try:
@@ -59,8 +62,8 @@ def get_trackouts():
 
 '''
     GET by ID
-    TODO test if dict is worth it here
 '''
+@jwt_required
 @trackouts_bp.route('%s/<int:id>' % base_trackouts_url, methods={'GET'})
 def get_trackout_by_id(id):
     try:
@@ -77,6 +80,7 @@ def get_trackout_by_id(id):
 '''
     DELETE
 '''
+@jwt_required
 @trackouts_bp.route('%s/delete/<int:id>' % base_trackouts_url, methods={'GET'})
 def delete_trackout_by_id(id):
     try:
@@ -97,11 +101,18 @@ def delete_trackout_by_id(id):
 
 
 '''
-    PUT TODO check if user exists first
+    PUT
 '''
+@jwt_required
 @trackouts_bp.route('%s/<int:id>' % base_trackouts_url, methods=['PUT'])
 def update_trackout(id):
     try:
+        user_id = current_identity.id
+        raw_user = db.session.query(User).get(id=user_id)
+        user = raw_user.to_dict()
+        if not user:
+            abort(400, f"A User with this id {user_id} does not exist")
+        
         db.session.query(TrackOut).filter_by(id=id).update(request.json)
         db.session.commit()
         payload = {

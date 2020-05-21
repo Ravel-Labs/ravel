@@ -23,6 +23,7 @@ def get_users():
         abort(500, e)
 
 
+@jwt_required()
 @users_bp.route('%s/<int:id>' % base_users_url)
 def get_user_by_id(id):
     try:
@@ -35,6 +36,7 @@ def get_user_by_id(id):
         abort(500, e)
 
 
+@jwt_required()
 @users_bp.route('%s/delete/<int:id>' % base_users_url, methods={'GET'})
 def delete_user_by_id(id):
     try:
@@ -54,6 +56,7 @@ def delete_user_by_id(id):
         abort(500, e)
 
 
+@jwt_required()
 @users_bp.route('%s/<int:id>' % base_users_url, methods=['PUT'])
 def update_user(id):
     try:

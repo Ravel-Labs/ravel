@@ -8,6 +8,7 @@ tracks_bp = Blueprint('tracks_bp', __name__)
 base_tracks_url = '/api/tracks'
 
 
+@jwt_required()
 @tracks_bp.route(base_tracks_url, methods=['POST'])
 @jwt_required()
 def create_track():
@@ -33,6 +34,11 @@ def create_track():
         abort(500, e)
 
 
+'''
+    GET
+
+    tracks that belong to the currently logged in user
+'''
 @tracks_bp.route(base_tracks_url, methods={'GET'})
 @jwt_required()
 def get_tracks():
@@ -47,6 +53,7 @@ def get_tracks():
         abort(500, e)
 
 
+@jwt_required()
 @tracks_bp.route('%s/<int:id>' % base_tracks_url, methods={'GET'})
 @jwt_required()
 def get_track_by_id(id):
@@ -61,6 +68,7 @@ def get_track_by_id(id):
         abort(500, e)
 
 
+@jwt_required()
 @tracks_bp.route('%s/delete/<int:id>' % base_tracks_url, methods={'DELETE'})
 @jwt_required()
 def delete_track_by_id(id):
@@ -81,6 +89,7 @@ def delete_track_by_id(id):
         abort(500, e)
 
 
+@jwt_required()
 @tracks_bp.route('%s/<int:id>' % base_tracks_url, methods=['PUT'])
 @jwt_required()
 def update_track(id):
