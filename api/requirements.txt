@@ -4,7 +4,6 @@ astroid==2.3.3
 autopep8==1.5.1
 billiard==3.6.3.0
 blinker==1.4
-celery==4.4.2
 cffi==1.14.0
 click==7.1.1
 entrypoints==0.3
