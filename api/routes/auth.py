@@ -13,6 +13,8 @@ base_auth_url = '/api/auth'
 '''
     Server side rendering
 '''
+
+
 @auth_bp.route('%s/login' % base_auth_url)
 def login():
     return "Login"

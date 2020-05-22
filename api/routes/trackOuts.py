@@ -11,6 +11,8 @@ base_trackouts_url = '/api/trackouts'
 '''
     POST
 '''
+
+
 @jwt_required
 @trackouts_bp.route(base_trackouts_url, methods=['POST'])
 @jwt_required()
@@ -35,6 +37,8 @@ def create_trackout():
 '''
     GET all
 '''
+
+
 @jwt_required
 @trackouts_bp.route(base_trackouts_url, methods={'GET'})
 def get_trackouts():
@@ -63,6 +67,8 @@ def get_trackouts():
 '''
     GET by ID
 '''
+
+
 @jwt_required
 @trackouts_bp.route('%s/<int:id>' % base_trackouts_url, methods={'GET'})
 def get_trackout_by_id(id):
@@ -80,6 +86,8 @@ def get_trackout_by_id(id):
 '''
     DELETE
 '''
+
+
 @jwt_required
 @trackouts_bp.route('%s/delete/<int:id>' % base_trackouts_url, methods={'GET'})
 def delete_trackout_by_id(id):
@@ -103,6 +111,8 @@ def delete_trackout_by_id(id):
 '''
     PUT
 '''
+
+
 @jwt_required
 @trackouts_bp.route('%s/<int:id>' % base_trackouts_url, methods=['PUT'])
 def update_trackout(id):
@@ -112,7 +122,7 @@ def update_trackout(id):
         user = raw_user.to_dict()
         if not user:
             abort(400, f"A User with this id {user_id} does not exist")
-        
+
         db.session.query(TrackOut).filter_by(id=id).update(request.json)
         db.session.commit()
         payload = {

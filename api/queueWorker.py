@@ -30,7 +30,6 @@ class Job():
         self.job_end = None
 
     def execute(self):
-        print "hello"
         self.function(*self.args)
 
 
