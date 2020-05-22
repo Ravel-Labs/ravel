@@ -1,5 +1,6 @@
 import re
 
+
 def emailValidator(email):
     regex = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
     if(re.search(regex,email)):  
@@ -7,7 +8,7 @@ def emailValidator(email):
     else:  
         return False
 
-# Update function to alerts
+
 def passwordValidator(password):
     if (len(password)<8): 
         return False
