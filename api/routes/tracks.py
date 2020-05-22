@@ -39,6 +39,8 @@ def create_track():
 
     tracks that belong to the currently logged in user
 '''
+
+
 @tracks_bp.route(base_tracks_url, methods={'GET'})
 @jwt_required()
 def get_tracks():
