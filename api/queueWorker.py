@@ -11,12 +11,13 @@ Q = queue.Queue()
 
 class Job():
     """
-        Job class workers will be handling. 
-        
+        Job class workers will be handling.
+
         Args
             function: Initiating function for a unit of work.
-            args: Arguments for the worker to use in executing this job function
-            job_start: Used for logging the time of creation 
+            args: Arguments for the worker to use
+            in executing this job function
+            job_start: Used for logging the time of creation
             job_end: Used for logging the time of job completion
     """
     def __repr__(self):
@@ -32,6 +33,7 @@ class Job():
         print "hello"
         self.function(*self.args)
 
+
 def worker():
     """
     Worker defines what needs to be done during the task
@@ -43,4 +45,3 @@ def worker():
         print(f'Finished {item}, {Q.qsize()} left')
         setattr(item, 'job_end', datetime.now())
         Q.task_done()
-        
