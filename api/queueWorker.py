@@ -41,6 +41,6 @@ def worker():
         item = Q.get()
         print(f'Working on {item}')
         item.execute()
-        print(f'Finished {item}, {Q.qsize()} left')
         setattr(item, 'job_end', datetime.now())
+        print(f'Finished {item}, {Q.qsize()} left')
         Q.task_done()

@@ -134,3 +134,34 @@ def update_trackout(id):
         return response
     except Exception as e:
         abort(500, e)
+
+
+'''
+    GET
+    * Publish trackout for processing
+    * Get all wavFiles for a trackout
+    * Dispatch status email
+'''
+
+
+@jwt_required
+@trackouts_bp.route('%s/process/<int:id>' % base_trackouts_url, methods=['PUT'])
+def process_trackout(id):
+    try:
+        user_id = current_identity.id
+        raw_user = db.session.query(User).get(id=user_id)
+        user = raw_user.to_dict()
+        if not user:
+            abort(400, f"A User with this id {user_id} does not exist")
+
+        db.session.query(TrackOut).filter_by(id=id).update(request.json)
+        db.session.commit()
+        payload = {
+            "action": "update",
+            "table": "trackouts",
+            "id": id
+        }
+        response = APIResponse(payload, 200).response
+        return response
+    except Exception as e:
+        abort(500, e)

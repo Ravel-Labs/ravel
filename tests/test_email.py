@@ -1,4 +1,4 @@
-from ravel.api.services.email.email import email_proxy
+# from ravel.api.services.email.email import email_proxy
 import unittest
 
 

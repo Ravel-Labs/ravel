@@ -1,18 +1,29 @@
+from api.queueWorker import Job, worker, Q
+from flaskthreads import AppContextThread
 import unittest
-from ravel.api.queueWorker import Job, worker
+import threading
+import time
+
 
 class TestQueue(unittest.TestCase):
 
-    def test_upper(self):
-        self.assertEqual('foo'.upper(), 'FOO')
+    @classmethod
+    def setUpClass(cls):
+        threading.Thread(target=worker, daemon=True).start()
 
-    def test_isupper(self):
-        self.assertTrue('FOO'.isupper())
-        self.assertFalse('Foo'.isupper())
+    def test_queue(self):
+        try:
+            # send thirty task requests to the worker
+            queue_size = 30
 
-    def test_split(self):
-        s = 'hello world'
-        self.assertEqual(s.split(), ['hello', 'world'])
-        # check that s.split fails when the separator is not a string
-        with self.assertRaises(TypeError):
-            s.split(2)
+            def sleep():
+                time.sleep(1)
+            for item in range(queue_size):
+                job = Job(sleep, [])
+                Q.put(job)
+            self.assertEqual(queue_size, Q.qsize())
+            # block until all tasks are done
+            Q.join()
+            self.assertEqual(0, Q.qsize())
+        except Exception as err:
+            self.fail("Failed with %s" % error)
