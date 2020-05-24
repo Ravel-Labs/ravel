@@ -3,7 +3,8 @@
 # in a more usable and meaningful way.
 import librosa
 import numpy as np
-from ravel_labs.lib import CompressSignal, EQSignal, SignalAggregator, ReverbSignal, DeEsserSignal
+from ravel_labs.lib import CompressSignal, EQSignal, SignalAggregator, \
+    ReverbSignal, DeEsserSignal
 
 
 class Processor():
@@ -96,9 +97,11 @@ class Compress():
 
         # do this for each track out in a track
         for track in trackouts:
-            comp_signal = CompressSignal("", numpy_array, 1024, 1024, 1024,
-                                 -12, audio_type, 0.2, 1, 1000,
-                                 2, 0.08, 1.0)
+            comp_signal = CompressSignal(
+                "", numpy_array, 1024, 1024, 1024,
+                -12, audio_type, 0.2, 1, 1000,
+                2, 0.08, 1.0)
+
             comp_signals.append(comp_signal)
             comp_params = comp_signal.comp_params()
             # push lfe and crest factor for each track into comp_lfe and
@@ -130,15 +133,16 @@ class Reverb():
     def reverb(self):
         numpy_array = []
 
-        ## audio type is the instrument on the track
+        # audio type is the instrument on the track
         audio_type = "vocal"
 
         # tweakable
         amount = 95
         room_scale = 10
-        rev = ReverbSignal("", numpy_array, 1024, 1024, 1024, -12, audio_type,
-                          amount, 0.0, room_scale, 0.0, 0.4, 600, 6000, 2, 70,
-                          12)
+        rev = ReverbSignal(
+            "", numpy_array, 1024, 1024, 1024, -12, audio_type,
+            amount, 0.0, room_scale, 0.0, 0.4, 600, 6000, 2, 70, 12
+        )
         processed = rev.reverb()
         return processed
 
@@ -151,9 +155,11 @@ class DeEsser():
     def deess(self):
         # critical bands are the frequencies at which the deesser looks at to
         # calculate sharpness
-        critical_bands = [100, 200, 300, 400, 510, 630, 770, 920, 1080, 1270,
-                        1480, 1720, 2000, 2320, 2700, 3150, 3700, 4400,
-                        5300, 6400, 7700, 9500, 12000, 15500]
+        critical_bands = [
+            100, 200, 300, 400, 510, 630, 770, 920, 1080, 1270,
+            1480, 1720, 2000, 2320, 2700, 3150, 3700, 4400,
+            5300, 6400, 7700, 9500, 12000, 15500
+        ]
         c = 0.08
 
         # get numpy array from wavefile
@@ -169,6 +175,7 @@ class DeEsser():
         processed = sig.deesser(gr)
 
         return processed
+
 
 class Handler():
     """
@@ -203,6 +210,7 @@ class Handler():
         GetTrackouts returns all the trackouts for a given `track_id`
         """
         pass
+
 
 if __name__ == "__main__":
     """
