@@ -11,6 +11,8 @@ db = SQLAlchemy()
 # administrator list
 ADMINS_FROM_EMAIL_ADDRESS = ['aboy.gabriel@outlook.com']
 mail = Mail()
+
+
 def create_app():
     # Todo: Make this handle environment configs better
     app = Flask(__name__)
@@ -22,18 +24,16 @@ def create_app():
 
     # Email configuration
     app.config.update(dict(
-        DEBUG = True,
-        MAIL_SERVER = 'smtp.sendgrid.net',
-        MAIL_PORT = 465,
-        MAIL_USE_TLS = False,
-        MAIL_USE_SSL = True,
-        MAIL_USERNAME = 'apikey',
-        MAIL_PASSWORD = environ.get("SENDGRID_API_KEY"),
+        DEBUG=True,
+        MAIL_SERVER='smtp.sendgrid.net',
+        MAIL_PORT=465,
+        MAIL_USE_TLS=False,
+        MAIL_USE_SSL=True,
+        MAIL_USERNAME='apikey',
+        MAIL_PASSWORD=environ.get("SENDGRID_API_KEY"),
     ))
 
     CORS(app)
-    
-
     from .models import User, track, trackout, wavFile
     from .routes.auth import authentication_handler, identity_handler
     JWT(app, authentication_handler, identity_handler)

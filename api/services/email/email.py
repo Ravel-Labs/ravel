@@ -37,8 +37,8 @@ def email_proxy(
         '''
         template_name = "broadcast.html"
 
-        default_intro = f"Hey {user_name}," if user_name
-        else "Greetings from Ravel,"
+        default_intro = f"Hey {user_name}," if user_name \
+                        else "Greetings from Ravel,"
 
         button_link = button_link or "google.com"
         intro = intro or default_intro
