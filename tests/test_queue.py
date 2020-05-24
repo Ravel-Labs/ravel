@@ -1,4 +1,4 @@
-from api.queueWorker import Job, worker, Q
+from ravel.api.queueWorker import Job, worker, Q
 from flaskthreads import AppContextThread
 import unittest
 import threading
@@ -13,7 +13,7 @@ class TestQueue(unittest.TestCase):
 
     def test_queue(self):
         try:
-            # send thirty task requests to the worker
+
             queue_size = 30
 
             def sleep():
@@ -22,7 +22,6 @@ class TestQueue(unittest.TestCase):
                 job = Job(sleep, [])
                 Q.put(job)
             self.assertEqual(queue_size, Q.qsize())
-            # block until all tasks are done
             Q.join()
             self.assertEqual(0, Q.qsize())
         except Exception as err:

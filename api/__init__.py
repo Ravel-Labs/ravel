@@ -4,7 +4,7 @@ from flask_cors import CORS
 from flask_jwt import JWT
 from os import environ
 from flask_mail import Mail
-from api.queueWorker import Q, Job, worker
+from ravel.api.queueWorker import Q, Job, worker
 from flaskthreads import AppContextThread
 db = SQLAlchemy()
 
@@ -21,7 +21,7 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"  # url
     app.config["JWT_AUTH_URL_RULE"] = "/api/auth/login"
     app.config["JWT_SECRET_KEY"] = "thisshouldbesetforproduction"
-
+    app.config['SQLALCHEMY_ECHO'] = True
     # Email configuration
     app.config.update(dict(
         DEBUG=True,
@@ -42,14 +42,18 @@ def create_app():
         # db.drop_all()
         # db.create_all() only creates models within scope
     '''
+    print("ENTER")
     with app.app_context():
-        mail.init_app(app)
-        db.init_app(app)
-        # db.drop_all()
-        db.create_all()
-        db.session.commit()
-        AppContextThread(target=worker, daemon=True).start()
-
+        try:
+                
+            mail.init_app(app)
+            db.init_app(app)
+            db.drop_all()
+            db.create_all()
+            db.session.commit()
+            AppContextThread(target=worker, daemon=True).start()
+        except Exception as e:
+            Exception(e)
     '''
     WebServer Rendering Routes
     '''

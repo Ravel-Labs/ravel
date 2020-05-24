@@ -4,7 +4,9 @@ from ravel.api import db
 
 class TrackOut(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    owner_id = db.Column(db.Integer, db.ForeignKey('track.id'))
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    
     user_id = db.Column(db.Integer)
     name = db.Column(db.String(1000))
     type = db.Column(db.String(50))
@@ -19,8 +21,9 @@ class TrackOut(db.Model):
     def to_dict(self):
         user = {
             "id": self.id,
+            "user_id": self.user_id,
             "created_at": self.created_at,
-            "user_id": self.user,
+            "owner_id": self.owner_id,
             "name": self.name,
             "type": self.type,
             "settings": self.settings,

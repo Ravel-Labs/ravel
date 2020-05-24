@@ -9,8 +9,8 @@ wavfiles_bp = Blueprint('wavfiles_bp', __name__)
 base_wavfiles_url = '/api/wavfiles'
 
 
+# @jwt_required()
 @wavfiles_bp.route(base_wavfiles_url, methods=['POST'])
-@jwt_required()
 def create_wavfile():
     try:
         raw_file = request.files['file']
@@ -48,7 +48,7 @@ def get_wavfiles():
 
 
 @wavfiles_bp.route('%s/<int:id>' % base_wavfiles_url, methods={'GET'})
-@jwt_required()
+# @jwt_required()
 def get_wavfile_by_id(id):
     try:
         raw_wavfile = WavFile.query.get(id)
@@ -62,9 +62,9 @@ def get_wavfile_by_id(id):
         abort(500, e)
 
 
+# @jwt_required()
 @wavfiles_bp.route(
     '%s/delete/<int:id>' % base_wavfiles_url, methods={'DELETE'})
-@jwt_required()
 def delete_wavfile_by_id(id):
     try:
         raw_wavfile = WavFile.query.get(id)
@@ -83,8 +83,8 @@ def delete_wavfile_by_id(id):
         abort(500, e)
 
 
+# @jwt_required()
 @wavfiles_bp.route('%s/<int:id>' % base_wavfiles_url, methods=['PUT'])
-@jwt_required()
 def update_wavfile(id):
     try:
         raw_file = request.files['file']

@@ -13,18 +13,31 @@ base_trackouts_url = '/api/trackouts'
 '''
 
 
-@jwt_required
+# @jwt_required
 @trackouts_bp.route(base_trackouts_url, methods=['POST'])
-@jwt_required()
+# @jwt_required()
 def create_trackout():
     try:
-        user_id = current_identity.id
+        user_id = 1
         type = request.json.get('type')
         name = request.json.get('name')
+        settings = request.json.get('settings')
+        wavefile = request.json.get('wavefile')
+        track_id = request.json.get('track_id')
+        compression = request.json.get('compression')
+        eq = request.json.get('eq')
+        deesser = request.json.get('deesser')
         raw_trackout = TrackOut(
             name=name,
             user_id=user_id,
-            type=type)
+            owner_id=2,
+            type=type,
+            settings=settings,
+            wavefile=wavefile,
+            track_id=track_id,
+            compression=compression,
+            eq=eq,
+            deesser=deesser)
         db.session.add(raw_trackout)
         db.session.commit()
         trackout = raw_trackout.to_dict()
@@ -39,7 +52,7 @@ def create_trackout():
 '''
 
 
-@jwt_required
+# @jwt_required
 @trackouts_bp.route(base_trackouts_url, methods={'GET'})
 def get_trackouts():
     try:
@@ -116,37 +129,6 @@ def delete_trackout_by_id(id):
 @jwt_required
 @trackouts_bp.route('%s/<int:id>' % base_trackouts_url, methods=['PUT'])
 def update_trackout(id):
-    try:
-        user_id = current_identity.id
-        raw_user = db.session.query(User).get(id=user_id)
-        user = raw_user.to_dict()
-        if not user:
-            abort(400, f"A User with this id {user_id} does not exist")
-
-        db.session.query(TrackOut).filter_by(id=id).update(request.json)
-        db.session.commit()
-        payload = {
-            "action": "update",
-            "table": "trackouts",
-            "id": id
-        }
-        response = APIResponse(payload, 200).response
-        return response
-    except Exception as e:
-        abort(500, e)
-
-
-'''
-    GET
-    * Publish trackout for processing
-    * Get all wavFiles for a trackout
-    * Dispatch status email
-'''
-
-
-@jwt_required
-@trackouts_bp.route('%s/process/<int:id>' % base_trackouts_url, methods=['PUT'])
-def process_trackout(id):
     try:
         user_id = current_identity.id
         raw_user = db.session.query(User).get(id=user_id)

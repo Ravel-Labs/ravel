@@ -3,26 +3,25 @@ from flask_jwt import jwt_required, current_identity
 from ravel.api import db
 from ravel.api.models.track import Track
 from ravel.api.models.apiresponse import APIResponse
-
+from ravel.api.models.trackout import TrackOut
 tracks_bp = Blueprint('tracks_bp', __name__)
 base_tracks_url = '/api/tracks'
 
 
-@jwt_required()
+# @jwt_required()
 @tracks_bp.route(base_tracks_url, methods=['POST'])
-@jwt_required()
 def create_track():
     try:
         name = request.json.get('name')
-        user_id = current_identity.id
+        user_id = 1 or request.json.get('user_id') or current_identity.id
         artist = request.json.get('artist')
         info = request.json.get('info')
-
         raw_track = Track(
             name=name,
             user_id=user_id,
             artist=artist,
             info=info)
+        print("HERE")
 
         db.session.add(raw_track)
         db.session.commit()
@@ -41,8 +40,8 @@ def create_track():
 '''
 
 
+# @jwt_required()
 @tracks_bp.route(base_tracks_url, methods={'GET'})
-@jwt_required()
 def get_tracks():
     try:
         raw_tracks = Track.query.filter_by(user_id=current_identity.id)
@@ -55,9 +54,8 @@ def get_tracks():
         abort(500, e)
 
 
-@jwt_required()
+# @jwt_required()
 @tracks_bp.route('%s/<int:id>' % base_tracks_url, methods={'GET'})
-@jwt_required()
 def get_track_by_id(id):
     try:
         raw_track = Track.query.get(id)
@@ -70,9 +68,8 @@ def get_track_by_id(id):
         abort(500, e)
 
 
-@jwt_required()
+# @jwt_required()
 @tracks_bp.route('%s/delete/<int:id>' % base_tracks_url, methods={'DELETE'})
-@jwt_required()
 def delete_track_by_id(id):
     try:
         raw_track = Track.query.get(id)
@@ -91,9 +88,8 @@ def delete_track_by_id(id):
         abort(500, e)
 
 
-@jwt_required()
+# @jwt_required()
 @tracks_bp.route('%s/<int:id>' % base_tracks_url, methods=['PUT'])
-@jwt_required()
 def update_track(id):
     try:
         db.session.query(Track).filter_by(id=id).update(request.json)
@@ -102,6 +98,32 @@ def update_track(id):
             "action": "update",
             "table": "trackouts",
             "id": str(id)
+        }
+        response = APIResponse(payload, 200).response
+        return response
+    except Exception as e:
+        abort(500, e)
+
+'''
+    GET
+    * Publish trackout for processing
+    * Get all wavFiles for a trackout
+    * Dispatch status email
+'''
+
+
+# @jwt_required
+@trackouts_bp.route('%s/process'
+                    % base_tracks_url, methods=['GET'])
+def process_trackout(id):
+    try:
+        q = (session.query(Track)
+                    .join(TrackOut)).all()
+        print(q)
+        payload = {
+            "action": "update",
+            "table": "trackouts",
+            "id": id
         }
         response = APIResponse(payload, 200).response
         return response
