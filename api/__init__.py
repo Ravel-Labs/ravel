@@ -11,6 +11,7 @@ db = SQLAlchemy()
 # administrator list
 ADMINS_FROM_EMAIL_ADDRESS = ['aboy.gabriel@outlook.com']
 mail = Mail()
+
 def create_app():
     # Todo: Make this handle environment configs better
     app = Flask(__name__)
@@ -19,7 +20,7 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"  # url
     app.config["JWT_AUTH_URL_RULE"] = "/api/auth/login"
     app.config["JWT_SECRET_KEY"] = "thisshouldbesetforproduction"
-
+    # app.config['SQLALCHEMY_ECHO'] = True
     # Email configuration
     app.config.update(dict(
         DEBUG = True,
@@ -35,6 +36,7 @@ def create_app():
     
 
     from .models import User, track, trackout, wavFile
+    from .models.track_models import Userx, Post
     from .routes.auth import authentication_handler, identity_handler
     JWT(app, authentication_handler, identity_handler)
 
@@ -45,7 +47,7 @@ def create_app():
     with app.app_context():
         mail.init_app(app)
         db.init_app(app)
-        # db.drop_all()
+        db.drop_all()
         db.create_all()
         db.session.commit()
         AppContextThread(target=worker, daemon=True).start()

@@ -4,13 +4,18 @@ from ravel.api import db
 
 class TrackOut(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    track_id = db.Column(db.Integer)
+    trackout_id = db.Column(db.Integer)
+    # wavFiles = db.relationship(
+    #     'wav_file'
+    #     primaryjoin=("and_(track_out.id==wav_file.track_id)"),
+    #     backref=db.backref('track', lazy='dynamic'), lazy='dynamic')
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     user_id = db.Column(db.Integer)
     name = db.Column(db.String(1000))
     type = db.Column(db.String(50))
     settings = db.Column(db.String(1000))
     wavefile = db.Column(db.Integer)
-    track_id = db.Column(db.Integer)
     # these relate to effect models such as Compressor, Deesser, and EQ
     compression = db.Column(db.Integer)
     eq = db.Column(db.Integer)

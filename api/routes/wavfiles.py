@@ -62,8 +62,7 @@ def get_wavfile_by_id(id):
         abort(500, e)
 
 
-@wavfiles_bp.route(
-    '%s/delete/<int:id>' % base_wavfiles_url, methods={'DELETE'})
+@wavfiles_bp.route('%s/delete/<int:id>' % base_wavfiles_url, methods={'DELETE'})
 @jwt_required()
 def delete_wavfile_by_id(id):
     try:
@@ -98,6 +97,25 @@ def update_wavfile(id):
         db.session.commit()
         payload = {
             "action": "update",
+            "table": "wavfile",
+            "id": id
+        }
+        response = APIResponse(payload, 200).response
+        return response
+    except Exception as e:
+        abort(500, e)
+
+@wavfiles_bp.route('%s/delete/<int:id>' % base_wavfiles_url, methods={'DELETE'})
+@jwt_required()
+def get_wavfile_by_trackout_id(id):
+    try:
+        raw_wavfile = WavFile.query.get(id)
+        if not raw_wavfile:
+            abort(404, "A wavefile with id %s does not exist" % id)
+        db.session.delete(raw_wavfile)
+        db.session.commit()
+        payload = {
+            "action": "deleted",
             "table": "wavfile",
             "id": id
         }

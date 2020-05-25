@@ -6,6 +6,7 @@ class WavFile(db.Model):
     trackout_id = db.Column(db.Integer)  # relates to Trackout
     file_binary = db.Column(db.LargeBinary)
     file_hash = db.Column(db.LargeBinary, unique=True)
+    # trackout_id = db.Column(db.Integer, db.ForeignKey("track_out.id"))
 
     def to_dict(self):
         wavfile = {
