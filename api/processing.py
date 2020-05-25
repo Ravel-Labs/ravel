@@ -2,9 +2,16 @@
 # This is a wrapper around the Ravel API Library to expose it to a web server
 # in a more usable and meaningful way.
 # import librosa
+
+# TODO: Make this import from an environment variable path instead of hardcoded
+# path.
+# from ravel.ravel_labs.lib.effects import EQSignal, CompressSignal, ReverbSignal, DeEsserSignal
+# from ravel_labs import EQSignal
 import numpy as np
-from ravel_labs.lib import CompressSignal, EQSignal, SignalAggregator, \
-    ReverbSignal, DeEsserSignal
+import sys
+PWD = "/Users/storj/dev/ravellabs/ravel/"
+sys.path.append(PWD)
+from ravel_labs.lib.effects import EQSignal
 
 
 class Processor():
@@ -33,7 +40,7 @@ class Equalize():
     """
 
     def __init__(self, wavfile):
-        self.wavfile = wavfile  # Type = ledgit a 
+        self.wavfile = wavfile  # Type = ledgit a
         print("New equalizer being created: ", self)
         pass
 
