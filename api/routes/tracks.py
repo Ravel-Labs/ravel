@@ -1,3 +1,5 @@
+from io import BytesIO
+from hashlib import md5
 from flask import Blueprint, abort, request
 from flask_jwt import jwt_required, current_identity
 from ravel.api import db
@@ -8,6 +10,8 @@ from ravel.api.services.email.email import email_proxy
 from ravel.api.models.apiresponse import APIResponse
 import json
 import time
+
+
 tracks_bp = Blueprint('tracks_bp', __name__)
 base_tracks_url = '/api/tracks'
 
@@ -113,7 +117,7 @@ def update_track(id):
 
 
 # @jwt_required()
-@tracks_bp.route('%s/process/<int:id>' % base_tracks_url, methods=['GET'])
+@tracks_bp.route('%s/process/<int:id>' % base_tracks_url, methods=['PUT'])
 def process_track(id):
     # Get trackouts > wavfile
     print("ENTER")
@@ -127,34 +131,39 @@ def process_track(id):
 
         # Get tracks by id
         raw_track = Track.query.get(id)
-        print(type(raw_track))
+        print("raw_track: ", type(raw_track))
 
         trackouts = raw_track.trackouts.all()
         trackouts_equalization = [track_out for track_out in trackouts]
         trackout_binarys = [track_out.file_binary for track_out in trackouts]
-        print(type(trackout_binarys[0]))
-        print(len(trackout_binarys))
+        print("trackout_binaries: ", type(trackout_binarys[0]))
+        print("length trackout binaries: ", len(trackout_binarys))
         # TODO Add processing to queue for each trackout
         processor = Processor()
         # if there is equalization to the track then apply it
         # TODO Any effect that is being applied
         # Based on the data we are passing in
         for trackout in trackouts_equalization:
-            # convert binary back to wav
             wavfile = BytesIO(trackout.file_binary)
-            
-            # Job arguments
-            eq_function = processor.equalize
-            eq_arguments = (wavfile)
-            
-            # TODO Create a Job
+            # eq_function = processor.equalize
+            eq_function = equalize_and_save
+            eq_params = {
+                "trackout_id": 1,
+                "freq": "1200",
+            }
+            eq_arguments = (wavfile, eq_params)
             processing_job = Job(eq_function, ())
-
-            # TODO Add to queue
             resolved = Q.put(processing_job)
-            print(resolved)
+
+            print("resolved job: ", processing_job.output)
+
+            # update database to match records
+            # db.session.query(Track).filter_by(id=id).update(request.json)
+            # db.session.commit()
+
             # TODO done processing update the trackout model with a new resolved processing
 
+        # print(trackouts_equalization[0].file_binary)
         # TODO turn wavefile into numpy array
 
         # TODO pass this numpy array into processing
@@ -189,3 +198,10 @@ def get_trackouts_by_track_id(id):
         return response
     except Exception as e:
         abort(500, e)
+
+# This gets passed to the job queue
+def equalize_and_save(wavfile, eq_params):
+    # declare the eq func with eq params
+    # save eq params to db as new EQ model and update track info
+    # processor.equalize
+    pass

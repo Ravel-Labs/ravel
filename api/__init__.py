@@ -45,7 +45,7 @@ def create_app():
     with app.app_context():
         mail.init_app(app)
         db.init_app(app)
-        db.drop_all()
+        ## db.drop_all()
         db.create_all()
         db.session.commit()
         AppContextThread(target=worker, daemon=True).start()

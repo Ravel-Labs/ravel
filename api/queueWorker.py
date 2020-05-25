@@ -28,10 +28,11 @@ class Job():
         self.args = args
         self.job_start = datetime.now()
         self.job_end = None
+        self.output = None
 
     def execute(self):
-        self.function(*self.args)
-
+        o = self.function(*self.args)
+        self.output = o
 
 def worker():
     """
@@ -41,6 +42,6 @@ def worker():
         item = Q.get()
         print(f'Working on {item}')
         item.execute()
-        print(f'Finished {item}, {Q.qsize()} left')
         setattr(item, 'job_end', datetime.now())
+        print(f'Finished {item}, {Q.qsize()} left')
         Q.task_done()
