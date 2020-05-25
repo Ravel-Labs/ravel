@@ -1,8 +1,7 @@
 from flask import Blueprint, abort, request
 from flask_jwt import jwt_required, current_identity
 from ravel.api import db
-from ravel.api.models.track import Track
-from ravel.api.models.track_models import Userx, Post
+from ravel.api.models.track_models import Track
 from ravel.api.services.email.email import email_proxy
 from ravel.api.models.apiresponse import APIResponse
 import json
@@ -95,6 +94,7 @@ def delete_track_by_id(id):
 @tracks_bp.route('%s/<int:id>' % base_tracks_url, methods=['PUT'])
 def update_track(id):
     try:
+        # TODO Effected by an updated trackout
         db.session.query(Track).filter_by(id=id).update(request.json)
         db.session.commit()
         payload = {
@@ -122,94 +122,47 @@ def process_track(id):
         #     button_title="")
 
         # Get tracks by id
-        raw_track = json.loads(get_track_by_id(id).response[0])
-        track = raw_track.get("payload")
-        # Extract trackout ids from track
-        print(track)
-        # Get wavfiles from trackouts
+        raw_track = Track.query.get(id)
+        print(type(raw_track))
+
+        trackouts = raw_track.trackouts.all()
+        trackout_binarys = [track_out.file_binary for track_out in trackouts]
+        print(type(trackout_binarys[0]))
+        print(len(trackout_binarys))
+
+        # TODO Add processing to queue for each trackout
+
+        # TODO turn wavefile into numpy array
+
+        # TODO pass this numpy array into processing
 
 
-        # TODO Add processing to queue for each track...?
+        # TODO turn result into wavfile
+
+
+        # view of all of the trackouts in a track
+
+        # sum the wav file to all of the tracks
+        # signal agg and pass to compression you get all back
         # function_arguments = (a, b)
         # process_job = Job(processing, function_arguments)
         # Q.put(process_job)
 
-        response = APIResponse(payload, 200).response
+        response = APIResponse("payload", 200).response
         return response
     except Exception as e:
         abort(500, e)
 
-@tracks_bp.route(f'{base_tracks_url}/user', methods=['POST'])
-def create_userx():
+
+@tracks_bp.route(f'{base_tracks_url}/trackouts/<int:id>', methods={'GET'})
+def get_trackouts_by_track_id(id):
     try:
-        username = request.json.get('username')
-        email = request.json.get('email')
-        password_hash = request.json.get('pas')
-
-        raw_track = Userx(
-            username=username,
-            email=email,
-            password_hash=password_hash)
-
-        db.session.add(raw_track)
-        db.session.commit()
-
-        track = raw_track.to_dict()
-        response = APIResponse(track, 201).response
-        return response
-    except Exception as e:
-        abort(500, e)
-
-@tracks_bp.route(f'{base_tracks_url}/user/<int:id>', methods={'GET'})
-def get_userx(id):
-    try:
-        raw_tracks=Userx.query.filter_by(id=id).first()
-        print(type(raw_tracks))
-        print(raw_tracks.to_dict())
-        print(raw_tracks.posts)
-        tracks=raw_tracks.to_dict()# for raw_track in raw_tracks]
-        if not tracks:
+        raw_tracks = Track.query.get(id)
+        raw_trackouts = raw_tracks.trackouts.all()
+        trackouts = [raw_trackout.to_dict() for raw_trackout in raw_trackouts]
+        if not trackouts:
             abort(400)
-        response=APIResponse(tracks, 200).response
-        return response
-    except Exception as e:
-        abort(500, e)
-
-
-@tracks_bp.route(f'{base_tracks_url}/post/<int:id>', methods=['POST'])
-def create_post(id):
-    try:
-        print(f"enter {id}")
-        userx = Userx.query.get(id)
-        print(type(userx))
-        print(userx.to_dict())
-        body = request.json.get('body')
-        # timestamp = request.json.get('timestamp')
-        
-        raw_track = Post(
-            body=body,
-            post=userx)
-        result = db.session.query(Userx).join(Post)
-        # time.sleep(20)
-        print(f"holy shit {result.all()}")
-        db.session.add(raw_track)
-        db.session.commit()
-
-        track = raw_track.to_dict()
-        response = APIResponse(track, 201).response
-        return response
-    except Exception as e:
-        abort(500, e)
-
-
-@tracks_bp.route(f'{base_tracks_url}/post', methods={'GET'})
-def get_post():
-    try:
-        raw_tracks=Post.query.all()
-        tracks=[raw_track.to_dict() for raw_track in raw_tracks]
-        if not tracks:
-            abort(400)
-        response=APIResponse(tracks, 200).response
+        response = APIResponse(trackouts, 200).response
         return response
     except Exception as e:
         abort(500, e)

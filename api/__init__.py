@@ -12,6 +12,7 @@ db = SQLAlchemy()
 ADMINS_FROM_EMAIL_ADDRESS = ['aboy.gabriel@outlook.com']
 mail = Mail()
 
+
 def create_app():
     # Todo: Make this handle environment configs better
     app = Flask(__name__)
@@ -20,23 +21,20 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"  # url
     app.config["JWT_AUTH_URL_RULE"] = "/api/auth/login"
     app.config["JWT_SECRET_KEY"] = "thisshouldbesetforproduction"
-    # app.config['SQLALCHEMY_ECHO'] = True
+    app.config['SQLALCHEMY_ECHO'] = True
     # Email configuration
     app.config.update(dict(
-        DEBUG = True,
-        MAIL_SERVER = 'smtp.sendgrid.net',
-        MAIL_PORT = 465,
-        MAIL_USE_TLS = False,
-        MAIL_USE_SSL = True,
-        MAIL_USERNAME = 'apikey',
-        MAIL_PASSWORD = environ.get("SENDGRID_API_KEY"),
+        DEBUG=True,
+        MAIL_SERVER='smtp.sendgrid.net',
+        MAIL_PORT=465,
+        MAIL_USE_TLS=False,
+        MAIL_USE_SSL=True,
+        MAIL_USERNAME='apikey',
+        MAIL_PASSWORD=environ.get("SENDGRID_API_KEY"),
     ))
-
     CORS(app)
-    
-
-    from .models import User, track, trackout, wavFile
-    from .models.track_models import Userx, Post
+    from .models import User
+    from .models.track_models import TrackOut, Track
     from .routes.auth import authentication_handler, identity_handler
     JWT(app, authentication_handler, identity_handler)
 
@@ -72,9 +70,6 @@ def create_app():
 
     from .routes.trackOuts import trackouts_bp
     app.register_blueprint(trackouts_bp)
-
-    from .routes.wavfiles import wavfiles_bp
-    app.register_blueprint(wavfiles_bp)
 
     from .routes.errors import errors_bp
     app.register_blueprint(errors_bp)

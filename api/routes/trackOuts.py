@@ -1,10 +1,11 @@
 from flask import Blueprint, jsonify, abort, request
 from flask_jwt import jwt_required, current_identity
-from ravel.api.models.trackout import TrackOut
+from ravel.api.models.track_models import TrackOut, Track
 from ravel.api.models.User import User
 from ravel.api.models.apiresponse import APIResponse
 from ravel.api import db
-
+from hashlib import md5
+from io import BytesIO
 trackouts_bp = Blueprint('trackouts_bp', __name__)
 base_trackouts_url = '/api/trackouts'
 
@@ -13,18 +14,38 @@ base_trackouts_url = '/api/trackouts'
 '''
 
 
-@jwt_required
-@trackouts_bp.route(base_trackouts_url, methods=['POST'])
-@jwt_required()
+# @jwt_required
+@trackouts_bp.route(f"{base_trackouts_url}", methods=['POST'])
 def create_trackout():
     try:
-        user_id = current_identity.id
-        type = request.json.get('type')
+        # unique_id = str(uuid.uuid1())
+        # print(type(unique_id))
+        # unique_binary = ''.join(format(ord(i), 'b') for i in unique_id).encode()
+        # print(unique_binary)
+        # print(type(unique_binary))
+        # id_binary_hash = md5(unique_binary).digest()
+        # print(id_binary_hash)
+        user_id = 1
+        type_of_track = request.json.get('type')
         name = request.json.get('name')
+        settings = request.json.get('settings')
+        wavfile = request.json.get('wavfile')
+        compression = request.json.get('compression')
+        eq = request.json.get('eq')
+        deesser = request.json.get('deesser')
+        track_id = int(request.json.get('track_id'))
+        raw_track = Track.query.get(track_id)
+
         raw_trackout = TrackOut(
-            name=name,
             user_id=user_id,
-            type=type)
+            name=name,
+            type=type_of_track,
+            settings=settings,
+            wavefile=1,
+            compression=1,
+            eq=1,
+            deesser=1,
+            trackouts=raw_track)
         db.session.add(raw_trackout)
         db.session.commit()
         trackout = raw_trackout.to_dict()
@@ -39,12 +60,11 @@ def create_trackout():
 '''
 
 
-@jwt_required
+# @jwt_required
 @trackouts_bp.route(base_trackouts_url, methods={'GET'})
 def get_trackouts():
     try:
-        track_id = request.args['track_id']
-
+        track_id = request.args.get('track_id')
         # get trackouts by track_id
         if track_id:
             raw_trackouts = TrackOut.query.filter_by(track_id=track_id).all()
@@ -117,6 +137,7 @@ def delete_trackout_by_id(id):
 @trackouts_bp.route('%s/<int:id>' % base_trackouts_url, methods=['PUT'])
 def update_trackout(id):
     try:
+        # TODO republish a process for a newly updated wavfile
         user_id = current_identity.id
         raw_user = db.session.query(User).get(id=user_id)
         user = raw_user.to_dict()
@@ -128,6 +149,30 @@ def update_trackout(id):
         payload = {
             "action": "update",
             "table": "trackouts",
+            "id": id
+        }
+        response = APIResponse(payload, 200).response
+        return response
+    except Exception as e:
+        abort(500, e)
+
+
+# @jwt_required
+@trackouts_bp.route('%s/wav/<int:id>' % base_trackouts_url, methods=['PUT'])
+def add_update_wavfile(id):
+    try:
+        raw_file = request.files['file']
+        file_binary = raw_file.read()
+        file_binary_hash = md5(file_binary).digest()
+        update_request = {
+            "file_binary": file_binary,
+            "file_hash": file_binary_hash
+        }
+        db.session.query(TrackOut).filter_by(id=id).update(update_request)
+        db.session.commit()
+        payload = {
+            "action": "update",
+            "table": "trackout",
             "id": id
         }
         response = APIResponse(payload, 200).response
