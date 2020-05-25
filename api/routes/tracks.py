@@ -2,6 +2,8 @@ from flask import Blueprint, abort, request
 from flask_jwt import jwt_required, current_identity
 from ravel.api import db
 from ravel.api.models.track_models import Track
+from ravel.api import ADMINS_FROM_EMAIL_ADDRESS, mail, Q, Job
+from ravel.api.processing import Handler, Processor
 from ravel.api.services.email.email import email_proxy
 from ravel.api.models.apiresponse import APIResponse
 import json
@@ -9,6 +11,8 @@ import time
 tracks_bp = Blueprint('tracks_bp', __name__)
 base_tracks_url = '/api/tracks'
 
+# Creational pattern to the processing layer
+handler = Handler()
 
 # @jwt_required()
 @tracks_bp.route(base_tracks_url, methods=['POST'])
@@ -126,11 +130,30 @@ def process_track(id):
         print(type(raw_track))
 
         trackouts = raw_track.trackouts.all()
+        trackouts_equalization = [track_out for track_out in trackouts]
         trackout_binarys = [track_out.file_binary for track_out in trackouts]
         print(type(trackout_binarys[0]))
         print(len(trackout_binarys))
-
         # TODO Add processing to queue for each trackout
+        processor = Processor()
+        # if there is equalization to the track then apply it
+        # TODO Any effect that is being applied
+        # Based on the data we are passing in
+        for trackout in trackouts_equalization:
+            # convert binary back to wav
+            wavfile = BytesIO(trackout.file_binary)
+            
+            # Job arguments
+            eq_function = processor.equalize
+            eq_arguments = (wavfile)
+            
+            # TODO Create a Job
+            processing_job = Job(eq_function, ())
+
+            # TODO Add to queue
+            resolved = Q.put(processing_job)
+            print(resolved)
+            # TODO done processing update the trackout model with a new resolved processing
 
         # TODO turn wavefile into numpy array
 

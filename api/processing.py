@@ -1,7 +1,7 @@
 # Processing takes in a request and applies to correct audio processing to it.
 # This is a wrapper around the Ravel API Library to expose it to a web server
 # in a more usable and meaningful way.
-import librosa
+# import librosa
 import numpy as np
 from ravel_labs.lib import CompressSignal, EQSignal, SignalAggregator, \
     ReverbSignal, DeEsserSignal
@@ -32,7 +32,8 @@ class Equalize():
     Creates a new Equalizer
     """
 
-    def __init__(self):
+    def __init__(self, wavfile):
+        self.wavfile = wavfile  # Type = ledgit a 
         print("New equalizer being created: ", self)
         pass
 
@@ -69,7 +70,9 @@ class Compress():
     Creates a new Compressor channel
     """
 
-    def __init__(self):
+    def __init__(self, wavfile, signal_aggregator):
+        self.wavfile = wavfile
+        self.signal_aggregator = signal_aggregator
         print("Creating a new Compressor: ", self)
         pass
 
