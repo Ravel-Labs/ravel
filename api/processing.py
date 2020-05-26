@@ -16,6 +16,7 @@ from ravel_labs.lib.effects import EQSignal
 
 class Processor():
     def __init__(self):
+        print("creating Processor")
         self.trackouts = []
         self.signal_aggregator = []
         self.compression_params = []

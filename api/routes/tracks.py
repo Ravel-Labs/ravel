@@ -3,7 +3,8 @@ from hashlib import md5
 from flask import Blueprint, abort, request
 from flask_jwt import jwt_required, current_identity
 from ravel.api import db
-from ravel.api.models.track_models import Track
+from ravel.api.models.track_models import Track, TrackOut
+from ravel.api.models.eq import Equalizer
 from ravel.api import ADMINS_FROM_EMAIL_ADDRESS, mail, Q, Job
 from ravel.api.processing import Handler, Processor
 from ravel.api.services.email.email import email_proxy
@@ -150,9 +151,11 @@ def process_track(id):
             eq_params = {
                 "trackout_id": 1,
                 "freq": "1200",
+                "filter_type": "",
+                "gain": 1
             }
-            eq_arguments = (wavfile, eq_params)
-            processing_job = Job(eq_function, ())
+            eq_arguments = (wavfile, eq_params, trackout.id)
+            processing_job = Job(eq_function, eq_arguments)
             resolved = Q.put(processing_job)
 
             print("resolved job: ", processing_job.output)
@@ -168,9 +171,7 @@ def process_track(id):
 
         # TODO pass this numpy array into processing
 
-
         # TODO turn result into wavfile
-
 
         # view of all of the trackouts in a track
 
@@ -200,7 +201,20 @@ def get_trackouts_by_track_id(id):
         abort(500, e)
 
 # This gets passed to the job queue
-def equalize_and_save(wavfile, eq_params):
+def equalize_and_save(wavfile, eq_params, trackout_id):
+    # create new processor for this equalizer
+    processor = Processor()
+    eq = Equalizer(
+        trackout_id=trackout_id,
+        freq=eq_params["freq"],
+        filter_type=eq_params["filter_type"],
+        gain=eq_params["gain"]
+    )
+    db.session.add(eq)
+    db.session.commit()
+
+    db.session.query(TrackOut).filter_by(id=trackout_id)
+
     # declare the eq func with eq params
     # save eq params to db as new EQ model and update track info
     # processor.equalize
