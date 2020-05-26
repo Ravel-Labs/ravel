@@ -2,28 +2,36 @@
 # This is a wrapper around the Ravel API Library to expose it to a web server
 # in a more usable and meaningful way.
 # import librosa
-
-# TODO: Make this import from an environment variable path instead of hardcoded
-# path.
 # from ravel.ravel_labs.lib.effects import EQSignal, CompressSignal, ReverbSignal, DeEsserSignal
 # from ravel_labs import EQSignal
 import numpy as np
+import scipy.io as sio
 import sys
 PWD = "/Users/storj/dev/ravellabs/ravel/"
 sys.path.append(PWD)
-from ravel_labs.lib.effects import EQSignal
+from ravel_labs.lib.effects import EQSignal, CompressSignal, ReverbSignal,\
+                                    DeEsserSignal, SignalAggregator
 
 
 class Processor():
-    def __init__(self):
+    def __init__(self, wavfile):
         print("creating Processor")
+        self.wavfile = wavfile
         self.trackouts = []
         self.signal_aggregator = []
         self.compression_params = []
         self.processed_tracks = []
+        self.num_signals = 1
+
+        # NB: This may not always be 44100 but we can deal with that later
+        self.sample_rate = 44100
+        self.signal_aggregator = SignalAggregator(
+            self.sample_rate, self.num_signals)
 
     def equalize(self):
-        print("Processor equalizer")
+        print("PROCESSING EQUALIZER")
+        eq = Equalize()
+        eq.equalize()
         pass
 
     def compress(self):
@@ -50,12 +58,15 @@ class Equalize():
 
         # get wavefile into a numpy array
         # REF: https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.io.wavfile.read.html
+
         NUMPY_ARRAY = []
+        samplerate, data = sio.wavfile.read(self.wavfile)
+        self.sample_rate = samplerate
 
         # get wavefile -> numpy ar  ray for each other trackout
         signals = []
         # once it's a numpy array
-        eq = EQSignal("./", NUMPY_ARRAY, 1024, 1024,
+        eq = EQSignal("./", data, 1024, 1024,
                       1024, -12, "vocal", 10, 3, -2)
 
         # signals is all of the other trackouts signals (aka numpy arrays)
@@ -123,7 +134,6 @@ class Compress():
         # we want to use 44100 sample rate as much as possible.
         # we can get this from librosa
         sample_rate = 44100
-
         agg = SignalAggregator(sample_rate, num_signals)
         lfa = agg.lfa(comp_lfe)
         cfa = agg.cfa(comp_crest)
