@@ -157,7 +157,7 @@ def process_track(id):
             processing_job = Job(eq_function, eq_arguments)
 
             # TODO: needs to resolve the wavfile ID of the processing job
-            # so that it can be updated in the database for the trackout 
+            # so that it can be updated in the database for the trackout
             resolved = Q.put(processing_job)
 
             # update database to match records
@@ -204,7 +204,7 @@ def get_trackouts_by_track_id(id):
 
 def equalize_and_save(wavfile, eq_params, trackout_id):
     # create new processor for this equalizer
-    processor = Processor()
+    processor = Processor(None)
 
     # create a new eq model to save settings against
     eq = Equalizer(

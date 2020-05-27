@@ -30,8 +30,8 @@ class Processor():
 
     def equalize(self):
         print("PROCESSING EQUALIZER")
-        eq = Equalize()
-        eq.equalize()
+        # eq = Equalize(self.wavfile)
+        # eq.equalize()
         pass
 
     def compress(self):
@@ -209,7 +209,7 @@ class Handler():
         creates a new builder
         """
         self._builder = None
-        self._builder = Processor()
+        self._builder = Processor(None)
         print("assigned builder: ", self._builder)
         pass
 
