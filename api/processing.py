@@ -7,7 +7,7 @@ from io import BytesIO
 import sys
 # PWD = "/Users/storj/dev/ravellabs/ravel/"
 # sys.path.append(PWD)
-from ravel_labs.lib.effects import EQSignal, CompressSignal, ReverbSignal,\
+from ravel.ravellib.lib.effects import EQSignal, CompressSignal, ReverbSignal,\
                                     DeEsserSignal, SignalAggregator
 
 
