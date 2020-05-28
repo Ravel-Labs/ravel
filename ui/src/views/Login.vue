@@ -66,10 +66,13 @@ export default {
   methods: {
     login (user) {
       this.$store.dispatch('auth/login', user)
+      .then((data) => {
+        this.$buefy.toast.open({
+          message: 'Logged in.',
+          type: 'is-success'
+        })
+      })
     }
   }
 };
 </script>
-
-<style  scoped>
-</style>

@@ -67,7 +67,7 @@ const auth = {
     }
   },
   getters: {
-    token: state => ls.getItem('token'),
+    token: state => state.token,
     user: state => state.user
   },
   actions: {
@@ -88,12 +88,12 @@ const auth = {
     async logout ({ commit, state}) {
       try {
         commit('LOGOUT_SUCCESS')
-        router.push({ name: 'login' })
+        // router.push({ name: 'login' })
       } catch (error) {
         commit('LOGOUT_FAILURE', error)
       }
     },
-    async signup ({ commit, state }, user) {
+    async signup ({ commit, state, dispatch }, user) {
       try {
         commit('SIGNUP_REQUEST')
         let { data } = await API().post('/auth/signup', {
@@ -102,11 +102,12 @@ const auth = {
           name: user.name
         })
         commit('SIGNUP_SUCCESS', user)
+        dispatch('login', user)
       } catch (error) {
         commit('SIGNUP_FAILURE', error)
       }
     },
-    async check ({ commit, state, dispatch }) {
+    async check ({ commit, dispatch }) {
       try {
         let { data } = await API().get('/auth/check')
         commit('CHECK_SUCCESS')
@@ -115,7 +116,7 @@ const auth = {
           console.log('failed with 401 error: ', error)
           commit('LOGOUT_REQUEST')
           commit('LOGOUT_SUCCESS')
-          router.push({ name: 'login' })
+          // router.push({ name: 'login' })
         }
         if (error === 'Request failed with status code 405') {
           commit('LOGIN_FAILURE', error)

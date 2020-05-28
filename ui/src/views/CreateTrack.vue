@@ -54,7 +54,7 @@ export default {
       .then(() => {
         router.push({ path: '/tracks' })
         this.$buefy.notification.open({
-          message: 'Something happened correctly!',
+          message: 'Track created!',
           type: 'is-success'
         })
         this.$store.dispatch('tracks/get')

@@ -9,7 +9,7 @@ const tracks = {
         name: '',
         info: '',
         user_id: '',
-        trackOuts: [],
+        trackouts: [],
       },
       error: "",
       loading: false
@@ -26,19 +26,20 @@ const tracks = {
       'GET_ONE_TRACK_SUCCESS' (state, track) {
         state.loading = false
         state.current = {
-          id: track.id,
-          name: track.name,
-          info: track.info,
-          user_id: track.user_id,
-          trackOuts: []
+          id: track.payload.id,
+          name: track.payload.name,
+          info: track.payload.info,
+          user_id: track.payload.user_id,
+          trackouts: []
         }
       },
       'GET_TRACKOUTS' (state, trackID) {
         state.loading = true
       },
       'GET_TRACKOUTS_SUCCESS' (state, trackouts) {
+        console.log('trackouts: ', trackouts)
         state.loading = false
-        state.current.trackOuts = trackouts
+        state.current.trackouts = trackouts
       },
       'GET_TRACKOUTS_FAILURE' (state, err) {
         state.loading = false
@@ -56,6 +57,13 @@ const tracks = {
         state.error = ""
       },
       'TRACKOUT_FAILURE' (state, error) {
+        state.error = error
+        state.loading = false
+      },
+      'DELETE_TRACK_SUCCESS' (state, error) {
+
+      }, 
+      'DELETE_TRACK_FAILURE' (state, error) {
         state.error = error
         state.loading = false
       }
@@ -86,7 +94,7 @@ const tracks = {
             return err
         }
       },
-      async getOne ({ commit, state }, id) {
+      async getTrackDetails ({ commit, state }, id) {
         try {
           commit('TRACK_REQUEST')
           let { data } = await API().get(`/tracks/${id}`)
@@ -99,8 +107,10 @@ const tracks = {
       async getTrackouts({ commit, state }, trackID) {
         try {
           commit('GET_TRACKOUTS')
-          let { data } = await API().get(`/trackouts/track/${trackID}`)
-          commit('GET_TRACKOUTS_SUCCESS')
+          let { data } = await API().get(`/trackouts`, {
+            track_id: trackID
+          })
+          commit('GET_TRACKOUTS_SUCCESS', data)
         } catch (err) {
           commit('GET_TRACKOUTS_FAILURE', err)
           console.error(err)
@@ -120,8 +130,10 @@ const tracks = {
       async delete ({commit, state}, track) {
         try {
           let { data } = await api.delete(`/tracks/${track.id}`)
-        } catch (e) {
-
+          commit('DELETE_TRACK_SUCCESS')
+        } catch (err) {
+          commit('DELETE_TRACK_FAILURE', err)
+          console.error('failed to delete track')
         }
       }
     }

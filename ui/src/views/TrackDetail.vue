@@ -89,6 +89,11 @@
         </div>
       </div>
     </div>
+    <section>
+      <code>
+        {{ trackDetail }}
+      </code>
+    </section>
   </section>
 </template>
 <script>
@@ -172,12 +177,14 @@ export default {
     }
   },
   created () {
-    // this.$store.dispatch('tracks')
+    this.$store.dispatch('tracks/getTrackDetails', this.$route.params.id)
+    this.$store.dispatch('tracks/getTrackouts', this.$route.params.id)
   },
   computed: {
-    // ...mapState({
-    //   track: state => state.tracks.current,
-    // })
+    ...mapState({
+      trackDetail: state => state.tracks.current,
+      trackouts: state => state.tracks.current.trackouts
+    })
   },
   methods: {
     upload () {

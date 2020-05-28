@@ -12,7 +12,7 @@
           <div class="level">
             <div class="level-item has-text-centered">
               <div>
-                <p><button class="button is-medium is-white heading">Sign up now</button></p>
+                <p><button class="button is-large is-white"><a href="/signup">Sign Up</a></button></p>
               </div>
             </div>
           </div>
@@ -32,9 +32,6 @@
 <script>
 export default {
   name: "home",
-  data: () => ({
-    user: {},
-  })
 };
 </script>
 

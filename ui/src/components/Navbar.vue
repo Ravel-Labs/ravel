@@ -53,7 +53,20 @@ export default {
     methods: {
       logout () {
         this.$store.dispatch('auth/logout')
-        this.$router.push('/login')
+        .then((data) => {
+          this.$buefy.toast.open({
+            message: 'Logged in.',
+            type: 'is-success'
+          })
+          this.$router.push('/login')
+        })
+        .catch((err) => {
+          console.error(err)
+          this.$buefy.toast.open({
+            message: `Logged out.`,
+            type: 'is-success'
+          })
+        })
       }
     }
 }

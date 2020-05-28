@@ -54,6 +54,21 @@ export default {
     ...mapActions('auth', [
       'signup'
     ])
+  },
+  handleSignup(user) {
+    signup(user)
+    .then((data) => {
+      this.$buefy.toast.open({
+        message: 'You\'re ready to go!',
+        type: 'is-success'
+      }) 
+    }).catch((err) => {
+      console.error(err)
+      this.$buefy.toast.open({
+        message: `Something went wrong.`,
+        type: 'is-danger'
+      })
+    })
   }
 }
 </script>

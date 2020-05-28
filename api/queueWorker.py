@@ -3,7 +3,7 @@ Q creates a Queue that we can push jobs into for processing
 and asynchronous handling.
 """
 
-from flaskthreads import AppContextThread
+# from flaskthreads import AppContextThread
 from datetime import datetime
 import queue
 Q = queue.Queue()
@@ -33,6 +33,7 @@ class Job():
     def execute(self):
         o = self.function(*self.args)
         self.output = o
+
 
 def worker():
     """

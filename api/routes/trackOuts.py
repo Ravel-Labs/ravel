@@ -41,6 +41,7 @@ def create_trackout():
             name=name,
             type=type_of_track,
             settings=settings,
+            # TODO: Make these effects create new models rather than set to default of 1
             wavefile=1,
             compression=1,
             eq=1,
@@ -87,8 +88,6 @@ def get_trackouts():
 '''
     GET by ID
 '''
-
-
 @jwt_required
 @trackouts_bp.route('%s/<int:id>' % base_trackouts_url, methods={'GET'})
 def get_trackout_by_id(id):
@@ -106,10 +105,8 @@ def get_trackout_by_id(id):
 '''
     DELETE
 '''
-
-
 @jwt_required
-@trackouts_bp.route('%s/delete/<int:id>' % base_trackouts_url, methods={'GET'})
+@trackouts_bp.route('%s/<int:id>' % base_trackouts_url, methods={'DELETE'})
 def delete_trackout_by_id(id):
     try:
         raw_trackout = TrackOut.query.get(id)
@@ -166,7 +163,7 @@ def add_update_wavfile(id):
         file_binary_hash = md5(file_binary).digest()
         update_request = {
             "file_binary": file_binary,
-            "file_hash": file_binary_hash
+            "file_hash": file_binary_hash.decode('utf-8')  # turn into string
         }
         db.session.query(TrackOut).filter_by(id=id).update(update_request)
         db.session.commit()

@@ -142,7 +142,7 @@ def process_track(id):
         # TODO Any effect that is being applied
         # Based on the data we are passing in
         for trackout in trackouts_equalization:
-            wavfile = BytesIO(trackout.file_binary)
+            wavfile = trackout.file_binary
             eq_function = equalize_and_save
 
             # TODO: These params should come from the request that's updating
@@ -167,17 +167,8 @@ def process_track(id):
             # TODO done processing update the trackout model with a new
             # resolved processing
 
+        
         # print(trackouts_equalization[0].file_binary)
-        # TODO turn wavefile into numpy array
-
-        # TODO pass this numpy array into processing
-
-        # TODO turn result into wavfile
-
-        # view of all of the trackouts in a track
-
-        # sum the wav file to all of the tracks
-        # signal agg and pass to compression you get all back
         # function_arguments = (a, b)
         # process_job = Job(processing, function_arguments)
         # Q.put(process_job)
@@ -204,7 +195,7 @@ def get_trackouts_by_track_id(id):
 
 def equalize_and_save(wavfile, eq_params, trackout_id):
     # create new processor for this equalizer
-    processor = Processor(None)
+    processor = Processor(wavfile)
 
     # create a new eq model to save settings against
     eq = Equalizer(

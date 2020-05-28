@@ -44,7 +44,6 @@
 </template>
 <script>
 import { mapActions, mapState } from 'vuex'
-import CreateTrack from '@/components/CreateTrack'
 
 export default {
   data () {
@@ -54,9 +53,6 @@ export default {
       showError: false,
       valid: false,
     }
-  },
-  components: {
-    CreateTrack
   },
   created () {
     this.$store.dispatch('auth/check')

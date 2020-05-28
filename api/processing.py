@@ -2,10 +2,9 @@
 # This is a wrapper around the Ravel API Library to expose it to a web server
 # in a more usable and meaningful way.
 # import librosa
-# from ravel.ravel_labs.lib.effects import EQSignal, CompressSignal, ReverbSignal, DeEsserSignal
-# from ravel_labs import EQSignal
 import numpy as np
 import scipy.io as sio
+from io import BytesIO
 import sys
 PWD = "/Users/storj/dev/ravellabs/ravel/"
 sys.path.append(PWD)
@@ -30,9 +29,13 @@ class Processor():
 
     def equalize(self):
         print("PROCESSING EQUALIZER")
-        # eq = Equalize(self.wavfile)
-        # eq.equalize()
-        pass
+        if self.wavfile is None:
+            print(f"finished processing None wavfile.{self.wavefile}")
+            pass
+
+        eq = Equalize(self.wavfile)
+        processed = eq.equalize()
+        return processed
 
     def compress(self):
         print("Processor compressor")
@@ -49,24 +52,29 @@ class Equalize():
     """
 
     def __init__(self, wavfile):
-        self.wavfile = wavfile  # Type = ledgit a
-        print("New equalizer being created: ", self)
+        self.wavfile = wavfile
+        print(f"type of wavefile:.{type(self.wavfile)}")
         pass
 
     def equalize(self):
-        # fetch wavefiles from database for each trackout for this track.
-
-        # get wavefile into a numpy array
         # REF: https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.io.wavfile.read.html
-
-        NUMPY_ARRAY = []
-        samplerate, data = sio.wavfile.read(self.wavfile)
-        self.sample_rate = samplerate
-
-        # get wavefile -> numpy ar  ray for each other trackout
+        load_bytes = BytesIO(self.wavfile)
+        print(f"Type {type(self.wavfile)} ")
+        # wav_as_bytes = pickle.dumps(self.wavfile)
+        # numpy_array = np.fromstring(self.wavfile)
+        # load from bytes into bumpy array
+        load_bytes = BytesIO(self.wavfile)
+        loaded_np = np.load(load_bytes, allow_pickle=True)
+        # string_wav = str(self.wavfile)
+        print(f"type of numpy? : {type(loaded_np)}")
         signals = []
-        # once it's a numpy array
-        eq = EQSignal("./", data, 1024, 1024,
+        '''
+            @parameters
+                0: path or file like object
+                1: numpy array
+                3: more to be desired...
+        '''
+        eq = EQSignal(loaded_np, 1024, 1024,
                       1024, -12, "vocal", 10, 3, -2)
 
         # signals is all of the other trackouts signals (aka numpy arrays)
@@ -80,7 +88,8 @@ class Equalize():
         # REF: https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.write.html
         eqwave = []
 
-        # return the equalized track
+        # return the equalized trackprint()
+        print(f'returning eqwave: {eqwave}')
         return eqwave
 
 
