@@ -3,11 +3,10 @@
 # in a more usable and meaningful way.
 # import librosa
 import numpy as np
-import scipy.io as sio
 from io import BytesIO
 import sys
-PWD = "/Users/storj/dev/ravellabs/ravel/"
-sys.path.append(PWD)
+# PWD = "/Users/storj/dev/ravellabs/ravel/"
+# sys.path.append(PWD)
 from ravel_labs.lib.effects import EQSignal, CompressSignal, ReverbSignal,\
                                     DeEsserSignal, SignalAggregator
 
