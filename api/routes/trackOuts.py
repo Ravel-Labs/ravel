@@ -4,6 +4,8 @@ from ravel.api.models.track_models import TrackOut, Track
 from ravel.api.models.User import User
 from ravel.api.models.apiresponse import APIResponse
 from ravel.api import db
+import scipy.io as sio
+
 from hashlib import md5
 from io import BytesIO
 trackouts_bp = Blueprint('trackouts_bp', __name__)
@@ -17,6 +19,7 @@ base_trackouts_url = '/api/trackouts'
 # @jwt_required
 @trackouts_bp.route(f"{base_trackouts_url}", methods=['POST'])
 def create_trackout():
+    print(f'hit create trackout')
     try:
         # unique_id = str(uuid.uuid1())
         # print(type(unique_id))
@@ -35,7 +38,7 @@ def create_trackout():
         deesser = request.json.get('deesser')
         track_id = int(request.json.get('track_id'))
         raw_track = Track.query.get(track_id)
-
+        print(f"raw tracks {raw_track}")
         raw_trackout = TrackOut(
             user_id=user_id,
             name=name,
@@ -159,11 +162,14 @@ def update_trackout(id):
 def add_update_wavfile(id):
     try:
         raw_file = request.files['file']
-        file_binary = raw_file.read()
-        file_binary_hash = md5(file_binary).digest()
+        samplerate, data = sio.wavfile.read(raw_file)
+        print(f"sample rate: {samplerate}")
+        print(type(samplerate))
+        print(type(data.tobytes()))
+
+        # file_binary_hash = md5(data.tobytes()).digest()
         update_request = {
-            "file_binary": file_binary,
-            "file_hash": file_binary_hash.decode('utf-8')  # turn into string
+            "file_binary": data.tobytes()
         }
         db.session.query(TrackOut).filter_by(id=id).update(update_request)
         db.session.commit()

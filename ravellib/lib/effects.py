@@ -7,9 +7,10 @@ from scipy.io.wavfile import write
 
 
 class Signal:
-    def __init__(self, path, signal, n_fft, window_size, hop_length, peak, audio_type):
-        self.path = path
-        self.sr = librosa.get_samplerate(self.path)
+    def __init__(self, signal, n_fft, window_size, hop_length, peak, audio_type):
+        # self.path = path
+        # self.sr = librosa.get_samplerate(self.path)
+        self.sr = 44100
         self.n_fft = n_fft
         self.window_size = window_size
         self.hop_length = hop_length
@@ -27,9 +28,9 @@ class Signal:
 
 
 class EQSignal(Signal):
-    def __init__(self, path, signal, n_fft, window_size, hop_length, peak, audio_type, 
+    def __init__(self, signal, n_fft, window_size, hop_length, peak, audio_type, 
                 rank_threshold, max_n, max_eq):
-        super().__init__(path, signal, n_fft, window_size, hop_length, peak, audio_type)
+        super().__init__(signal, n_fft, window_size, hop_length, peak, audio_type)
         self.fft_db_avg = np.mean(self.fft_db, axis=1)
         self.rank = preprocessing.rank_signal_1d(self.fft_db_avg)
         self.rank_threshold = rank_threshold

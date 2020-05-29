@@ -120,6 +120,7 @@ def update_track(id):
 # @jwt_required()
 @tracks_bp.route('%s/process/<int:id>' % base_tracks_url, methods=['PUT'])
 def process_track(id):
+    print(f"hello processing {id}")
     # Get trackouts > wavfile
     try:
         # Dispatch email processing progress
@@ -131,18 +132,23 @@ def process_track(id):
 
         # Get tracks by id
         raw_track = Track.query.get(id)
+        print(raw_track)
         payload = {
             "job": "started"
         }
 
         trackouts = raw_track.trackouts.all()
+        print(f'len trackouts: {len(trackouts)}')
         trackouts_equalization = [track_out for track_out in trackouts]
         trackout_binarys = [track_out.file_binary for track_out in trackouts]
+        
         # if there is equalization to the track then apply it
         # TODO Any effect that is being applied
         # Based on the data we are passing in
         for trackout in trackouts_equalization:
+            print("Got to the for loop")
             wavfile = trackout.file_binary
+            load_bytes = BytesIO(wavfile)
             eq_function = equalize_and_save
 
             # TODO: These params should come from the request that's updating
@@ -153,12 +159,14 @@ def process_track(id):
                 "filter_type": "",
                 "gain": 1
             }
-            eq_arguments = (wavfile, eq_params, trackout.id)
+            eq_arguments = (load_bytes, eq_params, trackout.id)
             processing_job = Job(eq_function, eq_arguments)
+            print(f'processing job: ', {processing_job})
 
             # TODO: needs to resolve the wavfile ID of the processing job
             # so that it can be updated in the database for the trackout
             resolved = Q.put(processing_job)
+            print(f'resolved: ', {resolved})
 
             # update database to match records
             # db.session.query(Track).filter_by(id=id).update(request.json)

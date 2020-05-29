@@ -53,7 +53,7 @@ class TrackOut(db.Model):
             "settings": self.settings,
             "wavefile": self.wavefile,
             "track_id": self.track_id,
-            "file_hash": self.file_hash.decode('utf-8')
+            # "file_hash": self.file_hash.decode('utf-8')
         }
         if not user.get("id"):
             del user['id']
