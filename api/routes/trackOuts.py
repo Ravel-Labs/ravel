@@ -16,19 +16,12 @@ base_trackouts_url = '/api/trackouts'
 '''
 
 
-# @jwt_required
 @trackouts_bp.route(f"{base_trackouts_url}", methods=['POST'])
+@jwt_required
 def create_trackout():
     print(f'hit create trackout')
     try:
-        # unique_id = str(uuid.uuid1())
-        # print(type(unique_id))
-        # unique_binary = ''.join(format(ord(i), 'b') for i in unique_id).encode()
-        # print(unique_binary)
-        # print(type(unique_binary))
-        # id_binary_hash = md5(unique_binary).digest()
-        # print(id_binary_hash)
-        user_id = 1
+        user_id = current_identity.id
         type_of_track = request.json.get('type')
         name = request.json.get('name')
         settings = request.json.get('settings')
@@ -39,16 +32,16 @@ def create_trackout():
         track_id = int(request.json.get('track_id'))
         raw_track = Track.query.get(track_id)
         print(f"raw tracks {raw_track}")
+
         raw_trackout = TrackOut(
             user_id=user_id,
             name=name,
             type=type_of_track,
             settings=settings,
-            # TODO: Make these effects create new models rather than set to default of 1
             wavefile=1,
-            compression=1,
-            eq=1,
-            deesser=1,
+            compression=0,
+            eq=0,
+            deesser=0,
             trackouts=raw_track)
         db.session.add(raw_trackout)
         db.session.commit()
@@ -64,8 +57,8 @@ def create_trackout():
 '''
 
 
-# @jwt_required
 @trackouts_bp.route(base_trackouts_url, methods={'GET'})
+@jwt_required
 def get_trackouts():
     try:
         track_id = request.args.get('track_id')
@@ -163,8 +156,8 @@ def update_trackout(id):
         abort(500, e)
 
 
-# @jwt_required
 @trackouts_bp.route('%s/wav/<int:id>' % base_trackouts_url, methods=['PUT'])
+@jwt_required
 def add_update_wavfile(id):
     try:
         raw_file = request.files['file']
