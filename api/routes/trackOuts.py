@@ -70,6 +70,12 @@ def get_trackouts():
     try:
         track_id = request.args.get('track_id')
         # get trackouts by track_id
+        print('getting trackouts by track_id: ', track_id)
+        
+        if track_id is None:
+            response = APIResponse({}, 200).response
+            return response
+
         if track_id:
             raw_trackouts = TrackOut.query.filter_by(track_id=track_id).all()
             trackouts = [rt.to_dict() for rt in raw_trackouts]

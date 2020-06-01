@@ -15,6 +15,9 @@ const tracks = {
       loading: false
     },
     mutations: {
+      'SET_ERROR' (state, error) {
+        state.error = error
+      },
       'TRACK_REQUEST' (state) {
         console.log('mutation: TRACK_REQUEST', state)
         state.loading = true
@@ -60,12 +63,31 @@ const tracks = {
         state.error = error
         state.loading = false
       },
-      'DELETE_TRACK_SUCCESS' (state, error) {
-
+      'DELETE_TRACK_SUCCESS' (state, data) {
+        state.loading = false
       }, 
       'DELETE_TRACK_FAILURE' (state, error) {
         state.error = error
         state.loading = false
+      },
+      'UPLOAD_WAV_REQUEST' (state, data) {
+        state.loading = true 
+        state.error = ""
+      },
+      'UPLOAD_WAV_SUCCESS' (state, data) {
+
+      },
+      'UPLOAD_WAV_FAILURE' (state, error) {
+
+      },
+      'PROCESS_REQUEST' (state, data) {
+
+      },
+      'PROCESS_FAILURE' (state, error) {
+
+      },
+      'PROCESS_SUCCESS' (state, data) {
+
       }
     },
     actions: {
@@ -80,7 +102,7 @@ const tracks = {
           })
           commit('TRACK_SUCCESS', data)
         } catch (err) {
-          commit('TRACK_FAILURE', err)
+          commit('SET_ERROR', err)
         }
       },
       async get ({ commit, state }) {
@@ -104,20 +126,20 @@ const tracks = {
           return err
         }
       },
-      async getTrackouts({ commit, state }, trackID) {
+      async getTrackouts ({ commit, state }, id) {
         try {
           commit('GET_TRACKOUTS')
           let { data } = await API().get(`/trackouts`, {
-            track_id: trackID
+            track_id: id 
           })
-          commit('GET_TRACKOUTS_SUCCESS', data)
+          commit('GET_TRACKOUTS_SUCCESS', data.payload)
         } catch (err) {
           commit('GET_TRACKOUTS_FAILURE', err)
           console.error(err)
           throw err
         }
       },
-      async update({ commit, state}, track) {
+      async update ({ commit, state}, track) {
         try {
           commit('TRACK_REQUEST')
           let { data } = await API().get(`/tracks/${id}`, track)
@@ -129,11 +151,35 @@ const tracks = {
       },
       async delete ({commit, state}, track) {
         try {
-          let { data } = await api.delete(`/tracks/${track.id}`)
+          let { data } = await API().delete(`/tracks/${track.id}`)
           commit('DELETE_TRACK_SUCCESS')
         } catch (err) {
           commit('DELETE_TRACK_FAILURE', err)
           console.error('failed to delete track')
+        }
+      },
+      async uploadFile ({ commit, state }, formData) {
+        axios.post(`/trackouts/wav/${id}`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        })
+        .then((data) => {
+          console.log('upload file response: ', data)
+          commit('UPLOAD_WAV_SUCCESS')
+        })
+        .catch((err) => {
+          console.log('failed to upload file: ', err)
+        })
+      },
+      async process ({ commit, state }, id, settings) {
+        try {
+          let { data } = API().put(`/tracks/${id}/process`)
+          commit('PROCESS_SUCCESS', data)
+        } catch (err) {
+          console.error('error processing track: ', err)
         }
       }
     }

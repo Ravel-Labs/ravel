@@ -4,12 +4,12 @@
       <div class="trackouts container">
         <div class="columns">
           <div class="column">
-            <h1 class="title is-1">{{ track.name }}</h1>
-            <p>{{ track.info }}</p>
+            <h1 class="title is-1">{{ trackDetail.name }}</h1>
+            <p>{{ trackDetail.info }}</p>
           </div>
         </div>
         <!-- Each trackout has a set of details for it -->
-        <b-collapse v-for="t in track.trackOuts"
+        <b-collapse v-for="t in trackouts"
           :key="t.id"
           class="card"
           animation="slide">
@@ -103,45 +103,8 @@ export default {
   name: 'trackDetails',
   data () {
     return {
-      file: {},
+      file: '',
       dropFiles: [],
-      track: {
-        trackOuts: [
-          {
-            id: 1,
-            created_at: Date.now(),
-            user_id: 1,
-            name: 'vocals',
-            type: 'vocals',
-            wavefile: [],
-            track_id: 1,
-            compression: 15,
-            reverb: 30,
-            eq: 50,
-            deesser: true,
-            vocal_magic: true,
-            drum_booster: false
-          },
-        {
-            id: 2,
-            created_at: Date.now(),
-            user_id: 1,
-            name: 'drums',
-            type: 'drums',
-            wavefile: [],
-            track_id: 1,
-            compression: 90,
-            reverb: 20,
-            eq: 50,
-            deesser: true,
-            vocal_magic: false,
-            drum_booster: true
-          }
-        ],
-        name: 'Neon Dreams',
-        created_at: Date.now(),
-        info: 'Recorded at SoundCity Studios'
-      },
       trackTypes: [
         {
           id: 1,
@@ -187,8 +150,16 @@ export default {
     })
   },
   methods: {
-    upload () {
+    handleFileUpload () {
       console.log('upload hit')
+      this.file = this.$refs.file.files[0]
+      let formData = new FormData() 
+      formData.append('file', this.file)
+      this.$store.dispatch('tracks/uploadFile', formData)
+        .then((data) => {
+          console.log('dispatch upload response: ', data)
+        })
+        .catch((err) => console.error('error uploading: ', err))
     },
     deleteDropFile (index) {
       this.dropFiles.splice(index, 1);

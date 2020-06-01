@@ -7,7 +7,7 @@
         </template>
         <template slot="start">
             <b-navbar-item v-if="token">
-              <a href="#" router-link :to="{name: 'tracks'}">
+              <a href="/tracks">
                 Tracks
               </a>
             </b-navbar-item>
