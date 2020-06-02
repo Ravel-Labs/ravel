@@ -16,8 +16,8 @@ base_trackouts_url = '/api/trackouts'
 '''
 
 
-# @jwt_required
 @trackouts_bp.route(f"{base_trackouts_url}", methods=['POST'])
+@jwt_required()
 def create_trackout():
     print(f'hit create trackout')
     try:
@@ -28,7 +28,7 @@ def create_trackout():
         # print(type(unique_binary))
         # id_binary_hash = md5(unique_binary).digest()
         # print(id_binary_hash)
-        user_id = 1
+        user_id = current_identity.id
         type_of_track = request.json.get('type')
         name = request.json.get('name')
         settings = request.json.get('settings')
@@ -44,7 +44,10 @@ def create_trackout():
             name=name,
             type=type_of_track,
             settings=settings,
-            # TODO: Make these effects create new models rather than set to default of 1
+
+            # TODO: Make these effects create new models rather than set to 
+            # default of 1
+
             wavefile=1,
             compression=1,
             eq=1,
@@ -64,11 +67,12 @@ def create_trackout():
 '''
 
 
-# @jwt_required
 @trackouts_bp.route(base_trackouts_url, methods={'GET'})
+@jwt_required()
 def get_trackouts():
     try:
         track_id = request.args.get('track_id')
+        print(f'getting trackouts for {track_id}')
         # get trackouts by track_id
         if track_id:
             raw_trackouts = TrackOut.query.filter_by(track_id=track_id).all()
@@ -91,8 +95,8 @@ def get_trackouts():
 '''
     GET by ID
 '''
-@jwt_required
 @trackouts_bp.route('%s/<int:id>' % base_trackouts_url, methods={'GET'})
+@jwt_required()
 def get_trackout_by_id(id):
     try:
         raw_trackout = TrackOut.query.get(id)
@@ -108,8 +112,8 @@ def get_trackout_by_id(id):
 '''
     DELETE
 '''
-@jwt_required
 @trackouts_bp.route('%s/<int:id>' % base_trackouts_url, methods={'DELETE'})
+@jwt_required()
 def delete_trackout_by_id(id):
     try:
         raw_trackout = TrackOut.query.get(id)
@@ -133,7 +137,7 @@ def delete_trackout_by_id(id):
 '''
 
 
-@jwt_required
+@jwt_required()
 @trackouts_bp.route('%s/<int:id>' % base_trackouts_url, methods=['PUT'])
 def update_trackout(id):
     try:
@@ -157,8 +161,8 @@ def update_trackout(id):
         abort(500, e)
 
 
-# @jwt_required
 @trackouts_bp.route('%s/wav/<int:id>' % base_trackouts_url, methods=['PUT'])
+@jwt_required()
 def add_update_wavfile(id):
     try:
         raw_file = request.files['file']

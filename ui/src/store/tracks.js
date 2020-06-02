@@ -16,7 +16,6 @@ const tracks = {
     },
     mutations: {
       'TRACK_REQUEST' (state) {
-        console.log('mutation: TRACK_REQUEST', state)
         state.loading = true
       },
       'TRACK_SUCCESS' (state, tracks) {
@@ -33,7 +32,7 @@ const tracks = {
           trackouts: []
         }
       },
-      'GET_TRACKOUTS' (state, trackID) {
+      'GET_TRACKOUTS' (state) {
         state.loading = true
       },
       'GET_TRACKOUTS_SUCCESS' (state, trackouts) {
@@ -54,14 +53,21 @@ const tracks = {
       'TRACKOUT_SUCCESS' (state, trackout) {
         state.loading = false
         state.current = trackout
-        state.error = ""
+        state.error = undefined
+      },
+      'ADD_TRACKOUT_SUCCESS' (state, trackouts) {
+        state.loading = false
+        state.error = undefined
+        state.current.trackouts.push(trackout)
       },
       'TRACKOUT_FAILURE' (state, error) {
         state.error = error
         state.loading = false
       },
-      'DELETE_TRACK_SUCCESS' (state, error) {
-
+      'DELETE_TRACK_SUCCESS' (state, track_id) {
+        // TODO: Remove track from list with splice
+        state.loading = false
+        state.error = undefined
       }, 
       'DELETE_TRACK_FAILURE' (state, error) {
         state.error = error
@@ -90,11 +96,11 @@ const tracks = {
           console.table(data.payload)
           commit('TRACK_SUCCESS', data.payload)
         } catch (err) {
-            console.log('error getting tracks: ', err)
-            return err
+          console.log('error getting tracks: ', err)
+          return err
         }
       },
-      async getTrackDetails ({ commit, state }, id) {
+      async getTrackDetails ({ commit, dispatch }, id) {
         try {
           commit('TRACK_REQUEST')
           let { data } = await API().get(`/tracks/${id}`)
@@ -114,7 +120,16 @@ const tracks = {
         } catch (err) {
           commit('GET_TRACKOUTS_FAILURE', err)
           console.error(err)
-          throw err
+          return err
+        }
+      },
+      async addTrackout({ commit }, trackout) {
+        try {
+          commit('TRACK_REQUEST')
+          let { data } = await API().post('/trackouts', trackout)
+          commit('ADD_TRACKOUT_SUCCESS', data.payload)
+        } catch (err) {
+          throw new Error('error processing trackout: ', err)
         }
       },
       async update({ commit, state}, track) {
