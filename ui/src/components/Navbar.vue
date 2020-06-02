@@ -63,8 +63,8 @@ export default {
         .catch((err) => {
           console.error(err)
           this.$buefy.toast.open({
-            message: `Logged out.`,
-            type: 'is-success'
+            message: `There was an error.`,
+            type: 'is-danger'
           })
         })
       }

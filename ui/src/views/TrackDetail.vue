@@ -9,7 +9,7 @@
           </div>
         </div>
         <!-- Each trackout has a set of details for it -->
-        <b-collapse v-for="t in track.trackOuts"
+        <b-collapse v-for="t in track.trackouts"
           :key="t.id"
           class="card"
           animation="slide">
@@ -91,7 +91,7 @@
     </div>
     <section>
       <code>
-        {{ trackDetail }}
+        {{ details }}
       </code>
     </section>
   </section>
@@ -105,43 +105,6 @@ export default {
     return {
       file: {},
       dropFiles: [],
-      track: {
-        trackOuts: [
-          {
-            id: 1,
-            created_at: Date.now(),
-            user_id: 1,
-            name: 'vocals',
-            type: 'vocals',
-            wavefile: [],
-            track_id: 1,
-            compression: 15,
-            reverb: 30,
-            eq: 50,
-            deesser: true,
-            vocal_magic: true,
-            drum_booster: false
-          },
-        {
-            id: 2,
-            created_at: Date.now(),
-            user_id: 1,
-            name: 'drums',
-            type: 'drums',
-            wavefile: [],
-            track_id: 1,
-            compression: 90,
-            reverb: 20,
-            eq: 50,
-            deesser: true,
-            vocal_magic: false,
-            drum_booster: true
-          }
-        ],
-        name: 'Neon Dreams',
-        created_at: Date.now(),
-        info: 'Recorded at SoundCity Studios'
-      },
       trackTypes: [
         {
           id: 1,
@@ -182,8 +145,7 @@ export default {
   },
   computed: {
     ...mapState({
-      trackDetail: state => state.tracks.current,
-      trackouts: state => state.tracks.current.trackouts
+      track: state => state.tracks.current,
     })
   },
   methods: {
