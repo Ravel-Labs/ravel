@@ -110,7 +110,7 @@ const tracks = {
           let { data } = await API().get(`/trackouts`, {
             track_id: trackID
           })
-          commit('GET_TRACKOUTS_SUCCESS', data)
+          commit('GET_TRACKOUTS_SUCCESS', data.payload)
         } catch (err) {
           commit('GET_TRACKOUTS_FAILURE', err)
           console.error(err)

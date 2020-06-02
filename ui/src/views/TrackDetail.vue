@@ -91,7 +91,7 @@
     </div>
     <section>
       <code>
-        {{ details }}
+        {{ track }}
       </code>
     </section>
   </section>
