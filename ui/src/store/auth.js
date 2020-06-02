@@ -72,7 +72,7 @@ const auth = {
     user: state => state.user
   },
   actions: {
-    async login ({ commit, state }, user) {
+    async login ({ commit }, user) {
       try {
         commit('LOGIN_REQUEST', user)
         let { data } = await API().post('/auth/login', {
@@ -81,12 +81,11 @@ const auth = {
         })
         commit('LOGIN_SUCCESS', data['access_token'])
         commit('SET_USER', user)
-        router.push({ name: 'tracks' })
       } catch (error) {
         commit('LOGIN_FAILURE', error)
       }
     },
-    async logout ({ commit, state}) {
+    async logout ({ commit }) {
       try {
         commit('LOGOUT_SUCCESS')
         router.push({ name: 'login' })
@@ -95,16 +94,15 @@ const auth = {
         commit('LOGOUT_FAILURE', error)
       }
     },
-    async signup ({ commit, state, dispatch }, user) {
+    async signup ({ commit }, user) {
       try {
         commit('SIGNUP_REQUEST')
-        let { data } = await API().post('/auth/signup', {
+        await API().post('/auth/signup', {
           email: user.email,
           password: user.password,
           name: user.name
         })
         commit('SIGNUP_SUCCESS')
-        dispatch('login', user)
       } catch (error) {
         commit('SIGNUP_FAILURE', error)
       }
@@ -112,14 +110,12 @@ const auth = {
     async check ({ commit, dispatch }) {
       try {
         let { data } = await API().get('/auth/check')
-        console.log('auth check data: ', data)
         commit('CHECK_SUCCESS', data)
       } catch (error) {
         if (error === "Request failed with status code 401") {
           console.log('failed with 401 error: ', error)
           commit('LOGOUT_REQUEST')
           commit('LOGOUT_SUCCESS')
-          router.push({ name: 'login' })
         } else {
           console.log('general authentication error: ', error)
           throw new Error(error)

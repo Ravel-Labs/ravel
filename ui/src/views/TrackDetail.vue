@@ -95,6 +95,8 @@
     <section>
       <code>
         {{ track }}
+        <hr/>
+        {{ token }}
       </code>
     </section>
   </section>
@@ -149,6 +151,7 @@ export default {
   computed: {
     ...mapState({
       track: state => state.tracks.current,
+      token: state => state.auth.token
     })
   },
   methods: {

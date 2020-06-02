@@ -110,7 +110,7 @@ const tracks = {
           return err
         }
       },
-      async getTrackouts({ commit, state }, trackID) {
+      async getTrackouts({ commit }, trackID) {
         try {
           commit('GET_TRACKOUTS')
           let { data } = await API().get(`/trackouts`, {
@@ -132,7 +132,7 @@ const tracks = {
           throw new Error('error processing trackout: ', err)
         }
       },
-      async update({ commit, state}, track) {
+      async update({ commit }, track) {
         try {
           commit('TRACK_REQUEST')
           let { data } = await API().get(`/tracks/${id}`, track)
@@ -142,7 +142,7 @@ const tracks = {
           console.log('error updating track: ', err)
         }
       },
-      async delete ({commit, state}, track) {
+      async delete ({ commit }, track) {
         try {
           let { data } = await api.delete(`/tracks/${track.id}`)
           commit('DELETE_TRACK_SUCCESS')

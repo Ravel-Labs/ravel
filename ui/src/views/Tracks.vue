@@ -55,7 +55,6 @@ export default {
     }
   },
   created () {
-    this.$store.dispatch('auth/check')
     this.$store.dispatch('tracks/get')
   },
   computed: {

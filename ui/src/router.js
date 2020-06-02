@@ -70,8 +70,8 @@ const router = new Router({
 
 router.beforeEach((to, from, next) => {
   console.log('hitting before each')
-  const authtoken = store.getters['auth/token']
   if (to.meta.requireAuth) {
+    const authtoken = store.getters['auth/token']
     if (!authtoken) {
       console.log('no auth token')
       router.push('login')
