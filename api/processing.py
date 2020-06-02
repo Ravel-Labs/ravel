@@ -60,30 +60,21 @@ class Equalize():
     def equalize(self):
         print(f'Equalizer.equalize() hit')
         # REF: https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.io.wavfile.read.html
-        # load_bytes = BytesIO(self.wavfile)
+        load_bytes = BytesIO(self.wavfile)
+        load_bytes.seek(0)
         print(f"Type {type(self.wavfile)} ")
-        samplerate, data = sio.wavfile.read(self.wavfile)
-        print(f"type of data {type(data)}")
-        # load_bytes = sio.wavfile.write('wav.',11025,self.wavfile)
-        # wav_as_bytes = pickle.dumps(self.wavfile)
-        # numpy_array = np.fromstring(self.wavfile, dtype=float32)
-        # print(f'numpy_array: {numpy_array}')
-        # load from bytes into bumpy array
-        # load_bytes = BytesIO(self.wavfile)
-        # picked_obj = pickle.dumps(load_bytes)
-        # loaded_np = np.load(picked_obj, allow_pickle=True)
-        # string_wav = str(self.wavfile)
-        # print(f"type of numpy? : {type(numpy_array)}")
-
+        picked_obj = pickle.dumps(load_bytes)
+        loaded_np = np.frombuffer(picked_obj)
+        print(loaded_np)
         # TODO: signals is a list of all trackouts for this track.
-        signals = [numpy_array]
+        signals = [loaded_np]
         '''
             @parameters
                 0: path or file like object
                 1: numpy array
                 3: more to be desired...
         '''
-        eq = EQSignal(numpy_array, 1024, 1024,
+        eq = EQSignal(loaded_np, 1024, 1024,
                       1024, -12, "vocal", 10, 3, -2)
 
         print(f'eq signal: {eq}')

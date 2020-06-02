@@ -148,7 +148,6 @@ def process_track(id):
         for trackout in trackouts_equalization:
             print("Got to the for loop")
             wavfile = trackout.file_binary
-            load_bytes = BytesIO(wavfile)
             eq_function = equalize_and_save
 
             # TODO: These params should come from the request that's updating
@@ -159,7 +158,7 @@ def process_track(id):
                 "filter_type": "",
                 "gain": 1
             }
-            eq_arguments = (load_bytes, eq_params, trackout.id)
+            eq_arguments = (wavfile, eq_params, trackout.id)
             processing_job = Job(eq_function, eq_arguments)
             print(f'processing job: ', {processing_job})
 
