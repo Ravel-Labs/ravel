@@ -63,11 +63,12 @@ const auth = {
     },
     'CHECK_FAILURE' (state, error) {
       state.token = ''
+      state.user = {}
       state.error = error
     }
   },
   getters: {
-    token: state => state.token,
+    token: () => ls.getItem('token'),
     user: state => state.user
   },
   actions: {
@@ -88,7 +89,7 @@ const auth = {
     async logout ({ commit, state}) {
       try {
         commit('LOGOUT_SUCCESS')
-        // router.push({ name: 'login' })
+        router.push({ name: 'login' })
       } catch (error) {
         commit('LOGOUT_FAILURE', error)
       }
@@ -110,20 +111,21 @@ const auth = {
     async check ({ commit, dispatch }) {
       try {
         let { data } = await API().get('/auth/check')
-        commit('CHECK_SUCCESS')
+        console.log('')
+        commit('CHECK_SUCCESS', data)
       } catch (error) {
-        if (error === 'Request failed with status code 401') {
+        if (error === "Request failed with status code 401") {
           console.log('failed with 401 error: ', error)
           commit('LOGOUT_REQUEST')
           commit('LOGOUT_SUCCESS')
-          // router.push({ name: 'login' })
-        }
-        if (error === 'Request failed with status code 405') {
-          commit('LOGIN_FAILURE', error)
+          router.push({ name: 'login' })
         } else {
-          console.log('general auth error: ', error)
-          dispatch('logout')
+          console.log('general authentication error: ', error)
+          throw new Error(error)
         }
+
+        dispatch('CHECK_FAILURE', error)
+        return error
       }
     }
   }

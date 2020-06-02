@@ -29,6 +29,7 @@
                 </a>
             </div>
             <div class="card-content">
+                  <!-- Manual settings -->
                   <b-field label="Compression">
                       <b-slider v-model="t.compression"></b-slider>
                   </b-field>
@@ -41,6 +42,7 @@
                       <b-slider v-model="t.eq"></b-slider>
                   </b-field>
 
+                  <!-- Presets -->
                   <div class="columns">
                     <div class="column">
                       <b-switch v-model="t.vocal_magic">
@@ -59,6 +61,7 @@
                       </b-switch>
                     </div>
                   </div>
+
                   <div class="columns">
                     <div class="column">
                     <b-field label="Track Type">

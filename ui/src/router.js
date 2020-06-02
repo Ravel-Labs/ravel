@@ -72,7 +72,7 @@ router.beforeEach((to, from, next) => {
   const authtoken = store.getters['auth/token']
   store.dispatch('auth/check', router)
   .then((data) => {
-    return router.next()
+    return next()
   })
 
   // if login and they're already signed in, push them to tracks

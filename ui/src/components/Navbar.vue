@@ -41,9 +41,6 @@ import router from '@/router'
 
 export default {
     name: 'Navbar',
-    data () {
-      return {}
-    },
     computed: {
       ...mapState({
         user: state => state.auth.user,
@@ -58,7 +55,7 @@ export default {
             message: 'Logged out.',
             type: 'is-info'
           })
-          this.$router.push('/login')
+          this.$router.push({ name: 'login' })
         })
         .catch((err) => {
           console.error(err)
