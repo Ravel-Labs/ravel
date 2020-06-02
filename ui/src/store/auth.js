@@ -90,6 +90,7 @@ const auth = {
       try {
         commit('LOGOUT_SUCCESS')
         router.push({ name: 'login' })
+        location.window.reload()
       } catch (error) {
         commit('LOGOUT_FAILURE', error)
       }
@@ -102,7 +103,7 @@ const auth = {
           password: user.password,
           name: user.name
         })
-        commit('SIGNUP_SUCCESS', user)
+        commit('SIGNUP_SUCCESS')
         dispatch('login', user)
       } catch (error) {
         commit('SIGNUP_FAILURE', error)
@@ -111,7 +112,7 @@ const auth = {
     async check ({ commit, dispatch }) {
       try {
         let { data } = await API().get('/auth/check')
-        console.log('')
+        console.log('auth check data: ', data)
         commit('CHECK_SUCCESS', data)
       } catch (error) {
         if (error === "Request failed with status code 401") {

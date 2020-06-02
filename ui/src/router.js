@@ -70,22 +70,8 @@ const router = new Router({
 
 router.beforeEach((to, from, next) => {
   const authtoken = store.getters['auth/token']
-  store.dispatch('auth/check', router)
-  .then((data) => {
-    return next()
-  })
-
-  // if login and they're already signed in, push them to tracks
-  if (to.name === 'login') {
-    if (authtoken) {
-      router.push('tracks')
-    }
-  }
-
-  // prevent access to routes without the token
   if (to.meta.requireAuth) {
     if (!authtoken) {
-      console.log('NO AUTH TOKEN')
       router.push('login')
     }
   }

@@ -67,6 +67,7 @@ export default {
     login (user) {
       this.$store.dispatch('auth/login', user)
       .then((data) => {
+        this.$store.dispatch('auth/check')
         this.$buefy.toast.open({
           message: 'Logged in.',
           type: 'is-success'
