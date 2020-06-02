@@ -90,7 +90,7 @@ const auth = {
       try {
         commit('LOGOUT_SUCCESS')
         router.push({ name: 'login' })
-        location.window.reload()
+        location.reload()
       } catch (error) {
         commit('LOGOUT_FAILURE', error)
       }
