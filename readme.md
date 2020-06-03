@@ -23,6 +23,9 @@ them all cached and built and making sure they all still work.
 
 4. Install requirement.txt
 `cd api/ && pip install -r requirements.txt`
+The system must also have SoX installed
+`brew install sox`
+https://pypi.org/project/pysndfx/
 
 5. Run the Flask app
 From inside `/api` folder, run `FLASK_APP=run FLASK_ENV=development flask run`

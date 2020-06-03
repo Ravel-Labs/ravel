@@ -158,6 +158,7 @@ def process_track(id):
                 "filter_type": "",
                 "gain": 1
             }
+            
             eq_arguments = (wavfile, eq_params, trackout.id)
             processing_job = Job(eq_function, eq_arguments)
             print(f'processing job: ', {processing_job})
