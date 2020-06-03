@@ -67,21 +67,20 @@ class Equalize():
         loaded_np = np.frombuffer(picked_obj)
         print(loaded_np)
         # TODO: signals is a list of all trackouts for this track.
-        signals = [loaded_np]
         '''
             @parameters
-                0: path or file like object
                 1: numpy array
                 3: more to be desired...
         '''
+
         eq = EQSignal(loaded_np, 1024, 1024,
                       1024, -12, "vocal", 10, 3, -2)
 
         print(f'eq signal: {eq}')
-
+        # get all other trackouts for a track
         # signals is all of the other trackouts signals (aka numpy arrays)
         # get eq params for all trackout signals for this track
-        params = eq.eq_params(signals)
+        params = eq.eq_params([eq])
 
         print(f'params: {params}')
         # equalize the track
