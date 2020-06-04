@@ -35,6 +35,8 @@ class TrackOut(db.Model):
     # these relate to effect models such as Compressor, Deesser, and EQ
     compression = db.Column(db.Integer)
     eq = db.relationship("Equalizer", backref="eq", uselist=False)
+    de = db.relationship("Compressor", backref="de", uselist=False)
+    co = db.relationship("Deesser", backref="co", uselist=False)
     deesser = db.Column(db.Integer)
 
     '''
@@ -76,3 +78,39 @@ class Equalizer(db.Model):
             "filter_type": self.filter_type,
             "gain": self.gain
         }
+
+
+class Deesser(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    trackout_id = db.Column(db.Integer, db.ForeignKey("track_out.id"))
+    sharpness_avg = db.Column(db.Float)
+
+
+def to_dict(self):
+    return {
+        "id": self.id,
+        "trackout_id": self.trackout_id,
+        "sharpness_avg": self.sharpness_avg
+    }
+
+
+class Compressor(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    trackout_id = db.Column(db.Integer, db.ForeignKey("track_out.id"))
+    ratio = db.Column(db.Float)
+    threshold = db.Column(db.Float)
+    knee_width = db.Column(db.Float)
+    attack = db.Column(db.Float)
+    release = db.Column(db.Float)
+
+
+def to_dict(self):
+    return {
+        "id": self.id,
+        "trackout_id": self.trackout_id,
+        "ratio": self.ratio,
+        "threshold": self.threshold,
+        "knee_width": self.knee_width,
+        "attack": self.attack,
+        "release": self.release
+    }

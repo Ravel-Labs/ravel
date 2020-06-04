@@ -153,7 +153,7 @@ def process_track(id):
 
             print(f"Got to the for loop {len(remaining_track_outs)}")
             wavfile = trackout.file_binary
-            eq_function = equalize_and_save
+            eq_function = process_and_save
 
             # TODO: These params should come from the request that's updating
             # the track.
@@ -208,7 +208,7 @@ def get_trackouts_by_track_id(id):
         abort(500, e)
 
 
-def equalize_and_save(mainWavfile, listOfWavfiles, eq_params, trackout_id):
+def process_and_save(mainWavfile, listOfWavfiles, eq_params, trackout_id):
 
     processor = Processor(mainWavfile, listOfWavfiles)
     trackout = TrackOut.query.get(trackout_id)
@@ -222,6 +222,8 @@ def equalize_and_save(mainWavfile, listOfWavfiles, eq_params, trackout_id):
         equalized_binary=eq_wav,
         eq=trackout
     )
-
+# TODO try batching db writes
     db.session.add(raw_equalizer)
     db.session.commit()
+
+    # eq_wav = processor.compress()

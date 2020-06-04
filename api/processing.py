@@ -112,14 +112,15 @@ class Equalize():
         print(f'returning eqwave: {equalized}')
         return eqwave
 
+
 class Compress():
     """
     Creates a new Compressor channel
     """
 
-    def __init__(self, wavfile, signal_aggregator):
+    def __init__(self, wavfile):
         self.wavfile = wavfile
-        self.signal_aggregator = signal_aggregator
+        # self.signal_aggregator = signal_aggregator
         print("Creating a new Compressor: ", self)
         pass
 
@@ -170,7 +171,7 @@ class Compress():
             cp = comp_signals[i].comp_params(cfa, lfa)
             compressed = comp_signals[i].compression(cp)
             processed_signals.append(compressed)
-
+        print(f"WOOT {processed_signals}")
         return processed_signals
 
 
