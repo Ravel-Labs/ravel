@@ -41,6 +41,13 @@ class Processor():
         print(f"Successful equalization: \n\t {type(processed)}")
         return processed
 
+    def create_npa_from_wav(self, wav_file):
+        load_bytes = BytesIO(wav_file.file_binary)
+        load_bytes.seek(0)
+        picked_obj = pickle.dumps(load_bytes)
+        loaded_np = np.frombuffer(picked_obj)
+        return loaded_np
+
     def compress(self):
         print("Processor compressor")
         if self.wavfile is None:
@@ -69,57 +76,41 @@ class Equalize():
         pass
 
     def equalize(self):
-        print(f'Equalizer.equalize() hit')
+        print(f'Equalizer.equalize()')
         # REF: https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.io.wavfile.read.html
-        load_bytes = BytesIO(self.wavfile)
-        load_bytes.seek(0)
-        print(f"Type {type(self.wavfile)} ")
-        # Main
-        picked_obj = pickle.dumps(load_bytes)
-        loaded_np = np.frombuffer(picked_obj, dtype=np.int32)
-        print(loaded_np)
-        list_of_eq = list()
-        
-        # for wav_file in self.listOfWavfiles:
-        #     print(wav_file, "HII")
-        #     load_bytes = BytesIO(wav_file.file_binary)
-        #     load_bytes.seek(0)
-        #     print(f"Type {type(wav_file)} ")
-        #     # Main
-        #     picked_obj = pickle.dumps(load_bytes)
-        #     loaded_np = np.frombuffer(picked_obj)
-        #     list_of_eq.append(loaded_np)
-        # print(f"TYPE OF MANY WAV FILE {type(list_of_eq[0])}")
-        # TODO: signals is a list of all trackouts for this track.
+        main_wav_np = self.create_npa_from_wav(self.wavfile)
+        # List of eq created from the rest of the trackout set excluding one trackout
+        signals = list()
+        print(f"Creating signals npArray for {len(self.listOfWavfiles)}s")
+        if len(self.listOfWavfiles) == 0:
+            print("This will break things?")
+        for wav_file in self.listOfWavfiles:
+            loaded_np = self.create_npa_from_wav(wav_file)
+            _eq = EQSignal(loaded_np, 1024, 1024,
+                      1024, -12, "vocal", 10, 3, -2)
+            signals.append(_eq)
+
         '''
             @parameters
                 1: numpy array
                 3: more to be desired...
         '''
-
-        eq = EQSignal(loaded_np, 1024, 1024,
+        eq = EQSignal(main_wav_np, 1024, 1024,
                       1024, -12, "vocal", 10, 3, -2)
-
         print(f'eq signal: {eq}')
-        # get all other trackouts for a track
-        # signals is all of the other trackouts signals (aka numpy arrays)
-        # get eq params for all trackout signals for this track
-        params = eq.eq_params([eq])
 
+        # signals is all of the other trackouts signals (aka numpy arrays)
+        params = eq.eq_params(signals)
         print(f'params: {params}')
+
         # equalize the track
         equalized = eq.equalization(params, 2)
         print(f'equalized: {equalized}\ntype: {type(equalized)}')
 
-        # write it back to a wavefile
         # REF: https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.write.html
-        eqwave = equalized.tobytes() 
-
-
-        # return the equalized trackprint()
+        eqwave = equalized.tobytes()
         print(f'returning eqwave: {equalized}')
         return eqwave
-
 
 class Compress():
     """

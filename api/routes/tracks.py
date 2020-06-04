@@ -207,19 +207,13 @@ def get_trackouts_by_track_id(id):
     except Exception as e:
         abort(500, e)
 
-# TODO I need to update the database 
-# right now I have eq results I need to write those
+
 def equalize_and_save(mainWavfile, listOfWavfiles, eq_params, trackout_id):
-    # create new processor for this equalizer
+
     processor = Processor(mainWavfile, listOfWavfiles)
     trackout = TrackOut.query.get(trackout_id)
-    # trackout.eq = eq.id
-    print("updated trackout: ", trackout)
     eq_wav = processor.equalize()
-    print(f"HERE ARE THE RESULTS {type(eqResults)}")
-
-    # raw_track = TrackOut.query.get(track_id)
-    print(f"raw tracks {raw_track}")
+    print(f"equalized complete: {bool(eq_wav)}")
     raw_equalizer = Equalizer(
         trackout_id=trackout_id,
         freq=eq_params["freq"],
@@ -231,6 +225,3 @@ def equalize_and_save(mainWavfile, listOfWavfiles, eq_params, trackout_id):
 
     db.session.add(raw_equalizer)
     db.session.commit()
-    # declare the eq func with eq params
-    # save eq params to db as new EQ model and update track info
-
