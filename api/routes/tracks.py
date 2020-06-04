@@ -4,7 +4,7 @@ from flask import Blueprint, abort, request
 from flask_jwt import jwt_required, current_identity
 from ravel.api import db
 from ravel.api.models.track_models import Track, TrackOut
-from ravel.api.models.eq import Equalizer
+from ravel.api.models.track_models import Equalizer
 from ravel.api import ADMINS_FROM_EMAIL_ADDRESS, mail, Q, Job
 from ravel.api.processing import Handler, Processor
 from ravel.api.services.email.email import email_proxy
@@ -140,33 +140,40 @@ def process_track(id):
         trackouts = raw_track.trackouts.all()
         print(f'len trackouts: {len(trackouts)}')
         trackouts_equalization = [track_out for track_out in trackouts]
-        trackout_binarys = [track_out.file_binary for track_out in trackouts]
+        print(type(trackouts_equalization))
+        # trackout_binarys = [track_out.file_binary for track_out in trackouts]
         
         # if there is equalization to the track then apply it
         # TODO Any effect that is being applied
         # Based on the data we are passing in
         for trackout in trackouts_equalization:
-            print("Got to the for loop")
+            print(type(set([trackout])))
+            # Minimum number of trackouts? Can a track be analysed against itself? If not then what?
+            remaining_track_outs = set(trackouts_equalization)-set([trackout])
+
+            print(f"Got to the for loop {len(remaining_track_outs)}")
             wavfile = trackout.file_binary
             eq_function = equalize_and_save
 
             # TODO: These params should come from the request that's updating
             # the track.
+            '''
+                Equalize each trackout A in a Set against the subset (totalSet - A)
+            '''
             eq_params = {
                 "trackout_id": 1,
                 "freq": "1200",
                 "filter_type": "",
                 "gain": 1
             }
-            
-            eq_arguments = (wavfile, eq_params, trackout.id)
+            eq_arguments = (wavfile, remaining_track_outs, eq_params, trackout.id)
             processing_job = Job(eq_function, eq_arguments)
-            print(f'processing job: ', {processing_job})
+            print(f'processing job:  {processing_job}')
 
             # TODO: needs to resolve the wavfile ID of the processing job
             # so that it can be updated in the database for the trackout
             resolved = Q.put(processing_job)
-            print(f'resolved: ', {resolved})
+            print(f'resolved: ', {type(resolved)})
 
             # update database to match records
             # db.session.query(Track).filter_by(id=id).update(request.json)
@@ -200,30 +207,30 @@ def get_trackouts_by_track_id(id):
     except Exception as e:
         abort(500, e)
 
-
-def equalize_and_save(wavfile, eq_params, trackout_id):
+# TODO I need to update the database 
+# right now I have eq results I need to write those
+def equalize_and_save(mainWavfile, listOfWavfiles, eq_params, trackout_id):
     # create new processor for this equalizer
-    processor = Processor(wavfile)
+    processor = Processor(mainWavfile, listOfWavfiles)
+    trackout = TrackOut.query.get(trackout_id)
+    # trackout.eq = eq.id
+    print("updated trackout: ", trackout)
+    eq_wav = processor.equalize()
+    print(f"HERE ARE THE RESULTS {type(eqResults)}")
 
-    # create a new eq model to save settings against
-    eq = Equalizer(
+    # raw_track = TrackOut.query.get(track_id)
+    print(f"raw tracks {raw_track}")
+    raw_equalizer = Equalizer(
         trackout_id=trackout_id,
         freq=eq_params["freq"],
         filter_type=eq_params["filter_type"],
-        gain=eq_params["gain"]
+        gain=eq_params["gain"],
+        equalized_binary=eq_wav,
+        eq=trackout
     )
-    db.session.add(eq)
+
+    db.session.add(raw_equalizer)
     db.session.commit()
-
-    print("eq created: ", eq.id)
-
-    # update trackout to track new settings
-    trackout = db.session.query(TrackOut).filter_by(id=trackout_id)
-    trackout.eq = eq.id
-    db.session.commit()
-    print("updated trackout: ", trackout)
-
-    processor.equalize()
     # declare the eq func with eq params
     # save eq params to db as new EQ model and update track info
-    pass
+

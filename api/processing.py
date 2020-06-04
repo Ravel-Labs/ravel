@@ -14,9 +14,10 @@ from ravel.ravellib.lib.effects import EQSignal, CompressSignal, ReverbSignal,\
 
 
 class Processor():
-    def __init__(self, wavfile):
-        print(f'Creating Processor with wavfile: {wavfile}')
+    def __init__(self, wavfile, listOfWavfiles):
+        print(f'Creating Processor with wavfile')
         self.wavfile = wavfile
+        self.listOfWavfiles = listOfWavfiles
         self.trackouts = []
         self.signal_aggregator = []
         self.compression_params = []
@@ -29,18 +30,27 @@ class Processor():
             self.sample_rate, self.num_signals)
 
     def equalize(self):
-        print("PROCESSING EQUALIZER")
+        print("Processor equalizer")
         if self.wavfile is None:
             print(f"finished processing None wavfile.{self.wavefile}")
+            # TODO throw exception here and test this in a try catch
             pass
 
-        eq = Equalize(self.wavfile)
+        eq = Equalize(self.wavfile, self.listOfWavfiles)
         processed = eq.equalize()
+        print(f"Successful equalization: \n\t {type(processed)}")
         return processed
 
     def compress(self):
         print("Processor compressor")
-        pass
+        if self.wavfile is None:
+            print(f"finished processing None wavfile.{self.wavefile}")
+            pass
+
+        co = Compress(self.wavfile)
+        processed = co.compress()
+        print(f"Successful compression: \n\t{processed}")
+        return processed
 
     def limit(self):
         print("Processor limiter")
@@ -52,8 +62,9 @@ class Equalize():
     Creates a new Equalizer
     """
 
-    def __init__(self, wavfile):
+    def __init__(self, wavfile, listOfWavfiles):
         self.wavfile = wavfile
+        self.listOfWavfiles = listOfWavfiles
         print(f"type of wavefile:.{type(self.wavfile)}")
         pass
 
@@ -63,9 +74,22 @@ class Equalize():
         load_bytes = BytesIO(self.wavfile)
         load_bytes.seek(0)
         print(f"Type {type(self.wavfile)} ")
+        # Main
         picked_obj = pickle.dumps(load_bytes)
-        loaded_np = np.frombuffer(picked_obj)
+        loaded_np = np.frombuffer(picked_obj, dtype=np.int32)
         print(loaded_np)
+        list_of_eq = list()
+        
+        # for wav_file in self.listOfWavfiles:
+        #     print(wav_file, "HII")
+        #     load_bytes = BytesIO(wav_file.file_binary)
+        #     load_bytes.seek(0)
+        #     print(f"Type {type(wav_file)} ")
+        #     # Main
+        #     picked_obj = pickle.dumps(load_bytes)
+        #     loaded_np = np.frombuffer(picked_obj)
+        #     list_of_eq.append(loaded_np)
+        # print(f"TYPE OF MANY WAV FILE {type(list_of_eq[0])}")
         # TODO: signals is a list of all trackouts for this track.
         '''
             @parameters
@@ -85,14 +109,15 @@ class Equalize():
         print(f'params: {params}')
         # equalize the track
         equalized = eq.equalization(params, 2)
-        print(f'equalized: {equalized}')
+        print(f'equalized: {equalized}\ntype: {type(equalized)}')
 
         # write it back to a wavefile
         # REF: https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.write.html
-        eqwave = []
+        eqwave = equalized.tobytes() 
+
 
         # return the equalized trackprint()
-        print(f'returning eqwave: {eqwave}')
+        print(f'returning eqwave: {equalized}')
         return eqwave
 
 
@@ -221,7 +246,7 @@ class Handler():
         creates a new builder
         """
         self._builder = None
-        self._builder = Processor(None)
+        self._builder = Processor(None, None)
         print("assigned builder: ", self._builder)
         pass
 

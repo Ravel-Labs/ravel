@@ -47,7 +47,6 @@ def create_trackout():
             # TODO: Make these effects create new models rather than set to default of 1
             wavefile=1,
             compression=1,
-            eq=1,
             deesser=1,
             trackouts=raw_track)
         db.session.add(raw_trackout)

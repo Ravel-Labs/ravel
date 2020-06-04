@@ -34,7 +34,7 @@ class TrackOut(db.Model):
     wavefile = db.Column(db.Integer)
     # these relate to effect models such as Compressor, Deesser, and EQ
     compression = db.Column(db.Integer)
-    eq = db.Column(db.Integer)
+    eq = db.relationship("Equalizer", backref="eq", uselist=False)
     deesser = db.Column(db.Integer)
 
     '''
@@ -58,3 +58,21 @@ class TrackOut(db.Model):
         if not user.get("id"):
             del user['id']
         return user
+
+
+class Equalizer(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    trackout_id = db.Column(db.Integer, db.ForeignKey("track_out.id"))
+    freq = db.Column(db.String)
+    filter_type = db.Column(db.String)
+    gain = db.Column(db.Float)
+    equalized_binary = db.Column(db.LargeBinary)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "trackout_id": self.trackout_id,
+            "freq": self.freq,
+            "filter_type": self.filter_type,
+            "gain": self.gain
+        }
