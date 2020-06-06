@@ -30,14 +30,13 @@ class TrackOut(db.Model):
     user_id = db.Column(db.Integer)
     name = db.Column(db.String(1000))
     type = db.Column(db.String(50))
-    settings = db.Column(db.String(1000))
 
     '''
     FX Model relations for later processing and analysis
     '''
-    compression = db.Column(db.Integer)
-    eq = db.Column(db.Integer)
-    deesser = db.Column(db.Integer)
+    compression = db.Column(db.Integer, default=0)
+    eq = db.Column(db.Integer, default=0)
+    deesser = db.Column(db.Integer, default=0)
 
     '''
     Wav File Representation

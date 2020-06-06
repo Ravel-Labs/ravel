@@ -43,7 +43,6 @@ def create_trackout():
             user_id=user_id,
             name=name,
             type=type_of_track,
-            settings=settings,
 
             # TODO: Make these effects create new models rather than set to 
             # default of 1

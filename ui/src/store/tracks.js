@@ -150,6 +150,18 @@ const tracks = {
           commit('DELETE_TRACK_FAILURE', err)
           console.error('failed to delete track')
         }
+      },
+      async uploadFile ({ commit, state }, formData) {
+        try {
+          let { data } = await api.post('//TODO')
+          commit('UPLOAD_SUCCESS', data)
+        } catch (err) {
+          if (err.response) {
+            console.log('error response: ', err.response)
+          }
+          console.error('error uploading file: ', err)
+          throw new Error(err)
+        }
       }
     }
 }
