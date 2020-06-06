@@ -139,17 +139,17 @@ def process_track(id):
 
         trackouts = raw_track.trackouts.all()
         print(f'len trackouts: {len(trackouts)}')
-        trackouts_equalization = [track_out for track_out in trackouts]
-        print(type(trackouts_equalization))
+        trackouts_binaries = [track_out.file_binary for track_out in trackouts]
+        print(type(trackouts_binaries[0]))
         # trackout_binarys = [track_out.file_binary for track_out in trackouts]
         
         # if there is equalization to the track then apply it
         # TODO Any effect that is being applied
         # Based on the data we are passing in
-        for trackout in trackouts_equalization:
+        for trackout in trackouts:
             print(type(set([trackout])))
             # Minimum number of trackouts? Can a track be analysed against itself? If not then what?
-            remaining_track_outs = set(trackouts_equalization)-set([trackout])
+            remaining_track_outs = set(trackouts_binaries)-set([trackout])
 
             print(f"Got to the for loop {len(remaining_track_outs)}")
             wavfile = trackout.file_binary
@@ -166,7 +166,7 @@ def process_track(id):
                 "filter_type": "",
                 "gain": 1
             }
-            eq_arguments = (wavfile, remaining_track_outs, eq_params, trackout.id)
+            eq_arguments = (wavfile, remaining_track_outs, trackouts_binaries, eq_params, trackout.id)
             processing_job = Job(eq_function, eq_arguments)
             print(f'processing job:  {processing_job}')
 
@@ -208,22 +208,22 @@ def get_trackouts_by_track_id(id):
         abort(500, e)
 
 
-def process_and_save(mainWavfile, listOfWavfiles, eq_params, trackout_id):
-
-    processor = Processor(mainWavfile, listOfWavfiles)
+def process_and_save(mainWavfile, listOfWavfiles, trackouts_binaries, eq_params, trackout_id):
+    
+    processor = Processor(mainWavfile, listOfWavfiles, trackouts_binaries)
     trackout = TrackOut.query.get(trackout_id)
-    eq_wav = processor.equalize()
-    print(f"equalized complete: {bool(eq_wav)}")
-    raw_equalizer = Equalizer(
-        trackout_id=trackout_id,
-        freq=eq_params["freq"],
-        filter_type=eq_params["filter_type"],
-        gain=eq_params["gain"],
-        equalized_binary=eq_wav,
-        eq=trackout
-    )
-# TODO try batching db writes
-    db.session.add(raw_equalizer)
-    db.session.commit()
+#     eq_wav = processor.equalize()
+#     print(f"equalized complete: {bool(eq_wav)}")
+#     raw_equalizer = Equalizer(
+#         trackout_id=trackout_id,
+#         freq=eq_params["freq"],
+#         filter_type=eq_params["filter_type"],
+#         gain=eq_params["gain"],
+#         equalized_binary=eq_wav,
+#         eq=trackout
+#     )
+# # TODO try batching db writes
+#     db.session.add(raw_equalizer)
+#     db.session.commit()
 
-    # eq_wav = processor.compress()
+    eq_wav = processor.deesser()

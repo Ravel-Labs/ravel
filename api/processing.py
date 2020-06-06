@@ -14,9 +14,10 @@ from ravel.ravellib.lib.effects import EQSignal, CompressSignal, ReverbSignal,\
 
 
 class Processor():
-    def __init__(self, wavfile, listOfWavfiles):
+    def __init__(self, wavfile, listOfWavfiles, trackouts_binaries):
         print(f'Creating Processor with wavfile')
         self.wavfile = wavfile
+        self.all_trackout_binaries = trackouts_binaries
         self.listOfWavfiles = listOfWavfiles
         self.trackouts = []
         self.signal_aggregator = []
@@ -54,9 +55,20 @@ class Processor():
             print(f"finished processing None wavfile.{self.wavefile}")
             pass
 
-        co = Compress(self.wavfile)
+        co = Compress(self.wavfile, self.signal_aggregator, self.all_trackout_binaries)
         processed = co.compress()
         print(f"Successful compression: \n\t{processed}")
+        return processed
+
+    def deesser(self):
+        print("Processor compressor")
+        if self.wavfile is None:
+            print(f"finished processing None wavfile.{self.wavefile}")
+            pass
+
+        de = DeEsser(self.wavfile)
+        processed = de.deess()
+        print(f"Successful deesser: \n\t{processed}")
         return processed
 
     def limit(self):
@@ -118,11 +130,19 @@ class Compress():
     Creates a new Compressor channel
     """
 
-    def __init__(self, wavfile):
+    def __init__(self, wavfile, signal_aggregator, all_trackout_binaries):
         self.wavfile = wavfile
-        # self.signal_aggregator = signal_aggregator
+        self.all_trackout_binaries = all_trackout_binaries
+        self.signal_aggregator = signal_aggregator
         print("Creating a new Compressor: ", self)
-        pass
+
+    def create_npa_from_wav(self, wav_file):
+        load_bytes = BytesIO(wav_file)
+        load_bytes.seek(0)
+        picked_obj = pickle.dumps(load_bytes)
+        loaded_np = np.frombuffer(picked_obj)
+        print(f"what is the type return {type(loaded_np)}")
+        return loaded_np
 
     def compress(self):
         """
@@ -133,10 +153,10 @@ class Compress():
         the trackouts in the track to make an accurate guess.
         """
 
-        trackouts = []
-        comp_signals = []
-        comp_lfe = []
-        comp_crest = []
+        trackouts = self.all_trackout_binaries
+        comp_signals = [] # All the other trackouts in a track np array of signals
+        comp_lfe = [] # Convenience methods
+        comp_crest = [] # 
         processed_signals = []
 
         # turn waveile into numpy array
@@ -148,13 +168,15 @@ class Compress():
 
         # do this for each track out in a track
         for track in trackouts:
-            comp_signal = CompressSignal(
-                "", numpy_array, 1024, 1024, 1024,
-                -12, audio_type, 0.2, 1, 1000,
+            # Convert wav binary to np_array
+            np_arr = self.create_npa_from_wav(track)
+            cp = CompressSignal(
+                np_arr, 1024, 1024, 123,
+                200, audio_type, 0.2, 1, 1000,
                 2, 0.08, 1.0)
 
-            comp_signals.append(comp_signal)
-            comp_params = comp_signal.comp_params()
+            comp_signals.append(cp)
+            comp_params = cp.comp_params()
             # push lfe and crest factor for each track into comp_lfe and
             # comp_crest in order
 
@@ -198,9 +220,18 @@ class Reverb():
 
 
 class DeEsser():
-    def __init__(self):
+    def __init__(self, wavfile):
+        self.wavfile = wavfile
         print("creating new DeEsser: ", self)
         pass
+
+    def create_npa_from_wav(self, wav_file):
+        load_bytes = BytesIO(wav_file)
+        load_bytes.seek(0)
+        picked_obj = pickle.dumps(load_bytes)
+        loaded_np = np.frombuffer(picked_obj)
+        print(f"what is the type return {type(loaded_np)}")
+        return loaded_np
 
     def deess(self):
         # critical bands are the frequencies at which the deesser looks at to
@@ -213,11 +244,11 @@ class DeEsser():
         c = 0.08
 
         # get numpy array from wavefile
-        numpy_array = []
+        numpy_array = self.create_npa_from_wav(self.wavfile)
 
         # audio type is the track type
         audio_type = "vocal"
-        sig = DeEsserSignal("", numpy_array, 256, 256, 256, -12, audio_type,
+        sig = DeEsserSignal(numpy_array, 256, 256, 256, -12, audio_type,
                             critical_bands, c, 1.2, 0.65)
 
         sharpness = sig.compute_sharpness()
@@ -238,7 +269,7 @@ class Handler():
         creates a new builder
         """
         self._builder = None
-        self._builder = Processor(None, None)
+        self._builder = Processor(None, None, None)
         print("assigned builder: ", self._builder)
         pass
 
