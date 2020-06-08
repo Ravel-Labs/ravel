@@ -252,7 +252,7 @@ def get_eq_results_by_trackout_id(id):
 
         for raw_trackout in raw_trackouts:
             '''
-            trackout
+            trackout:
                 @methods
                     def eq
                     def de

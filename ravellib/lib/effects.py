@@ -312,11 +312,14 @@ class DeEsserSignal(Signal):
     def deesser(self, gain):
         y_out = np.zeros(self.signal.shape)
         frame_sig = librosa.util.frame(self.signal, frame_length=self.n_fft, hop_length=self.hop_length)
+        '''
+            M is the number of time frames. It needs to remain flexible based on the length of song.
+            M will be an integer that depends on how many time frames an audio signal has.
+        '''
         M, N = frame_sig.shape[0], frame_sig.shape[1]
         # fix padding that makes these dimensions not always aligned via stft
         # quick fix is a truncation of array 
         y = np.zeros((M, N))
-        print(f"hello M {M} {type(M)}")
         for m in range(9):
             print(m)
             print(len(gain))
