@@ -6,8 +6,8 @@
             </b-navbar-item>
         </template>
         <template slot="start">
-            <b-navbar-item v-if="token">
-              <a href="#" router-link :to="{name: 'tracks'}">
+            <b-navbar-item tag="router-link" to="/tracks" v-if="token">
+              <a href="">
                 Tracks
               </a>
             </b-navbar-item>
@@ -41,9 +41,6 @@ import router from '@/router'
 
 export default {
     name: 'Navbar',
-    data () {
-      return {}
-    },
     computed: {
       ...mapState({
         user: state => state.auth.user,
@@ -55,16 +52,16 @@ export default {
         this.$store.dispatch('auth/logout')
         .then((data) => {
           this.$buefy.toast.open({
-            message: 'Logged in.',
-            type: 'is-success'
+            message: 'Logged out.',
+            type: 'is-info'
           })
-          this.$router.push('/login')
+          this.$router.push({ name: 'login' })
         })
         .catch((err) => {
           console.error(err)
           this.$buefy.toast.open({
-            message: `Logged out.`,
-            type: 'is-success'
+            message: `There was an error.`,
+            type: 'is-danger'
           })
         })
       }

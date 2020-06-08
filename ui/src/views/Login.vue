@@ -71,6 +71,12 @@ export default {
           message: 'Logged in.',
           type: 'is-success'
         })
+
+        return data
+      })
+      .then((data) => {
+        router.push({ name: 'tracks' })
+        this.$store.dispatch('auth/check')
       })
     }
   }

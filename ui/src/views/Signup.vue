@@ -56,13 +56,19 @@ export default {
     ])
   },
   handleSignup(user) {
-    signup(user)
+    this.$store.dispatch('auth/signup', user)
     .then((data) => {
       this.$buefy.toast.open({
         message: 'You\'re ready to go!',
         type: 'is-success'
       }) 
-    }).catch((err) => {
+
+      this.$store.dispatch('auth/login')
+      .then((data) => {
+        router.push({ name: 'tracks' })
+      })
+    })
+    .catch((err) => {
       console.error(err)
       this.$buefy.toast.open({
         message: `Something went wrong.`,

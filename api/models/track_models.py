@@ -44,6 +44,7 @@ class TrackOut(db.Model):
     '''
     file_binary = db.Column(db.LargeBinary)
     file_hash = db.Column(db.LargeBinary, unique=True)
+    wavefile = db.Column(db.Integer)
 
     def to_dict(self):
         user = {

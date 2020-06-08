@@ -63,15 +63,16 @@ const auth = {
     },
     'CHECK_FAILURE' (state, error) {
       state.token = ''
+      state.user = {}
       state.error = error
     }
   },
   getters: {
-    token: state => state.token,
+    token: () => ls.getItem('token'),
     user: state => state.user
   },
   actions: {
-    async login ({ commit, state }, user) {
+    async login ({ commit }, user) {
       try {
         commit('LOGIN_REQUEST', user)
         let { data } = await API().post('/auth/login', {
@@ -80,29 +81,28 @@ const auth = {
         })
         commit('LOGIN_SUCCESS', data['access_token'])
         commit('SET_USER', user)
-        router.push({ name: 'tracks' })
       } catch (error) {
         commit('LOGIN_FAILURE', error)
       }
     },
-    async logout ({ commit, state}) {
+    async logout ({ commit }) {
       try {
         commit('LOGOUT_SUCCESS')
-        // router.push({ name: 'login' })
+        router.push({ name: 'login' })
+        location.reload()
       } catch (error) {
         commit('LOGOUT_FAILURE', error)
       }
     },
-    async signup ({ commit, state, dispatch }, user) {
+    async signup ({ commit }, user) {
       try {
         commit('SIGNUP_REQUEST')
-        let { data } = await API().post('/auth/signup', {
+        await API().post('/auth/signup', {
           email: user.email,
           password: user.password,
           name: user.name
         })
-        commit('SIGNUP_SUCCESS', user)
-        dispatch('login', user)
+        commit('SIGNUP_SUCCESS')
       } catch (error) {
         commit('SIGNUP_FAILURE', error)
       }
@@ -110,20 +110,19 @@ const auth = {
     async check ({ commit, dispatch }) {
       try {
         let { data } = await API().get('/auth/check')
-        commit('CHECK_SUCCESS')
+        commit('CHECK_SUCCESS', data)
       } catch (error) {
-        if (error === 'Request failed with status code 401') {
+        if (error === "Request failed with status code 401") {
           console.log('failed with 401 error: ', error)
           commit('LOGOUT_REQUEST')
           commit('LOGOUT_SUCCESS')
-          // router.push({ name: 'login' })
-        }
-        if (error === 'Request failed with status code 405') {
-          commit('LOGIN_FAILURE', error)
         } else {
-          console.log('general auth error: ', error)
-          dispatch('logout')
+          console.log('general authentication error: ', error)
+          throw new Error(error)
         }
+
+        dispatch('CHECK_FAILURE', error)
+        return error
       }
     }
   }

@@ -69,14 +69,11 @@ const router = new Router({
 })
 
 router.beforeEach((to, from, next) => {
-  const authtoken = store.getters['auth/token']
-  store.dispatch('auth/check', router)
-  if (to.name === 'login') {
-    if (authtoken) {
-      router.push('tracks')
-    }
-  }
+  console.log('hitting before each')
   if (to.meta.requireAuth) {
+    // NB: Get the authtoken _after_ the requireAuth 
+    // is checked or else there will be async issues.
+    const authtoken = store.getters['auth/token']
     if (!authtoken) {
       router.push('login')
     }
