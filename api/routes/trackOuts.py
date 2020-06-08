@@ -52,7 +52,9 @@ def create_trackout():
 def get_trackouts():
     try:
         track_id = request.args.get('track_id')
+
         print(f'getting trackouts for track id: {track_id}')
+
         # get trackouts by track_id
         if track_id:
             raw_trackouts = TrackOut.query.filter_by(track_id=track_id).all()

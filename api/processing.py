@@ -108,7 +108,7 @@ class Equalize():
         for wav_file in self.listOfWavfiles:
             loaded_np = self.create_npa_from_wav(wav_file)
             _eq = EQSignal(loaded_np, 1024, 1024,
-                      1024, -12, "vocal", 10, 3, -2)
+                           1024, -12, "vocal", 10, 3, -2)
             signals.append(_eq)
 
         '''
