@@ -29,8 +29,8 @@ def create_track():
         info = request.json.get('info')
 
         raw_track = Track(
-            name=name,
             user_id=user_id,
+            name=name,
             artist=artist,
             info=info)
 
