@@ -72,6 +72,11 @@ const tracks = {
       'DELETE_TRACK_FAILURE' (state, error) {
         state.error = error
         state.loading = false
+      },
+      'UPDATE_TRACKOUT_WAV_SUCCESS' (state, data) {
+        state.error = ""
+        state.loading = false
+        console.log('update trackout wav success: ', data)
       }
     },
     actions: {
@@ -151,9 +156,9 @@ const tracks = {
           console.error('failed to delete track')
         }
       },
-      async uploadFile ({ commit, state }, formData) {
+      async uploadFile ({ commit, state }, payload) {
         try {
-          let { data } = await api.post('//TODO')
+          let { data } = await api.post(`/trackouts/wav/${payload.id}`)
           commit('UPLOAD_SUCCESS', data)
         } catch (err) {
           if (err.response) {
@@ -161,6 +166,36 @@ const tracks = {
           }
           console.error('error uploading file: ', err)
           throw new Error(err)
+        }
+      },
+      async createTrackoutWithoutWav ({ commit, state }, trackout) {
+        try {
+          const id = window.localStorage.getItem('user_id')
+          let { data } = await API().post('/trackouts', {
+            // TODO: set these correctly
+            owner_id : id,
+            user_id : id,
+            name : trackout.name,
+            type : trackout.type,
+            settings : {
+              eq: {},
+              compression: {}
+            },
+            wavefile : trackout.wavefile,
+            track_id : trackout.track_id
+          })
+          commit('ADD_TRACKOUT_SUCCESS', data)
+        } catch (err) {
+          console.error(err)
+          throw new Error(err)
+        }
+      },
+      async updateTrackoutWithWav ({ commit, state }, formData) {
+        try {
+          let { data } = await API().put()
+          commit('UPDATE_TRACKOUT_WAV_SUCCESS', data)
+        } catch (err) {
+          console.error('update trackout wav success error: ', err)
         }
       }
     }
