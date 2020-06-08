@@ -118,8 +118,9 @@ const tracks = {
       async getTrackouts({ commit }, trackID) {
         try {
           commit('GET_TRACKOUTS')
-          let { data } = await API().get(`/trackouts`, {
-            track_id: trackID
+          let { data } = await API().get(`/trackouts`, { params: {
+              track_id: trackID
+            }
           })
           commit('GET_TRACKOUTS_SUCCESS', data.payload)
         } catch (err) {
