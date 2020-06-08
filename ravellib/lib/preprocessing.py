@@ -150,8 +150,10 @@ def crest_attack_release(attack_max, release_max, crest_factor_sq):
     release = (2 * release_max) / crest_factor_sq - attack
     return attack, release
 
-def crest_factor(peaks, rms): 
-    crest_factor = np.zeros(rms.shape)
+def crest_factor(audio_signal, peaks):
+    # rms.shape 
+    rms = librosa.feature.rms(audio_signal, frame_length=1024, hop_length=512)
+    crest_factor = np.zeros(rms.shape())
     crest_factor[0] = 0
     crest_factor[1:] = peaks[1:] / rms[1:]
     return np.sqrt(crest_factor)

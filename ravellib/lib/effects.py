@@ -316,7 +316,12 @@ class DeEsserSignal(Signal):
         # fix padding that makes these dimensions not always aligned via stft
         # quick fix is a truncation of array 
         y = np.zeros((M, N))
-        for m in range(M):
+        print(f"hello M {M} {type(M)}")
+        for m in range(9):
+            print(m)
+            print(len(gain))
+            print(len(y))
+            print(len(frame_sig))
             y[m] = gain[m] * frame_sig[m]
         y = y.flatten('F')
         n = y.shape[0]

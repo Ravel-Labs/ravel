@@ -1,6 +1,6 @@
 from io import BytesIO
 from hashlib import md5
-from flask import Blueprint, abort, request
+from flask import Blueprint, abort, request, send_file
 from flask_jwt import jwt_required, current_identity
 from ravel.api import db
 from ravel.api.models.track_models import Track, TrackOut
@@ -226,4 +226,47 @@ def process_and_save(mainWavfile, listOfWavfiles, trackouts_binaries, eq_params,
 #     db.session.add(raw_equalizer)
 #     db.session.commit()
 
+    # eq_wav = processor.compress()
     eq_wav = processor.deesser()
+
+
+# TODO Should be moved into its own blueprint /eq/<track_id>/<trackout_id>  = not totally correct
+@tracks_bp.route(f'{base_tracks_url}/eq/<int:id>', methods={'GET'})
+def get_eq_results_by_trackout_id(id):
+    try:
+        raw_tracks = Track.query.get(id)
+        raw_trackouts = raw_tracks.trackouts.all()
+        # For each raw_trackout lets get their EQ and return them all
+        trackout_eq = dict()
+        '''
+            This dict will contain meta data described below
+            {
+                # TODO Think about adding more meta data so subsuquent calls aren't necessary
+                track_id: String,
+                trackout_id_0: EQ File or Binary,
+                trackout_id_1: EQ File or Binary,
+
+            }
+        '''
+        trackout_eq["track_id"] = id
+
+        for raw_trackout in raw_trackouts:
+            '''
+            trackout
+                @methods
+                    def eq
+                    def de
+                    def comp
+            '''
+            raw_eq = raw_trackout.eq
+            eq_id = raw_eq.id
+            eq_binary = raw_eq.equalized_binary
+            print(type(eq_binary))
+            trackout_eq[eq_id] = eq_binary
+            return send_file(
+                BytesIO(eq_binary),
+                attachment_filename="wavFile.wav",
+                as_attachment=True)
+
+    except Exception as e:
+        abort(500, e)
