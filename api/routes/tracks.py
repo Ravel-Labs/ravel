@@ -2,6 +2,7 @@ from io import BytesIO
 from hashlib import md5
 from flask import Blueprint, abort, request, send_file
 from flask_jwt import jwt_required, current_identity
+from scipy.io.wavfile import write
 from ravel.api import db
 from ravel.api.models.track_models import Track, TrackOut
 from ravel.api.models.track_models import Equalizer
@@ -9,6 +10,7 @@ from ravel.api import ADMINS_FROM_EMAIL_ADDRESS, mail, Q, Job
 from ravel.api.processing import Handler, Processor
 from ravel.api.services.email.email import email_proxy
 from ravel.api.models.apiresponse import APIResponse
+
 import json
 import time
 
@@ -163,7 +165,7 @@ def process_track(id):
             eq_params = {
                 "trackout_id": 1,
                 "freq": "1200",
-                "filter_type": "",
+                "filter_type": 0,
                 "gain": 1
             }
             eq_arguments = (wavfile, remaining_track_outs, trackouts_binaries, eq_params, trackout.id)
@@ -236,6 +238,7 @@ def get_eq_results_by_trackout_id(id):
     try:
         raw_tracks = Track.query.get(id)
         raw_trackouts = raw_tracks.trackouts.all()
+        
         # For each raw_trackout lets get their EQ and return them all
         trackout_eq = dict()
         '''
@@ -245,7 +248,6 @@ def get_eq_results_by_trackout_id(id):
                 track_id: String,
                 trackout_id_0: EQ File or Binary,
                 trackout_id_1: EQ File or Binary,
-
             }
         '''
         trackout_eq["track_id"] = id
@@ -258,13 +260,18 @@ def get_eq_results_by_trackout_id(id):
                     def de
                     def comp
             '''
+            print(f'raw_trackout: {raw_trackout}')
             raw_eq = raw_trackout.eq
             eq_id = raw_eq.id
+            print(f'eq_id: {eq_id}')
             eq_binary = raw_eq.equalized_binary
             print(type(eq_binary))
             trackout_eq[eq_id] = eq_binary
+            samplerate = 44100
+            rendered = write("wavFile.wav", samplerate, eq_binary)
+
             return send_file(
-                BytesIO(eq_binary),
+                rendered,
                 attachment_filename="wavFile.wav",
                 as_attachment=True)
 

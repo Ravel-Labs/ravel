@@ -33,7 +33,7 @@ class Processor():
     def equalize(self):
         print("Processor equalizer")
         if self.wavfile is None:
-            print(f"finished processing None wavfile.{self.wavefile}")
+            print(f"finished processing None wavfile.{self.wavfile}")
             # TODO throw exception here and test this in a try catch
             pass
 
@@ -52,7 +52,7 @@ class Processor():
     def compress(self):
         print("Processor compressor")
         if self.wavfile is None:
-            print(f"finished processing None wavfile.{self.wavefile}")
+            print(f"finished processing None wavfile.{self.wavfile}")
             pass
 
         co = Compress(self.wavfile, self.signal_aggregator, self.all_trackout_binaries)
@@ -63,7 +63,7 @@ class Processor():
     def deesser(self):
         print("Processor compressor")
         if self.wavfile is None:
-            print(f"finished processing None wavfile.{self.wavefile}")
+            print(f"finished processing None wavfile.{self.wavfile}")
             pass
 
         de = Deesser(self.wavfile)
@@ -85,7 +85,7 @@ class Equalize():
     def __init__(self, wavfile, listOfWavfiles):
         self.wavfile = wavfile
         self.listOfWavfiles = listOfWavfiles
-        print(f"type of wavefile:.{type(self.wavfile)}")
+        print(f"type of wavfile:.{type(self.wavfile)}")
         pass
 
     def create_npa_from_wav(self, wav_file):
