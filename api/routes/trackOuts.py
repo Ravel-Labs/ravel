@@ -17,40 +17,22 @@ base_trackouts_url = '/api/trackouts'
 
 
 @trackouts_bp.route(f"{base_trackouts_url}", methods=['POST'])
-@jwt_required()
 def create_trackout():
-    print(f'hit create trackout')
     try:
-        # unique_id = str(uuid.uuid1())
-        # print(type(unique_id))
-        # unique_binary = ''.join(format(ord(i), 'b') for i in unique_id).encode()
-        # print(unique_binary)
-        # print(type(unique_binary))
-        # id_binary_hash = md5(unique_binary).digest()
-        # print(id_binary_hash)
-        user_id = current_identity.id
+        # current_identity.id
+        user_id = 1
+        track_id = request.json.get('track_id')
         type_of_track = request.json.get('type')
         name = request.json.get('name')
         settings = request.json.get('settings')
-        wavfile = request.json.get('wavfile')
-        compression = request.json.get('compression')
-        eq = request.json.get('eq')
-        deesser = request.json.get('deesser')
-        track_id = int(request.json.get('track_id'))
         raw_track = Track.query.get(track_id)
-        print(f"raw tracks {raw_track}")
+        print(f"raw track id: {raw_track.id}")
         raw_trackout = TrackOut(
             user_id=user_id,
+            track_id=track_id,
             name=name,
             type=type_of_track,
-
-            # TODO: Make these effects create new models rather than set to 
-            # default of 1
-
-            wavefile=1,
-            compression=1,
-            eq=1,
-            deesser=1,
+            settings=settings,
             trackouts=raw_track)
         db.session.add(raw_trackout)
         db.session.commit()
@@ -65,13 +47,12 @@ def create_trackout():
     GET all
 '''
 
-
+# TODO params not body
 @trackouts_bp.route(base_trackouts_url, methods={'GET'})
-@jwt_required()
 def get_trackouts():
     try:
         track_id = request.args.get('track_id')
-        print(f'getting trackouts for {track_id}')
+        print(f'getting trackouts for track id: {track_id}')
         # get trackouts by track_id
         if track_id:
             raw_trackouts = TrackOut.query.filter_by(track_id=track_id).all()
@@ -95,7 +76,6 @@ def get_trackouts():
     GET by ID
 '''
 @trackouts_bp.route('%s/<int:id>' % base_trackouts_url, methods={'GET'})
-@jwt_required()
 def get_trackout_by_id(id):
     try:
         raw_trackout = TrackOut.query.get(id)
@@ -112,7 +92,6 @@ def get_trackout_by_id(id):
     DELETE
 '''
 @trackouts_bp.route('%s/<int:id>' % base_trackouts_url, methods={'DELETE'})
-@jwt_required()
 def delete_trackout_by_id(id):
     try:
         raw_trackout = TrackOut.query.get(id)
@@ -136,7 +115,6 @@ def delete_trackout_by_id(id):
 '''
 
 
-@jwt_required()
 @trackouts_bp.route('%s/<int:id>' % base_trackouts_url, methods=['PUT'])
 def update_trackout(id):
     try:
@@ -161,16 +139,10 @@ def update_trackout(id):
 
 
 @trackouts_bp.route('%s/wav/<int:id>' % base_trackouts_url, methods=['PUT'])
-@jwt_required()
 def add_update_wavfile(id):
     try:
         raw_file = request.files['file']
         samplerate, data = sio.wavfile.read(raw_file)
-        print(f"sample rate: {samplerate}")
-        print(type(samplerate))
-        print(type(data.tobytes()))
-
-        # file_binary_hash = md5(data.tobytes()).digest()
         update_request = {
             "file_binary": data.tobytes()
         }

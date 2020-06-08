@@ -15,10 +15,20 @@ class Signal:
         self.window_size = window_size
         self.hop_length = hop_length
         self.signal = signal
+        print(type(signal))
         self.signal_db = librosa.amplitude_to_db(self.signal)
         self.peak = peak
         self.audio_type = audio_type
         self.x_norm = preprocessing.normalize(self.signal, self.peak)
+        print(type(self.n_fft ))
+
+        print(type(self.window_size))
+        print(type(self.n_fft ))
+        print(type(self.hop_length))
+    
+         
+        
+        
         self.fft = np.abs(librosa.core.stft(self.signal, n_fft=self.n_fft, 
                                             win_length=self.window_size, hop_length=self.hop_length))
         self.num_bins = self.fft.shape[0]
@@ -132,9 +142,9 @@ class EQSignal(Signal):
 
 
 class CompressSignal(Signal):
-    def __init__(self, path, signal, n_fft, window_size, hop_length, peak, audio_type, 
+    def __init__(self, signal, n_fft, window_size, hop_length, peak, audio_type, 
                 time_constant, order, cutoff, std, attack_max, release_max):
-        super().__init__(path, signal, n_fft, window_size, hop_length, peak, audio_type)
+        super().__init__(signal, n_fft, window_size, hop_length, peak, audio_type)
         self.time_constant = time_constant
         self.order = order
         self.cutoff = cutoff
@@ -250,9 +260,9 @@ class PanSignal(Signal):
         return np.dstack((left,right))[0]
 
 class DeEsserSignal(Signal):
-    def __init__(self, path, signal, n_fft, window_size, hop_length, peak, audio_type,
+    def __init__(self, signal, n_fft, window_size, hop_length, peak, audio_type,
                 critical_bands, c, sharp_thresh, max_reduction):
-        super().__init__(path, signal, n_fft, window_size, hop_length, peak, audio_type)
+        super().__init__(signal, n_fft, window_size, hop_length, peak, audio_type)
         self.critical_bands = critical_bands
         self.bark_idx = preprocessing.freq_bark_map(self.freqs, self.critical_bands)
         self.c = c
@@ -302,11 +312,19 @@ class DeEsserSignal(Signal):
     def deesser(self, gain):
         y_out = np.zeros(self.signal.shape)
         frame_sig = librosa.util.frame(self.signal, frame_length=self.n_fft, hop_length=self.hop_length)
+        '''
+            M is the number of time frames. It needs to remain flexible based on the length of song.
+            M will be an integer that depends on how many time frames an audio signal has.
+        '''
         M, N = frame_sig.shape[0], frame_sig.shape[1]
         # fix padding that makes these dimensions not always aligned via stft
         # quick fix is a truncation of array 
         y = np.zeros((M, N))
-        for m in range(M):
+        for m in range(9):
+            print(m)
+            print(len(gain))
+            print(len(y))
+            print(len(frame_sig))
             y[m] = gain[m] * frame_sig[m]
         y = y.flatten('F')
         n = y.shape[0]

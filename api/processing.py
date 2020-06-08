@@ -11,12 +11,14 @@ import scipy.io as sio
 # sys.path.append(PWD)
 from ravel.ravellib.lib.effects import EQSignal, CompressSignal, ReverbSignal,\
                                     DeEsserSignal, SignalAggregator
-
+from ravel.ravellib.lib.preprocessing import crest_factor, compute_lfe
 
 class Processor():
-    def __init__(self, wavfile):
-        print(f'Creating Processor with wavfile: {wavfile}')
+    def __init__(self, wavfile, listOfWavfiles, trackouts_binaries):
+        print(f'Creating Processor with wavfile')
         self.wavfile = wavfile
+        self.all_trackout_binaries = trackouts_binaries
+        self.listOfWavfiles = listOfWavfiles
         self.trackouts = []
         self.signal_aggregator = []
         self.compression_params = []
@@ -29,18 +31,46 @@ class Processor():
             self.sample_rate, self.num_signals)
 
     def equalize(self):
-        print("PROCESSING EQUALIZER")
+        print("Processor equalizer")
+        if self.wavfile is None:
+            print(f"finished processing None wavfile.{self.wavefile}")
+            # TODO throw exception here and test this in a try catch
+            pass
+
+        eq = Equalize(self.wavfile, self.listOfWavfiles)
+        processed = eq.equalize()
+        print(f"Successful equalization: \n\t {type(processed)}")
+        return processed.tobytes()
+
+    def create_npa_from_wav(self, wav_file):
+        load_bytes = BytesIO(wav_file.file_binary)
+        load_bytes.seek(0)
+        picked_obj = pickle.dumps(load_bytes)
+        loaded_np = np.frombuffer(picked_obj)
+        return loaded_np
+
+    def compress(self):
+        print("Processor compressor")
         if self.wavfile is None:
             print(f"finished processing None wavfile.{self.wavefile}")
             pass
 
-        eq = Equalize(self.wavfile)
-        processed = eq.equalize()
-        return processed
+        co = Compress(self.wavfile, self.signal_aggregator, self.all_trackout_binaries)
+        processed = co.compress()
+        print(f"Successful compression of type {type(processed)}: \n\t{processed}")
+        return processed.tobytes()
 
-    def compress(self):
+    def deesser(self):
         print("Processor compressor")
-        pass
+        if self.wavfile is None:
+            print(f"finished processing None wavfile.{self.wavefile}")
+            pass
+
+        de = Deesser(self.wavfile)
+        processed = de.deess()
+        print(f"Successful deesser of type {type(processed)}: \n\t{processed}")
+
+        return processed.tobytes()
 
     def limit(self):
         print("Processor limiter")
@@ -52,48 +82,55 @@ class Equalize():
     Creates a new Equalizer
     """
 
-    def __init__(self, wavfile):
+    def __init__(self, wavfile, listOfWavfiles):
         self.wavfile = wavfile
+        self.listOfWavfiles = listOfWavfiles
         print(f"type of wavefile:.{type(self.wavfile)}")
         pass
 
-    def equalize(self):
-        print(f'Equalizer.equalize() hit')
-        # REF: https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.io.wavfile.read.html
-        load_bytes = BytesIO(self.wavfile)
+    def create_npa_from_wav(self, wav_file):
+        load_bytes = BytesIO(wav_file)
         load_bytes.seek(0)
-        print(f"Type {type(self.wavfile)} ")
         picked_obj = pickle.dumps(load_bytes)
         loaded_np = np.frombuffer(picked_obj)
-        print(loaded_np)
-        # TODO: signals is a list of all trackouts for this track.
+        print(f"what is the type return {type(loaded_np)}")
+        return loaded_np
+
+    def equalize(self):
+        print(f'Equalizer.equalize()')
+        # REF: https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.io.wavfile.read.html
+        main_wav_np = self.create_npa_from_wav(self.wavfile)
+        # List of eq created from the rest of the trackout set excluding one trackout
+        signals = list()
+        print(f"Creating signals npArray for {len(self.listOfWavfiles)}s")
+        if len(self.listOfWavfiles) == 0:
+            print("This will break things?")
+        for wav_file in self.listOfWavfiles:
+            loaded_np = self.create_npa_from_wav(wav_file)
+            _eq = EQSignal(loaded_np, 1024, 1024,
+                      1024, -12, "vocal", 10, 3, -2)
+            signals.append(_eq)
+
         '''
             @parameters
                 1: numpy array
                 3: more to be desired...
         '''
-
-        eq = EQSignal(loaded_np, 1024, 1024,
+        eq = EQSignal(main_wav_np, 1024, 1024,
                       1024, -12, "vocal", 10, 3, -2)
-
         print(f'eq signal: {eq}')
-        # get all other trackouts for a track
-        # signals is all of the other trackouts signals (aka numpy arrays)
-        # get eq params for all trackout signals for this track
-        params = eq.eq_params([eq])
 
+        # signals is all of the other trackouts signals (aka numpy arrays)
+        params = eq.eq_params(signals)
         print(f'params: {params}')
+
         # equalize the track
         equalized = eq.equalization(params, 2)
-        print(f'equalized: {equalized}')
+        print(f'equalized: {equalized}\ntype: {type(equalized)}')
 
-        # write it back to a wavefile
         # REF: https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.write.html
-        eqwave = []
-
-        # return the equalized trackprint()
-        print(f'returning eqwave: {eqwave}')
-        return eqwave
+        print(f'returning eqwave of type {type(equalized)}: {equalized}')
+        return equalized
 
 
 class Compress():
@@ -101,11 +138,19 @@ class Compress():
     Creates a new Compressor channel
     """
 
-    def __init__(self, wavfile, signal_aggregator):
+    def __init__(self, wavfile, signal_aggregator, all_trackout_binaries):
         self.wavfile = wavfile
+        self.all_trackout_binaries = all_trackout_binaries
         self.signal_aggregator = signal_aggregator
         print("Creating a new Compressor: ", self)
-        pass
+
+    def create_npa_from_wav(self, wav_file):
+        load_bytes = BytesIO(wav_file)
+        load_bytes.seek(0)
+        picked_obj = pickle.dumps(load_bytes)
+        loaded_np = np.frombuffer(picked_obj)
+        print(f"what is the type return {type(loaded_np)}")
+        return loaded_np
 
     def compress(self):
         """
@@ -116,10 +161,10 @@ class Compress():
         the trackouts in the track to make an accurate guess.
         """
 
-        trackouts = []
-        comp_signals = []
-        comp_lfe = []
-        comp_crest = []
+        trackouts = self.all_trackout_binaries
+        comp_signals = [] # All the other trackouts in a track np array of signals
+        comp_lfe = [] # Convenience methods
+        comp_crest = [] # 
         processed_signals = []
 
         # turn waveile into numpy array
@@ -131,15 +176,22 @@ class Compress():
 
         # do this for each track out in a track
         for track in trackouts:
-            comp_signal = CompressSignal(
-                "", numpy_array, 1024, 1024, 1024,
-                -12, audio_type, 0.2, 1, 1000,
+            # Convert wav binary to np_array
+            np_arr = self.create_npa_from_wav(track)
+            cp = CompressSignal(
+                np_arr, 1024, 1024, 123,
+                200, audio_type, 0.2, 1, 1000,
                 2, 0.08, 1.0)
 
-            comp_signals.append(comp_signal)
-            comp_params = comp_signal.comp_params()
+            cp_crest_factor = cp.crest_factor
+            cp_lfe = cp.lfe
+            comp_crest.append(cp_crest_factor)
+            comp_lfe.append(cp_lfe)
+            cfa = self.signal_aggregator.cfa(comp_crest)
+            lfa = self.signal_aggregator.lfa(comp_lfe)
+            comp_params = cp.comp_params(cfa=cfa, lfa=lfa)
             # push lfe and crest factor for each track into comp_lfe and
-            # comp_crest in order
+            # comp_crest in order?
 
         num_signals = len(trackouts)
 
@@ -154,7 +206,7 @@ class Compress():
             cp = comp_signals[i].comp_params(cfa, lfa)
             compressed = comp_signals[i].compression(cp)
             processed_signals.append(compressed)
-
+        print(f"WOOT {processed_signals}")
         return processed_signals
 
 
@@ -180,10 +232,19 @@ class Reverb():
         return processed
 
 
-class DeEsser():
-    def __init__(self):
+class Deesser():
+    def __init__(self, wavfile):
+        self.wavfile = wavfile
         print("creating new DeEsser: ", self)
         pass
+
+    def create_npa_from_wav(self, wav_file):
+        load_bytes = BytesIO(wav_file)
+        load_bytes.seek(0)
+        picked_obj = pickle.dumps(load_bytes)
+        loaded_np = np.frombuffer(picked_obj)
+        print(f"what is the type return {type(loaded_np)}")
+        return loaded_np
 
     def deess(self):
         # critical bands are the frequencies at which the deesser looks at to
@@ -196,11 +257,11 @@ class DeEsser():
         c = 0.08
 
         # get numpy array from wavefile
-        numpy_array = []
+        numpy_array = self.create_npa_from_wav(self.wavfile)
 
         # audio type is the track type
         audio_type = "vocal"
-        sig = DeEsserSignal("", numpy_array, 256, 256, 256, -12, audio_type,
+        sig = DeEsserSignal(numpy_array, 256, 256, 256, -12, audio_type,
                             critical_bands, c, 1.2, 0.65)
 
         sharpness = sig.compute_sharpness()
@@ -221,7 +282,7 @@ class Handler():
         creates a new builder
         """
         self._builder = None
-        self._builder = Processor(None)
+        self._builder = Processor(None, None, None)
         print("assigned builder: ", self._builder)
         pass
 

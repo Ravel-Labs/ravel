@@ -1,10 +1,10 @@
 from io import BytesIO
 from hashlib import md5
-from flask import Blueprint, abort, request
+from flask import Blueprint, abort, request, send_file
 from flask_jwt import jwt_required, current_identity
 from ravel.api import db
 from ravel.api.models.track_models import Track, TrackOut
-from ravel.api.models.eq import Equalizer
+from ravel.api.models.track_models import Equalizer
 from ravel.api import ADMINS_FROM_EMAIL_ADDRESS, mail, Q, Job
 from ravel.api.processing import Handler, Processor
 from ravel.api.services.email.email import email_proxy
@@ -29,8 +29,8 @@ def create_track():
         info = request.json.get('info')
 
         raw_track = Track(
-            name=name,
             user_id=user_id,
+            name=name,
             artist=artist,
             info=info)
 
@@ -139,34 +139,41 @@ def process_track(id):
 
         trackouts = raw_track.trackouts.all()
         print(f'len trackouts: {len(trackouts)}')
-        trackouts_equalization = [track_out for track_out in trackouts]
-        trackout_binarys = [track_out.file_binary for track_out in trackouts]
+        trackouts_binaries = [track_out.file_binary for track_out in trackouts]
+        print(type(trackouts_binaries[0]))
+        # trackout_binarys = [track_out.file_binary for track_out in trackouts]
         
         # if there is equalization to the track then apply it
         # TODO Any effect that is being applied
         # Based on the data we are passing in
-        for trackout in trackouts_equalization:
-            print("Got to the for loop")
+        for trackout in trackouts:
+            print(type(set([trackout])))
+            # Minimum number of trackouts? Can a track be analysed against itself? If not then what?
+            remaining_track_outs = set(trackouts_binaries)-set([trackout])
+
+            print(f"Got to the for loop {len(remaining_track_outs)}")
             wavfile = trackout.file_binary
-            eq_function = equalize_and_save
+            eq_function = process_and_save
 
             # TODO: These params should come from the request that's updating
             # the track.
+            '''
+                Equalize each trackout A in a Set against the subset (totalSet - A)
+            '''
             eq_params = {
                 "trackout_id": 1,
                 "freq": "1200",
                 "filter_type": "",
                 "gain": 1
             }
-            
-            eq_arguments = (wavfile, eq_params, trackout.id)
+            eq_arguments = (wavfile, remaining_track_outs, trackouts_binaries, eq_params, trackout.id)
             processing_job = Job(eq_function, eq_arguments)
-            print(f'processing job: ', {processing_job})
+            print(f'processing job:  {processing_job}')
 
             # TODO: needs to resolve the wavfile ID of the processing job
             # so that it can be updated in the database for the trackout
             resolved = Q.put(processing_job)
-            print(f'resolved: ', {resolved})
+            print(f'resolved: ', {type(resolved)})
 
             # update database to match records
             # db.session.query(Track).filter_by(id=id).update(request.json)
@@ -201,29 +208,65 @@ def get_trackouts_by_track_id(id):
         abort(500, e)
 
 
-def equalize_and_save(wavfile, eq_params, trackout_id):
-    # create new processor for this equalizer
-    processor = Processor(wavfile)
+def process_and_save(mainWavfile, listOfWavfiles, trackouts_binaries, eq_params, trackout_id):
+    
+    processor = Processor(mainWavfile, listOfWavfiles, trackouts_binaries)
+    trackout = TrackOut.query.get(trackout_id)
+#     eq_wav = processor.equalize()
+#     print(f"equalized complete: {bool(eq_wav)}")
+#     raw_equalizer = Equalizer(
+#         trackout_id=trackout_id,
+#         freq=eq_params["freq"],
+#         filter_type=eq_params["filter_type"],
+#         gain=eq_params["gain"],
+#         equalized_binary=eq_wav,
+#         eq=trackout
+#     )
+# # TODO try batching db writes
+#     db.session.add(raw_equalizer)
+#     db.session.commit()
 
-    # create a new eq model to save settings against
-    eq = Equalizer(
-        trackout_id=trackout_id,
-        freq=eq_params["freq"],
-        filter_type=eq_params["filter_type"],
-        gain=eq_params["gain"]
-    )
-    db.session.add(eq)
-    db.session.commit()
+    # eq_wav = processor.compress()
+    eq_wav = processor.deesser()
 
-    print("eq created: ", eq.id)
 
-    # update trackout to track new settings
-    trackout = db.session.query(TrackOut).filter_by(id=trackout_id)
-    trackout.eq = eq.id
-    db.session.commit()
-    print("updated trackout: ", trackout)
+# TODO Should be moved into its own blueprint /eq/<track_id>/<trackout_id>  = not totally correct
+@tracks_bp.route(f'{base_tracks_url}/eq/<int:id>', methods={'GET'})
+def get_eq_results_by_trackout_id(id):
+    try:
+        raw_tracks = Track.query.get(id)
+        raw_trackouts = raw_tracks.trackouts.all()
+        # For each raw_trackout lets get their EQ and return them all
+        trackout_eq = dict()
+        '''
+            This dict will contain meta data described below
+            {
+                # TODO Think about adding more meta data so subsuquent calls aren't necessary
+                track_id: String,
+                trackout_id_0: EQ File or Binary,
+                trackout_id_1: EQ File or Binary,
 
-    processor.equalize()
-    # declare the eq func with eq params
-    # save eq params to db as new EQ model and update track info
-    pass
+            }
+        '''
+        trackout_eq["track_id"] = id
+
+        for raw_trackout in raw_trackouts:
+            '''
+            trackout:
+                @methods
+                    def eq
+                    def de
+                    def comp
+            '''
+            raw_eq = raw_trackout.eq
+            eq_id = raw_eq.id
+            eq_binary = raw_eq.equalized_binary
+            print(type(eq_binary))
+            trackout_eq[eq_id] = eq_binary
+            return send_file(
+                BytesIO(eq_binary),
+                attachment_filename="wavFile.wav",
+                as_attachment=True)
+
+    except Exception as e:
+        abort(500, e)
