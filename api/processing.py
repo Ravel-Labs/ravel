@@ -30,18 +30,6 @@ class Processor():
         self.signal_aggregator = SignalAggregator(
             self.sample_rate, self.num_signals)
 
-    def equalize(self):
-        print("Processor equalizer")
-        if self.wavfile is None:
-            print(f"finished processing None wavfile.{self.wavfile}")
-            # TODO throw exception here and test this in a try catch
-            pass
-
-        eq = Equalize(self.wavfile, self.listOfWavfiles)
-        processed = eq.equalize()
-        print(f"Successful equalization: \n\t {type(processed)}")
-        return processed.tobytes()
-
     def create_npa_from_wav(self, wav_file):
         load_bytes = BytesIO(wav_file.file_binary)
         load_bytes.seek(0)
@@ -49,28 +37,23 @@ class Processor():
         loaded_np = np.frombuffer(picked_obj)
         return loaded_np
 
-    def compress(self):
-        print("Processor compressor")
-        if self.wavfile is None:
-            print(f"finished processing None wavfile.{self.wavfile}")
-            pass
+    def equalize(self):
+        eq = Equalize(self.wavfile, self.listOfWavfiles)
+        processed = eq.equalize()
+        print(f"Successful equalization: \n\t {type(processed)}")
+        return processed
 
+    def compress(self):
         co = Compress(self.wavfile, self.signal_aggregator, self.all_trackout_binaries)
         processed = co.compress()
         print(f"Successful compression of type {type(processed)}: \n\t{processed}")
-        return processed.tobytes()
+        return processed
 
     def deesser(self):
-        print("Processor compressor")
-        if self.wavfile is None:
-            print(f"finished processing None wavfile.{self.wavfile}")
-            pass
-
         de = Deesser(self.wavfile)
         processed = de.deess()
         print(f"Successful deesser of type {type(processed)}: \n\t{processed}")
-
-        return processed.tobytes()
+        return processed
 
     def limit(self):
         print("Processor limiter")
@@ -79,14 +62,12 @@ class Processor():
 
 class Equalize():
     """
-    Creates a new Equalizer
+        Please define Equalize
     """
 
-    def __init__(self, wavfile, listOfWavfiles):
-        self.wavfile = wavfile
-        self.listOfWavfiles = listOfWavfiles
-        print(f"type of wavfile:.{type(self.wavfile)}")
-        pass
+    def __init__(self, main_trackout, other_trackouts):
+        self.wavfile = main_trackout
+        self.listOfWavfiles = other_trackouts
 
     def create_npa_from_wav(self, wav_file):
         load_bytes = BytesIO(wav_file)
@@ -99,14 +80,13 @@ class Equalize():
     def equalize(self):
         print(f'Equalizer.equalize()')
         # REF: https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.io.wavfile.read.html
-        main_wav_np = self.create_npa_from_wav(self.wavfile)
+        main_wav_np = self.wavfile
         # List of eq created from the rest of the trackout set excluding one trackout
         signals = list()
         print(f"Creating signals npArray for {len(self.listOfWavfiles)}s")
         if len(self.listOfWavfiles) == 0:
             print("This will break things?")
-        for wav_file in self.listOfWavfiles:
-            loaded_np = self.create_npa_from_wav(wav_file)
+        for loaded_np in self.listOfWavfiles:
             _eq = EQSignal(loaded_np, 1024, 1024,
                       1024, -12, "vocal", 10, 3, -2)
             signals.append(_eq)

@@ -21,7 +21,7 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"  # url
     app.config["JWT_AUTH_URL_RULE"] = "/api/auth/login"
     app.config["JWT_SECRET_KEY"] = "thisshouldbesetforproduction"
-    app.config['SQLALCHEMY_ECHO'] = True
+    # app.config['SQLALCHEMY_ECHO'] = True
     # Email configuration
     app.config.update(dict(
         DEBUG=True,

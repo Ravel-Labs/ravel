@@ -172,27 +172,22 @@ def add_update_wavfile(id):
 @trackouts_bp.route('%s/wav/<int:id>' % base_trackouts_url, methods=['GET'])
 def get_wav_from_trackout(id):
     try:
-        print("ENTER")
+        # Get wav path from TrackOut then call firebase service
         raw_trackout = TrackOut.query.get(id)
         file_name = f"{raw_trackout.name}.wav"
         firestore_path = raw_trackout.path
         retreive_from_file_store(firestore_path)
-        print("OK")
-        payload = {
-            "action": "update",
-            "table": "trackout",
-            "id": id
-        }
+
+        # Get file saved to disk and convert into BytesIO
         sam_rate, data = sio.wavfile.read("file_name.wav")
-        print(data)
-        print(type(data.tobytes()))
-        returnable = BytesIO(data.tobytes())
+        byte_io = BytesIO(bytes())
+        write(byte_io, sam_rate, data)
         file = send_file(
-            returnable,
+            byte_io,
             attachment_filename=file_name,
             as_attachment=True)
+        # Remove file from disk
         remove("file_name.wav")
-        print(type(file))
         return file
     except Exception as e:
         abort(500, e)

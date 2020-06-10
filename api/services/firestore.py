@@ -25,13 +25,13 @@ def publish_to_file_store(path, file):
         raise Exception(f"{e}")
 
 
-def retreive_from_file_store(path):
+def retreive_from_file_store(path, index=""):
     try:
-        print(path)
         firebase = pyrebase.initialize_app(firebaseConfig)
         storage = firebase.storage()
+        print(path)
         # Download wav to file system
-        return storage.child(path).download("file_name.wav")
-        print("n ")
+        local_file_name = f"trackout_{index}.wav"
+        return storage.child(path).download(local_file_name)
     except Exception as e:
         raise Exception(f"Firebase: {e}")
