@@ -61,19 +61,19 @@ class TrackOut(db.Model):
     '''
     Wav File Representation
     '''
-    file_binary = db.Column(db.LargeBinary)
+    path = db.Column(db.String(1000))
     file_hash = db.Column(db.LargeBinary, unique=True)
 
     def to_dict(self):
-        user = {
+        trackout = {
             "id": self.id,
             "user_id": self.user_id,
             "track_id": self.track_id,
             "created_at": self.created_at,
             "name": self.name,
             "type": self.type,
-            "settings": self.settings,
-            # "file_hash": self.file_hash.decode('utf-8')
+            "path": self.path,
+            "settings": self.settings
         }
         if not user.get("id"):
             del user['id']

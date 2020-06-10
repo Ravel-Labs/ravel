@@ -2,7 +2,7 @@ from io import BytesIO
 from hashlib import md5
 from flask import Blueprint, abort, request, send_file
 from flask_jwt import jwt_required, current_identity
-from scipy.io.wavfile import write
+from scipy.io.wavfile import write, read
 from ravel.api import db
 from ravel.api.models.track_models import Track, TrackOut
 from ravel.api.models.track_models import Equalizer
@@ -268,12 +268,16 @@ def get_eq_results_by_trackout_id(id):
             print(type(eq_binary))
             trackout_eq[eq_id] = eq_binary
             samplerate = 44100
-            rendered = write("wavFile.wav", samplerate, eq_binary)
-
             return send_file(
-                rendered,
+                BytesIO(eq_binary),
                 attachment_filename="wavFile.wav",
                 as_attachment=True)
+            # rendered = write("wavFile.wav", samplerate, eq_binary)
+
+            # return send_file(
+            #     rendered,
+            #     attachment_filename="wavFile.wav",
+            #     as_attachment=True)
 
     except Exception as e:
         abort(500, e)

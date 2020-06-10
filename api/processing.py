@@ -92,7 +92,7 @@ class Equalize():
         load_bytes = BytesIO(wav_file)
         load_bytes.seek(0)
         picked_obj = pickle.dumps(load_bytes)
-        loaded_np = np.frombuffer(picked_obj)
+        loaded_np = np.frombuffer(picked_obj, dtype=np.int32)
         print(f"what is the type return {type(loaded_np)}")
         return loaded_np
 
@@ -240,9 +240,10 @@ class Deesser():
 
     def create_npa_from_wav(self, wav_file):
         load_bytes = BytesIO(wav_file)
+        byte_buffer = load_bytes.getvalue()
         load_bytes.seek(0)
         picked_obj = pickle.dumps(load_bytes)
-        loaded_np = np.frombuffer(picked_obj)
+        loaded_np = np.frombuffer(byte_buffer)#, dtype=np.int32)
         print(f"what is the type return {type(loaded_np)}")
         return loaded_np
 
