@@ -9,6 +9,7 @@
             <p class="subtitle">{{ track.info }}</p>
           </div>
         </div>
+
         <!-- If Empty Trackouts -->
         <div class="tile is-ancestor" v-if="track.trackouts.length < 1">
           <div class="tile is-vertical">
@@ -35,7 +36,6 @@
             </b-button>
           </div>
         </div>
-
 
         <!-- Add Trackout Modal -->
         <div class="modal" v-bind:class="{ 'is-active': addTrackout }">
@@ -144,16 +144,6 @@
                 <br>
             </div>
         </b-collapse>
-        <!-- <div class="container columns is-desktop is-mobile is-centered">
-           <b-field class="file upload-area">
-             <b-upload v-model="file" expanded>
-               <a class="button is-medium is-primary is-fullwidth">
-                 <i class="fas fa-upload upload" aria-hidden="true"></i>
-                 <span>{{ file.name || "Click to upload a trackout"}}</span>
-               </a>
-             </b-upload>
-           </b-field>
-        </div> -->
       </div>
     </div>
     <section>
