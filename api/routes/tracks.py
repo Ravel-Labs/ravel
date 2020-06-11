@@ -4,6 +4,7 @@ from flask import Blueprint, abort, request, send_file
 from flask_jwt import jwt_required, current_identity
 from scipy.io.wavfile import write, read
 from ravel.api import db
+import numpy as np
 from ravel.api.models.track_models import Track, TrackOut
 from ravel.api.models.track_models import Equalizer
 from ravel.api.services.firestore import retreive_from_file_store
@@ -159,10 +160,11 @@ def process_track(id):
         for index, path in enumerate(trackout_paths):
             retreive_from_file_store(path, str(index))
             sam_rate, main_trackout = sio.wavfile.read(f"trackout_{index}.wav")
+            main_trackout = main_trackout.astype(np.float32)
             trackouts_as_numpy.append(main_trackout)
         # for each trackout run equalize
         for i, trackout in enumerate(trackouts):
-            remaining_trackouts = set(trackouts)-set([trackout])
+            # remaining_trackouts = set(trackouts)-set([trackout])
             # Equalize each trackout A in a Set against the subset (totalSet - A)
             # TODO get this from DB model
             eq_params = {
@@ -177,9 +179,11 @@ def process_track(id):
             eq_arguments = (main_trackout, remaining_trackouts, trackouts_as_numpy, eq_params, trackout.id)
             processing_job = Job(process_and_save, eq_arguments)
             print(f'processing job:  {processing_job}')
+            resolved = Q.put(processing_job)
+            print(f'Resolved: {type(resolved)}')
             
         # Todo remove all trackouts in storage
-        for i in range(trackout_paths):
+        for i, _ in enumerate(trackout_paths):
             remove(f"trackout_{i}.wav")
 
     #    """
@@ -225,11 +229,12 @@ def process_track(id):
 
 
 def process_and_save(main_trackout, other_trackouts, all_trackouts, eq_params, trackout_id):
-    
-    processor = Processor(mainWavfile, listOfWavfiles, all_trackouts)
+    print("Processing track")
+    processor = Processor(main_trackout, other_trackouts, all_trackouts)
 #     trackout = TrackOut.query.get(trackout_id)
-# #     eq_wav = processor.equalize()
-# #     print(f"equalized complete: {bool(eq_wav)}")
+
+    eq_wav = processor.equalize()
+    print(f"Processor.equalized completed: {bool(eq_wav)}")
 # #     raw_equalizer = Equalizer(
 # #         trackout_id=trackout_id,
 # #         freq=eq_params["freq"],

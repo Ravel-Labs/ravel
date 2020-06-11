@@ -87,8 +87,8 @@ class Equalize():
         if len(self.listOfWavfiles) == 0:
             print("This will break things?")
         for loaded_np in self.listOfWavfiles:
-            _eq = EQSignal(loaded_np, 1024, 1024,
-                      1024, -12, "vocal", 10, 3, -2)
+            print(type(loaded_np))
+            _eq = EQSignal(loaded_np, 1024, 1024, 1024, -12, "vocal", 10, 3, -2)
             signals.append(_eq)
 
         '''
