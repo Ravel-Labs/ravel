@@ -10,7 +10,7 @@
           </div>
         </div>
         <!-- If Empty Trackouts -->
-        <div class="tile is-ancestor">
+        <div class="tile is-ancestor" v-if="track.trackouts.length < 1">
           <div class="tile is-vertical">
             <div class="tile">
               <div class="tile is-parent is-vertical">
@@ -28,12 +28,14 @@
           </div>
         </div>
 
-        <b-button
-          class="is-info"
-          @click="toggleAddTrackout()"
-        >
-          Add Trackout
-        </b-button>
+        <div class="columns">
+          <div class="column">
+            <b-button class="is-info" @click="toggleAddTrackout()">
+              Add Trackout
+            </b-button>
+          </div>
+        </div>
+
 
         <!-- Add Trackout Modal -->
         <div class="modal" v-bind:class="{ 'is-active': addTrackout }">
