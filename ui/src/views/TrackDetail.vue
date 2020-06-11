@@ -29,6 +29,7 @@
           </div>
         </div>
 
+      <!-- Add Trackout Button -->
         <div class="columns">
           <div class="column">
             <b-button class="is-info" @click="toggleAddTrackout()">
