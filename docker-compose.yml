@@ -11,25 +11,8 @@ services:
       - 9000
 
   ui:
-    build: ./ui
+    build: ui
     container_name: ui
     restart: always
-    expose:
-      - 80
-
-  nginx:
-    build: ./nginx
-    container_name: nginx
-    restart: always
     ports:
-      - "8000:8000"
-      - "8001:80"
-
-        #  grafana:
-        #    image: grafana/grafana
-        #    restart: always
-        #    ports:
-        #      - "9878:3000"
-        #    environment:
-        #      - GF_SERVER_ROOT_URL=http://grafana.server.name
-        #      - GF_SECURITY_ADMIN_PASSWORD=secret
+      - "8000:80"
