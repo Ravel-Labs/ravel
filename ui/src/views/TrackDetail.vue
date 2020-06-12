@@ -44,7 +44,10 @@
           <div class="modal-card">
             <header class="modal-card-head">
               <p class="modal-card-title">Add Trackout</p>
-              <button class="delete" aria-label="close"></button>
+              <button 
+              class="delete" 
+              @click="toggleAddTrackout()" 
+              aria-label="close"></button>
             </header>
             <section class="modal-card-body">
 
