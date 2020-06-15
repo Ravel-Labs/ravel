@@ -45,6 +45,7 @@ def create_trackout():
         response = APIResponse(trackout, 201).response
         return response
     except Exception as e:
+        print(f'#### exception in POST: #### {e}')
         abort(500, e)
 
 
@@ -52,7 +53,6 @@ def create_trackout():
     GET all
 '''
 
-# TODO params not body
 @trackouts_bp.route(base_trackouts_url, methods={'GET'})
 def get_trackouts():
     try:
@@ -160,7 +160,7 @@ def add_update_wavfile(id):
         print(f'add update wavfile id: {id}')
         db.session.query(TrackOut).filter_by(id=id).update(update_request)
         db.session.commit()
-        print(f'committed: samplerate: {samplerate} - data: {data}')
+        print(f'committed: samplerate: {samplerate} - data: {len(data)}')
         payload = {
             "action": "update",
             "table": "trackout",

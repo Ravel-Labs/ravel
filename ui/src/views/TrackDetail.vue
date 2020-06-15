@@ -179,7 +179,8 @@ export default {
       dropFiles: [],
       addTrackout: false,
       trackout: {
-        name: ''
+        name: '',
+        type: ''
       },
       trackTypes: [
         {
@@ -218,6 +219,7 @@ export default {
   created () {
     this.$store.dispatch('tracks/getTrackDetails', this.$route.params.id)
     this.$store.dispatch('tracks/getTrackouts', this.$route.params.id)
+    console.log('user: ', this.user)
   },
   computed: {
     ...mapState({
@@ -233,21 +235,30 @@ export default {
       formData.append('file', this.file)
       console.log('uploading file: ', this.file)
       const trackPayload = {
-        user_id: 1 
+        user_id: 1,
+        track_id: this.$route.params.id,
+        name: this.trackout.name,
+        type: this.trackout.type
       }
       const filePayload = {
         formData: formData,
         id: this.$route.params.id
       }
-      Promise.all([
-        this.$store.dispatch('tracks/createTrackoutWithoutWav', trackPayload),
-        this.$store.dispatch('tracks/updateTrackoutWithWav', filePayload)
-      ]).then((data) => {
-        console.log('data from promise.all: ', data)
-      })
-      .catch((err) => {
-        console.error('Error uploading trackout after promise all: ', err)
-      })
+       this.$store.dispatch('tracks/createTrackoutWithoutWav', trackPayload)
+        .then((data) => {
+          // attempt file upload
+          this.$store.dispatch('tracks/updateTrackoutWithWav', filePayload)
+
+          this.$store.dispatch('tracks/getTrackouts', this.$route.params.id)
+          this.addTrackout = false
+          this.$buefy.notification.open({
+              message: 'Uploaded trackout!',
+              type: 'is-success'
+          })
+        })
+        .catch((err) => {
+          console.log('error creating trackout: ', err)
+        })
     },
     deleteDropFile (index) {
       this.dropFiles.splice(index, 1)

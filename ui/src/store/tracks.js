@@ -171,14 +171,15 @@ const tracks = {
       },
       async createTrackoutWithoutWav ({ commit }, trackout) {
         try {
-          let { data } = await API().post('/trackouts', {
+          let payload = {
             user_id : trackout.user_id,
             name : trackout.name,
             type : trackout.type,
             wavefile : trackout.wavefile,
             track_id : trackout.track_id
-          })
-          console.log('creating trackout with no wav attached: ', data)
+          }
+          console.log('attempting to create trackout with payload: ', payload)
+          let { data } = await API().post('/trackouts', payload)
           commit('ADD_TRACKOUT_SUCCESS', data)
         } catch (err) {
           console.error('FAILED to create trackout without wav: ', err)
