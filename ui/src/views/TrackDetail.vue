@@ -2,7 +2,7 @@
   <section class="section">
     <div class="container">
       <div class="trackouts container">
-        <!-- Header --> 
+        <!-- Header -->
         <div class="columns">
           <div class="column">
             <h1 class="title is-1">{{ track.name }}</h1>
@@ -18,10 +18,7 @@
                 <article class="tile is-child notification is-primary is-vcentered">
                   <p>You haven't created a trackout yet. Create one to get started!</p>
                   <p>
-                    <b-button
-                      class="is-info" 
-                      @click="toggleAddTrackout()"
-                    >Create Trackout</b-button> 
+                    <b-button class="is-info" @click="toggleAddTrackout()">Create Trackout</b-button>
                   </p>
                 </article>
               </div>
@@ -29,13 +26,10 @@
           </div>
         </div>
 
-      <!-- Add Trackout Button -->
         <div class="columns">
-          <div class="column">
-            <b-button class="is-info" @click="toggleAddTrackout()">
-              Add Trackout
-            </b-button>
-          </div>
+          <b-button class="is-info" @click="toggleAddTrackout()">
+            Add Trackout
+          </b-button>
         </div>
 
         <!-- Add Trackout Modal -->
@@ -47,7 +41,6 @@
               <button class="delete" @click="toggleAddTrackout()" aria-label="close"></button>
             </header>
             <section class="modal-card-body">
-
               <b-field label="Name">
                 <b-input v-model="trackout.name"></b-input>
               </b-field>
@@ -69,12 +62,11 @@
               </b-field>
 
               <code>
-                {{ file }} 
-              </code> 
+                {{ file }}
+              </code>
             </section>
             <footer class="modal-card-foot">
-              <button class="button is-primary"
-                @click="submitFile()">Upload</button>
+              <button class="button is-primary" @click="submitFile()">Upload</button>
               <button class="button">Cancel</button>
             </footer>
           </div>
@@ -84,28 +76,21 @@
         <!-- TODO -->
 
         <!-- Trackouts List -->
-        <b-collapse v-for="t in track.trackouts"
-          :key="t.id"
-          class="card"
-          animation="slide">
-            <div
-              slot="trigger"
-              slot-scope="props"
-              class="card-header"
-              role="button"
-              aria-controls="contentIdForA11y3">
-              <p class="card-header-title">
-                {{ t.name }}
-              </p>
-              <a class="card-header-icon">
-                  <b-icon
-                      :icon="props.open ? 'menu-down' : 'menu-up'">
-                  </b-icon>
-              </a>
-            </div>
-            <div class="card-content">
-                  <!-- Manual settings -->
-                  <b-field label="Compression">
+        <b-collapse v-for="t in track.trackouts" :key="t.id" class="card" animation="slide">
+          <div slot="trigger" slot-scope="props" class="card-header" role="button" aria-controls="contentIdForA11y3">
+            <p class="card-header-title">
+              {{ t.name }}
+            </p>
+            <a class="card-header-icon">
+              <b-icon :icon="props.open ? 'menu-down' : 'menu-up'"> </b-icon>
+            </a>
+          </div>
+          <div class="card-content">
+            <p>Created at: {{ t.created_at }}</p>
+            <p>Type: {{ t.type }}</p>
+
+            <!-- Manual settings
+                  <!-- <b-field label="Compression">
                       <b-slider v-model="t.compression"></b-slider>
                   </b-field>
 
@@ -115,11 +100,13 @@
 
                   <b-field label="EQ">
                       <b-slider v-model="t.eq"></b-slider>
-                  </b-field>
+                  </b-field> -->
 
-                  <!-- Presets -->
-                  <div class="columns">
+            <!-- Presets -->
+            <!-- <div class="columns">
                     <div class="column">
+                    <b-field>
+                    </b-field>
                       <b-switch v-model="t.vocal_magic">
                         Vocal Magic
                       </b-switch>
@@ -152,74 +139,67 @@
                     </b-field>
                     </div>
                   </div>
-                <br>
-            </div>
+                <br> -->
+          </div>
         </b-collapse>
       </div>
     </div>
-    <section>
-      <!-- <code>
-        {{ track }}
-        <hr/>
-        {{ token }}
-      </code> -->
-    </section>
+    <section></section>
   </section>
 </template>
 <script>
-import { mapState } from 'vuex'
+import { mapState } from "vuex";
 
 export default {
-  name: 'trackDetails',
-  data () {
+  name: "trackDetails",
+  data() {
     return {
       file: {
-        name: ''
+        name: ""
       },
       dropFiles: [],
       addTrackout: false,
       trackout: {
-        name: '',
-        type: ''
+        name: "",
+        type: ""
       },
       trackTypes: [
         {
           id: 1,
-          type: 'vocals',
-          name: 'vocals'
+          type: "vocals",
+          name: "vocals"
         },
         {
           id: 2,
-          type: 'drums',
-          name: 'drums'
+          type: "drums",
+          name: "drums"
         },
         {
           id: 3,
-          type: 'piano',
-          name: 'piano'
+          type: "piano",
+          name: "piano"
         },
         {
           id: 4,
-          type: 'guitar',
-          name: 'guitar'
+          type: "guitar",
+          name: "guitar"
         },
         {
           id: 5,
-          type: 'bass',
-          name: 'bass'
+          type: "bass",
+          name: "bass"
         },
         {
           id: 6,
-          type: 'synths / electronic',
-          name: 'synths / electronic'
-        },
+          type: "synths / electronic",
+          name: "synths / electronic"
+        }
       ]
-    }
+    };
   },
-  created () {
-    this.$store.dispatch('tracks/getTrackDetails', this.$route.params.id)
-    this.$store.dispatch('tracks/getTrackouts', this.$route.params.id)
-    console.log('user: ', this.user)
+  created() {
+    this.$store.dispatch("tracks/getTrackDetails", this.$route.params.id);
+    this.$store.dispatch("tracks/getTrackouts", this.$route.params.id);
   },
   computed: {
     ...mapState({
@@ -229,56 +209,59 @@ export default {
     })
   },
   methods: {
-    submitFile () {
-      console.log('upload hit')
-      let formData = new FormData()
-      formData.append('file', this.file)
-      console.log('uploading file: ', this.file)
+    submitFile() {
+      let formData = new FormData();
       const trackPayload = {
         user_id: 1,
         track_id: this.$route.params.id,
         name: this.trackout.name,
         type: this.trackout.type
-      }
+      };
       const filePayload = {
         formData: formData,
         id: this.$route.params.id
-      }
-       this.$store.dispatch('tracks/createTrackoutWithoutWav', trackPayload)
-        .then((data) => {
-          // attempt file upload
-          this.$store.dispatch('tracks/updateTrackoutWithWav', filePayload)
+      };
+      // attempt track creation and upload to it.
+      this.$store
+        .dispatch("tracks/createTrackoutWithoutWav", trackPayload)
+        .then(data => {
+          this.$store.dispatch("tracks/updateTrackoutWithWav", filePayload).then(data => {
+            // everything succeeded
+            this.$store.dispatch("tracks/getTrackouts", this.$route.params.id);
 
-          this.$store.dispatch('tracks/getTrackouts', this.$route.params.id)
-          this.addTrackout = false
-          this.$buefy.notification.open({
-              message: 'Uploaded trackout!',
-              type: 'is-success'
-          })
+            // fire notification and clean up
+            this.addTrackout = false;
+            this.$buefy.notification.open({
+              message: "Uploaded trackout!",
+              type: "is-success"
+            });
+          });
         })
-        .catch((err) => {
-          console.log('error creating trackout: ', err)
-        })
+        .catch(err => {
+          console.log("error creating trackout: ", err);
+        });
     },
-    deleteDropFile (index) {
-      this.dropFiles.splice(index, 1)
+    deleteDropFile(index) {
+      this.dropFiles.splice(index, 1);
     },
     toggleAddTrackout() {
-      console.log('addTrackout: ', this.addTrackout)
-      this.addTrackout = !this.addTrackout
-      console.log('addTrackout after: ', this.addTrackout)
+      console.log("addTrackout: ", this.addTrackout);
+      this.addTrackout = !this.addTrackout;
+      console.log("addTrackout after: ", this.addTrackout);
     }
   }
-}
+};
 </script>
 <style media="screen">
-  .upload-section {
-    width: 100%;
-  }
-  .upload {
-    margin-right: .5rem;
-  }
-  .upload-area {
-    margin: 2rem;
-  }
+.upload-section {
+  width: 100%;
+}
+
+.upload {
+  margin-right: 0.5rem;
+}
+
+.upload-area {
+  margin: 2rem;
+}
 </style>

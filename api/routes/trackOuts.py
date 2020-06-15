@@ -195,6 +195,7 @@ def get_wav_from_trackout(id):
     except Exception as e:
         abort(500, e)
 
+
 @trackouts_bp.route('%s/eq/<int:id>' % base_trackouts_url, methods=['GET'])
 def get_eq_from_trackout(id):
     try:
@@ -216,5 +217,12 @@ def get_eq_from_trackout(id):
         # Remove file from disk
         remove("trackout.wav")
         return file
+    except Exception as e:
+        abort(500, e)
+
+
+def get_trackout_wavfile(id):
+    try:
+        pass
     except Exception as e:
         abort(500, e)
