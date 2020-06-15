@@ -40,14 +40,11 @@
 
         <!-- Add Trackout Modal -->
         <div class="modal" v-bind:class="{ 'is-active': addTrackout }">
-          <div class="modal-background"></div>
+          <div @click="toggleAddTrackout()" class="modal-background"></div>
           <div class="modal-card">
             <header class="modal-card-head">
               <p class="modal-card-title">Add Trackout</p>
-              <button 
-              class="delete" 
-              @click="toggleAddTrackout()" 
-              aria-label="close"></button>
+              <button class="delete" @click="toggleAddTrackout()" aria-label="close"></button>
             </header>
             <section class="modal-card-body">
 
@@ -59,15 +56,22 @@
                 <b-input v-model="trackout.type"></b-input>
               </b-field>
 
-              <!-- TODO: ADD FILE UPLOAD -->
-
-              <b-button
-                @click="submitFile()" 
-              >Create</b-button>
-
+              <b-field class="file">
+                <b-upload v-model="file">
+                  <a class="button is-primary">
+                    <b-icon class="fa fa-arrow-up"></b-icon>
+                    <span>Click to select a trackout</span>
+                  </a>
+                </b-upload>
+                <span class="file-name" v-if="file">
+                  {{ file.name }}
+                </span>
+              </b-field>
+    
             </section>
             <footer class="modal-card-foot">
-              <button class="button is-primary">Upload</button>
+              <button class="button is-primary"
+                @click="submitFile()">Upload</button>
               <button class="button">Cancel</button>
             </footer>
           </div>
@@ -166,7 +170,9 @@ export default {
   name: 'trackDetails',
   data () {
     return {
-      file: {},
+      file: {
+        name: ''
+      },
       dropFiles: [],
       addTrackout: false,
       trackout: {
@@ -213,12 +219,27 @@ export default {
   computed: {
     ...mapState({
       track: state => state.tracks.current,
-      token: state => state.auth.token
+      token: state => state.auth.token,
+      user: state => state.user
     })
   },
   methods: {
     submitFile () {
       console.log('upload hit')
+      let formData = new FormData()
+      formData.append('file', this.file)
+      console.log('uploading file: ', file)
+      const trackPayload = {
+        user_id: this.user.id
+      }
+      const filePayload = {
+        formData: formData,
+        id: this.$route.params.id
+      }
+      Promise.all(
+        this.$store.dispatch('tracks/createTrackoutWithoutWav', trackPayload),
+        this.$store.dispatch('tracks/updateTrackoutWithWav', filePayload)
+      )
     },
     deleteDropFile (index) {
       this.dropFiles.splice(index, 1)

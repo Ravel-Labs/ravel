@@ -80,7 +80,7 @@ const tracks = {
       }
     },
     actions: {
-      async create ({ commit, state }, track) {
+      async create ({ commit }, track) {
         try {
           commit('TRACK_REQUEST')
           let { data } = await API().post('/tracks', {
@@ -94,7 +94,7 @@ const tracks = {
           commit('TRACK_FAILURE', err)
         }
       },
-      async get ({ commit, state }) {
+      async get ({ commit }) {
         try {
           commit('TRACK_REQUEST')
           let { data } = await API().get('/tracks')
@@ -105,7 +105,7 @@ const tracks = {
           return err
         }
       },
-      async getTrackDetails ({ commit, dispatch }, id) {
+      async getTrackDetails ({ commit }, id) {
         try {
           commit('TRACK_REQUEST')
           let { data } = await API().get(`/tracks/${id}`)
@@ -157,7 +157,7 @@ const tracks = {
           console.error('failed to delete track')
         }
       },
-      async uploadFile ({ commit, state }, payload) {
+      async uploadFile ({ commit }, payload) {
         try {
           let { data } = await api.post(`/trackouts/wav/${payload.id}`)
           commit('UPLOAD_SUCCESS', data)
@@ -169,19 +169,12 @@ const tracks = {
           throw new Error(err)
         }
       },
-      async createTrackoutWithoutWav ({ commit, state }, trackout) {
+      async createTrackoutWithoutWav ({ commit }, trackout) {
         try {
-          const id = window.localStorage.getItem('user_id')
           let { data } = await API().post('/trackouts', {
-            // TODO: set these correctly
-            owner_id : id,
-            user_id : id,
+            user_id : trackout.user_id,
             name : trackout.name,
             type : trackout.type,
-            settings : {
-              eq: {},
-              compression: {}
-            },
             wavefile : trackout.wavefile,
             track_id : trackout.track_id
           })
@@ -191,12 +184,21 @@ const tracks = {
           throw new Error(err)
         }
       },
-      async updateTrackoutWithWav ({ commit, state }, formData) {
+      async updateTrackoutWithWav ({ commit }, payload) {
         try {
-          let { data } = await API().put()
+          let { data } = await API().put(`/trackouts/wav/${payload.id}`,
+            payload.formData,
+            {
+              headers: {
+                'Content-Type': 'multipart/form-data'
+              }
+            } 
+          )
+          console.log('uploaded successfully: ', data)
           commit('UPDATE_TRACKOUT_WAV_SUCCESS', data)
         } catch (err) {
-          console.error('update trackout wav success error: ', err)
+          console.error('wav upload failed: ', err)
+          return err
         }
       }
     }

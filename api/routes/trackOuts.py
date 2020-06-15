@@ -25,7 +25,7 @@ base_trackouts_url = '/api/trackouts'
 @trackouts_bp.route(f"{base_trackouts_url}", methods=['POST'])
 def create_trackout():
     try:
-        # current_identity.id
+        # current_identity.id # TODO: Make this account for users for real
         user_id = 1
         track_id = request.json.get('track_id')
         type_of_track = request.json.get('type')
