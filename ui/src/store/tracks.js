@@ -36,7 +36,6 @@ const tracks = {
         state.loading = true
       },
       'GET_TRACKOUTS_SUCCESS' (state, trackouts) {
-        console.log('trackouts: ', trackouts)
         state.loading = false
         state.current.trackouts = trackouts
       },
@@ -44,8 +43,9 @@ const tracks = {
         state.loading = false
         state.error = err
       },
-      'TRACK_FAILURE' (state) {
+      'TRACK_FAILURE' (state, error) {
         state.loading = false
+        state.error = error
       },
       'TRACKOUT_REQUEST' (state) {
         state.loading = true
@@ -55,12 +55,12 @@ const tracks = {
         state.current = trackout
         state.error = undefined
       },
-      'ADD_TRACKOUT_SUCCESS' (state, trackouts) {
+      'ADD_TRACKOUT_SUCCESS' (state, trackout) {
         state.loading = false
         state.error = undefined
         state.current.trackouts.push(trackout)
       },
-      'TRACKOUT_FAILURE' (state, error) {
+      'ADD_TRACKOUT_FAILURE' (state, error) {
         state.error = error
         state.loading = false
       },
@@ -178,10 +178,11 @@ const tracks = {
             wavefile : trackout.wavefile,
             track_id : trackout.track_id
           })
+          console.log('creating trackout with no wav attached: ', data)
           commit('ADD_TRACKOUT_SUCCESS', data)
         } catch (err) {
-          console.error(err)
-          throw new Error(err)
+          console.error('FAILED to create trackout without wav: ', err)
+          commit('ADD_TRACKOUT_FAILURE', err)
         }
       },
       async updateTrackoutWithWav ({ commit }, payload) {

@@ -25,8 +25,7 @@ base_trackouts_url = '/api/trackouts'
 @trackouts_bp.route(f"{base_trackouts_url}", methods=['POST'])
 def create_trackout():
     try:
-        # current_identity.id # TODO: Make this account for users for real
-        user_id = 1
+        user_id = request.json.get('user_id')
         track_id = request.json.get('track_id')
         type_of_track = request.json.get('type')
         name = request.json.get('name')
@@ -59,7 +58,7 @@ def get_trackouts():
     try:
         track_id = request.args.get('track_id')
 
-        print(f'getting trackouts for track id: {track_id}')
+        print(f'###  Getting trackouts for track_id: {track_id}')
 
         # get trackouts by track_id
         if track_id:
@@ -158,8 +157,10 @@ def add_update_wavfile(id):
         update_request = {
             "path": firestore_path
         }
+        print(f'add update wavfile id: {id}')
         db.session.query(TrackOut).filter_by(id=id).update(update_request)
         db.session.commit()
+        print(f'committed: samplerate: {samplerate} - data: {data}')
         payload = {
             "action": "update",
             "table": "trackout",

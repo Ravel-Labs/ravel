@@ -11,7 +11,7 @@
         </div>
 
         <!-- If Empty Trackouts -->
-        <div class="tile is-ancestor" v-if="track.trackouts.length < 1">
+        <div class="tile is-ancestor" v-if="!track.trackouts">
           <div class="tile is-vertical">
             <div class="tile">
               <div class="tile is-parent is-vertical">
@@ -67,7 +67,10 @@
                   {{ file.name }}
                 </span>
               </b-field>
-    
+
+              <code>
+                {{ file }} 
+              </code> 
             </section>
             <footer class="modal-card-foot">
               <button class="button is-primary"
@@ -228,18 +231,23 @@ export default {
       console.log('upload hit')
       let formData = new FormData()
       formData.append('file', this.file)
-      console.log('uploading file: ', file)
+      console.log('uploading file: ', this.file)
       const trackPayload = {
-        user_id: this.user.id
+        user_id: 1 
       }
       const filePayload = {
         formData: formData,
         id: this.$route.params.id
       }
-      Promise.all(
+      Promise.all([
         this.$store.dispatch('tracks/createTrackoutWithoutWav', trackPayload),
         this.$store.dispatch('tracks/updateTrackoutWithWav', filePayload)
-      )
+      ]).then((data) => {
+        console.log('data from promise.all: ', data)
+      })
+      .catch((err) => {
+        console.error('Error uploading trackout after promise all: ', err)
+      })
     },
     deleteDropFile (index) {
       this.dropFiles.splice(index, 1)
