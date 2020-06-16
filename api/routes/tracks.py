@@ -7,7 +7,7 @@ from ravel.api import db
 import numpy as np
 from ravel.api.models.track_models import Track, TrackOut
 from ravel.api.models.track_models import Equalizer
-from ravel.api.services.firestore import retreive_from_file_store
+from ravel.api.services.firestore import retreive_from_file_store, publish_to_file_store
 from ravel.api.routes.trackOuts import get_wav_from_trackout
 from ravel.api import ADMINS_FROM_EMAIL_ADDRESS, mail, Q, Job
 from ravel.api.processing import Handler, Processor
@@ -156,14 +156,15 @@ def process_track(id):
         print(num_of_trackouts)
         
         # for each path request file from firebase
-        trackouts_as_numpy = list()
+        mono_signal_trackouts = list()
         for index, path in enumerate(trackout_paths):
             retreive_from_file_store(path, str(index))
             sam_rate, main_trackout = sio.wavfile.read(f"trackout_{index}.wav")
-            main_trackout = main_trackout.astype(np.float32)
-            trackouts_as_numpy.append(main_trackout)
+            raw_trackout_stereo_signal = main_trackout.astype(np.float32)
+            trackout_mono_signal = raw_trackout.sum(axis=1) / 2
+            mono_signal_trackouts.append(trackout_mono_signal)
         # for each trackout run equalize
-        for i, trackout in enumerate(trackouts):
+        for i, raw_trackout in enumerate(trackouts):
             # remaining_trackouts = set(trackouts)-set([trackout])
             # Equalize each trackout A in a Set against the subset (totalSet - A)
             # TODO get this from DB model
@@ -175,8 +176,8 @@ def process_track(id):
             }
             # load main_trackout
             main_trackout = trackouts_as_numpy[i]
-            remaining_trackouts = trackouts_as_numpy[:i-1] + trackouts_as_numpy[i:]
-            eq_arguments = (main_trackout, remaining_trackouts, trackouts_as_numpy, eq_params, trackout.id)
+            remaining_trackouts = trackouts_as_numpy[:i-1] + mono_signal_trackouts[i:]
+            eq_arguments = (main_trackout, remaining_trackouts, mono_signal_trackouts, eq_params, raw_trackout)
             processing_job = Job(process_and_save, eq_arguments)
             print(f'processing job:  {processing_job}')
             resolved = Q.put(processing_job)
@@ -228,27 +229,32 @@ def process_track(id):
         abort(500, e)
 
 
-def process_and_save(main_trackout, other_trackouts, all_trackouts, eq_params, trackout_id):
+def process_and_save(main_trackout, other_trackouts, all_trackouts, eq_params, raw_trackout):
     print("Processing track")
+    sample_rate = 44100
     processor = Processor(main_trackout, other_trackouts, all_trackouts)
 #     trackout = TrackOut.query.get(trackout_id)
-
+    trackout_id = raw_trackout.id
     eq_wav = processor.equalize()
-    print(f"Processor.equalized completed: {bool(eq_wav)}")
-# #     raw_equalizer = Equalizer(
-# #         trackout_id=trackout_id,
-# #         freq=eq_params["freq"],
-# #         filter_type=eq_params["filter_type"],
-# #         gain=eq_params["gain"],
-# #         equalized_binary=eq_wav,
-# #         eq=trackout
-# #     )
-# # # TODO try batching db writes
-# #     db.session.add(raw_equalizer)
-# #     db.session.commit()
-
-#     # eq_wav = processor.compress()
-#     eq_wav = processor.deesser()
+    storage_name = "eq_results.wav"
+    write(storage_name, sample_rate, eq_wav)
+    print(f"Processor.equalized completed: {bool(eq_wav.any())}")
+    print(f"Type of processor results: {type(eq_wav)}")
+    trackout_name = raw_trackout.name
+    firestore_path = f"eq/{trackout_id}/{storage_name}"
+    # publish_to_file_store
+    publish_to_file_store(firestore_path, storage_name)
+    remove(storage_name)
+    
+    raw_equalizer = Equalizer(
+        freq=eq_params["freq"],
+        filter_type=eq_params["filter_type"],
+        gain=eq_params["gain"],
+        path=firestore_path,
+        eq=raw_trackout  # Relationship with raw_trackout
+    )
+    db.session.add(raw_equalizer)
+    db.session.commit()
 
 
 # TODO Should be moved into its own blueprint /eq/<track_id>/<trackout_id>  = not totally correct

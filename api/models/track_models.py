@@ -54,7 +54,7 @@ class TrackOut(db.Model):
     name = db.Column(db.String(1000))
     type = db.Column(db.String(50))
     settings = db.Column(db.String(1000))
-    eq = db.relationship("Equalizer", backref="eq", uselist=False)
+    eq = db.relationship("Equalizer", backref="eq", lazy='subquery', uselist=False)
     de = db.relationship("Compressor", backref="de", uselist=False)
     co = db.relationship("Deesser", backref="co", uselist=False)
 
@@ -93,7 +93,7 @@ class Equalizer(db.Model):
     freq = db.Column(db.String)
     filter_type = db.Column(db.String)
     gain = db.Column(db.Float)
-    equalized_binary = db.Column(db.LargeBinary)
+    path = db.Column(db.String(1000))
 
     def to_dict(self):
         return {
