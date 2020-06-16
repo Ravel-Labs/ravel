@@ -161,7 +161,7 @@ def process_track(id):
             retreive_from_file_store(path, str(index))
             sam_rate, main_trackout = sio.wavfile.read(f"trackout_{index}.wav")
             raw_trackout_stereo_signal = main_trackout.astype(np.float32)
-            trackout_mono_signal = raw_trackout.sum(axis=1) / 2
+            trackout_mono_signal = raw_trackout_stereo_signal.sum(axis=1) / 2
             mono_signal_trackouts.append(trackout_mono_signal)
         # for each trackout run equalize
         for i, raw_trackout in enumerate(trackouts):
@@ -175,8 +175,8 @@ def process_track(id):
                 "gain": 1
             }
             # load main_trackout
-            main_trackout = trackouts_as_numpy[i]
-            remaining_trackouts = trackouts_as_numpy[:i-1] + mono_signal_trackouts[i:]
+            main_trackout = mono_signal_trackouts[i]
+            remaining_trackouts = mono_signal_trackouts[:i-1] + mono_signal_trackouts[i:]
             eq_arguments = (main_trackout, remaining_trackouts, mono_signal_trackouts, eq_params, raw_trackout)
             processing_job = Job(process_and_save, eq_arguments)
             print(f'processing job:  {processing_job}')

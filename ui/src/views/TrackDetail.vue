@@ -44,7 +44,20 @@
               <button class="delete" aria-label="close"></button>
             </header>
             <section class="modal-card-body">
-              <!-- Add Trackout Modal Content ... -->
+
+              <b-field label="Name">
+                <b-input v-model="trackout.name"></b-input>
+              </b-field>
+
+              <b-field label="Type">
+                <b-input v-model="trackout.type"></b-input>
+              </b-field>
+
+              <!-- TODO: ADD FILE UPLOAD -->
+
+              <b-button
+                @click="submitFile()" 
+              >Create</b-button>
 
             </section>
             <footer class="modal-card-foot">
@@ -160,6 +173,9 @@ export default {
       file: {},
       dropFiles: [],
       addTrackout: false,
+      trackout: {
+        name: ''
+      },
       trackTypes: [
         {
           id: 1,
