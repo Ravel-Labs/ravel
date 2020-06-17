@@ -1,15 +1,14 @@
-import requests
 import pyrebase
-
-
+from os import environ
+print(environ.get("FB_API_KEY"))
 firebaseConfig = {
-    "apiKey": "AIzaSyBnVdSGrhaMP2KlF8Xg93V9EESdA9ngCrE",
+    "apiKey": environ.get("FB_API_KEY"),
+    "appId": environ.get("RAVEL_FB_ID"),
     "authDomain": "ravellabs.firebaseapp.com",
     "databaseURL": "https://ravellabs.firebaseio.com",
     "projectId": "ravellabs",
     "storageBucket": "ravellabs.appspot.com",
     "messagingSenderId": "724664302988",
-    "appId": "1:724664302988:web:e00c15ac79b2179946aaa9"
 }
 
 
