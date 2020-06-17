@@ -181,7 +181,7 @@ def get_wav_from_trackout(id):
         retreive_from_file_store(firestore_path)
 
         # Get file saved to disk and convert into BytesIO
-        sam_rate, data = sio.wavfile.read("file_name.wav")
+        sam_rate, data = sio.wavfile.read("trackout.wav")
         byte_io = BytesIO(bytes())
         write(byte_io, sam_rate, data)
         file = send_file(
@@ -189,7 +189,31 @@ def get_wav_from_trackout(id):
             attachment_filename=file_name,
             as_attachment=True)
         # Remove file from disk
-        remove("file_name.wav")
+        remove("trackout.wav")
+        return file
+    except Exception as e:
+        abort(500, e)
+
+@trackouts_bp.route('%s/eq/<int:id>' % base_trackouts_url, methods=['GET'])
+def get_eq_from_trackout(id):
+    try:
+        # Get wav path from TrackOut then call firebase service
+        raw_trackout = TrackOut.query.get(id)
+        eq = raw_trackout.eq
+        firestore_path = eq.path
+        file_name = f"eq_results.wav"
+        retreive_from_file_store(firestore_path)
+
+        # Get file saved to disk and convert into BytesIO
+        sam_rate, data = sio.wavfile.read("trackout.wav")
+        byte_io = BytesIO(bytes())
+        write(byte_io, sam_rate, data)
+        file = send_file(
+            byte_io,
+            attachment_filename=file_name,
+            as_attachment=True)
+        # Remove file from disk
+        remove("trackout.wav")
         return file
     except Exception as e:
         abort(500, e)

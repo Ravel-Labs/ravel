@@ -75,8 +75,7 @@ class TrackOut(db.Model):
             "path": self.path,
             "settings": self.settings
         }
-        # if not user.get("id"):
-        #     del user['id']
+
         return trackout
 
 

@@ -148,25 +148,20 @@ def process_track(id):
         #     user_name=name,
         #     button_title="")
 
-        # Get tracks by id
         raw_track = Track.query.get(id)
         trackouts = raw_track.trackouts.all()
         trackout_paths = [track_out.path for track_out in trackouts]
-        num_of_trackouts = len(trackout_paths)
-        print(num_of_trackouts)
-        
-        # for each path request file from firebase
         mono_signal_trackouts = list()
+        # for each path request file from firebase
         for index, path in enumerate(trackout_paths):
             retreive_from_file_store(path, str(index))
             sam_rate, main_trackout = sio.wavfile.read(f"trackout_{index}.wav")
             raw_trackout_stereo_signal = main_trackout.astype(np.float32)
             trackout_mono_signal = raw_trackout_stereo_signal.sum(axis=1) / 2
             mono_signal_trackouts.append(trackout_mono_signal)
-        # for each trackout run equalize
+        # Equalize each trackout A in a Set against the subset (totalSet - A)
         for i, raw_trackout in enumerate(trackouts):
             # remaining_trackouts = set(trackouts)-set([trackout])
-            # Equalize each trackout A in a Set against the subset (totalSet - A)
             # TODO get this from DB model
             eq_params = {
                 "trackout_id": 1,
@@ -174,10 +169,15 @@ def process_track(id):
                 "filter_type": 0,
                 "gain": 1
             }
-            # load main_trackout
             main_trackout = mono_signal_trackouts[i]
-            remaining_trackouts = mono_signal_trackouts[:i-1] + mono_signal_trackouts[i:]
-            eq_arguments = (main_trackout, remaining_trackouts, mono_signal_trackouts, eq_params, raw_trackout)
+            remaining_trackouts = \
+                mono_signal_trackouts[:i-1] + mono_signal_trackouts[i:]
+            eq_arguments = (
+                main_trackout,
+                remaining_trackouts,
+                mono_signal_trackouts,
+                eq_params,
+                raw_trackout)
             processing_job = Job(process_and_save, eq_arguments)
             print(f'processing job:  {processing_job}')
             resolved = Q.put(processing_job)
@@ -186,43 +186,6 @@ def process_track(id):
         # Todo remove all trackouts in storage
         for i, _ in enumerate(trackout_paths):
             remove(f"trackout_{i}.wav")
-
-    #    """
-    #     # trackout_binarys = [track_out.file_binary for track_out in trackouts]
-        
-    #     # if there is equalization to the track then apply it
-    #     # TODO Any effect that is being applied
-    #     # Based on the data we are passing in
-
-    #         print(type(set([trackout])))
-    #         # Minimum number of trackouts? Can a track be analysed against itself? If not then what?
-    #         remaining_track_outs = set(trackouts)-set([trackout])
-
-    #         print(f"Got to the for loop {len(remaining_track_outs)}")
-    #         wavfile = trackout.file_binary
-    #         eq_function = process_and_save
-
-    #         # TODO: These params should come from the request that's updating
-    #         # the track.
-
-    #         # TODO: needs to resolve the wavfile ID of the processing job
-    #         # so that it can be updated in the database for the trackout
-    #         resolved = Q.put(processing_job)
-    #         print(f'resolved: ', {type(resolved)})
-
-    #         # update database to match records
-    #         # db.session.query(Track).filter_by(id=id).update(request.json)
-    #         # db.session.commit()
-
-    #         # TODO done processing update the trackout model with a new
-    #         # resolved processing
-
-        
-    #     # print(trackouts_equalization[0].file_binary)
-    #     # function_arguments = (a, b)
-    #     # process_job = Job(processing, function_arguments)
-    #     # Q.put(process_job)
-    # """
         response = APIResponse({}, 200).response
         return response
     except Exception as e:
@@ -233,7 +196,6 @@ def process_and_save(main_trackout, other_trackouts, all_trackouts, eq_params, r
     print("Processing track")
     sample_rate = 44100
     processor = Processor(main_trackout, other_trackouts, all_trackouts)
-#     trackout = TrackOut.query.get(trackout_id)
     trackout_id = raw_trackout.id
     eq_wav = processor.equalize()
     storage_name = "eq_results.wav"
@@ -297,12 +259,5 @@ def get_eq_results_by_trackout_id(id):
                 BytesIO(eq_binary),
                 attachment_filename="wavFile.wav",
                 as_attachment=True)
-            # rendered = write("wavFile.wav", samplerate, eq_binary)
-
-            # return send_file(
-            #     rendered,
-            #     attachment_filename="wavFile.wav",
-            #     as_attachment=True)
-
     except Exception as e:
         abort(500, e)
