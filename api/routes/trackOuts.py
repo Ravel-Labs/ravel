@@ -223,6 +223,13 @@ def get_eq_from_trackout(id):
 
 def get_trackout_wavfile(id):
     try:
+        raw_trackout = db.session.query(TrackOut).filter_by(id=id).first()
+        if not raw_trackout:
+            abort(400, f"A Trackout with this id {id} does not exist")
+
+        print(f'raw trackout: {raw_trackout}')
+        print(f'trackout to dict: {raw_trackout.to_dict()}')
+            
         pass
     except Exception as e:
         abort(500, e)

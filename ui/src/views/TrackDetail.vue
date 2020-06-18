@@ -60,10 +60,6 @@
                   {{ file.name }}
                 </span>
               </b-field>
-
-              <code>
-                {{ file }}
-              </code>
             </section>
             <footer class="modal-card-foot">
               <button class="button is-primary" @click="submitFile()">Upload</button>
@@ -88,7 +84,7 @@
           <div class="card-content">
             <p>Created at: {{ t.created_at }}</p>
             <p>Type: {{ t.type }}</p>
-
+            <b-button @click="process()" class="is-success">Process</b-button>
             <!-- Manual settings
                   <!-- <b-field label="Compression">
                       <b-slider v-model="t.compression"></b-slider>
@@ -248,6 +244,12 @@ export default {
       console.log("addTrackout: ", this.addTrackout);
       this.addTrackout = !this.addTrackout;
       console.log("addTrackout after: ", this.addTrackout);
+    },
+    process() {
+      this.$store.dispatch('tracks/process')
+    },
+    update () {
+      this.$store.dispatch('track/updateSettings', {})
     }
   }
 };
