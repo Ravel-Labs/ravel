@@ -54,30 +54,29 @@ class TrackOut(db.Model):
     name = db.Column(db.String(1000))
     type = db.Column(db.String(50))
     settings = db.Column(db.String(1000))
-    eq = db.relationship("Equalizer", backref="eq", uselist=False)
+    eq = db.relationship("Equalizer", backref="eq", lazy='subquery', uselist=False)
     de = db.relationship("Compressor", backref="de", uselist=False)
     co = db.relationship("Deesser", backref="co", uselist=False)
 
     '''
     Wav File Representation
     '''
-    file_binary = db.Column(db.LargeBinary)
+    path = db.Column(db.String(1000))
     file_hash = db.Column(db.LargeBinary, unique=True)
 
     def to_dict(self):
-        user = {
+        trackout = {
             "id": self.id,
             "user_id": self.user_id,
             "track_id": self.track_id,
             "created_at": self.created_at,
             "name": self.name,
             "type": self.type,
-            "settings": self.settings,
-            # "file_hash": self.file_hash.decode('utf-8')
+            "path": self.path,
+            "settings": self.settings
         }
-        if not user.get("id"):
-            del user['id']
-        return user
+
+        return trackout
 
 
 class Equalizer(db.Model):
@@ -93,7 +92,7 @@ class Equalizer(db.Model):
     freq = db.Column(db.String)
     filter_type = db.Column(db.String)
     gain = db.Column(db.Float)
-    equalized_binary = db.Column(db.LargeBinary)
+    path = db.Column(db.String(1000))
 
     def to_dict(self):
         return {

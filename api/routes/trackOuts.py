@@ -1,11 +1,17 @@
-from flask import Blueprint, jsonify, abort, request
+from flask import Blueprint, jsonify, abort, request, send_file
 from flask_jwt import jwt_required, current_identity
+
+from ravel.api.services.firestore import publish_to_file_store, retreive_from_file_store
 from ravel.api.models.track_models import TrackOut, Track
 from ravel.api.models.User import User
+from scipy.io.wavfile import write, read
 from ravel.api.models.apiresponse import APIResponse
 from ravel.api import db
+import requests
 import scipy.io as sio
-
+import wave
+import pyrebase
+from os import remove
 from hashlib import md5
 from io import BytesIO
 trackouts_bp = Blueprint('trackouts_bp', __name__)
@@ -144,9 +150,13 @@ def update_trackout(id):
 def add_update_wavfile(id):
     try:
         raw_file = request.files['file']
-        samplerate, data = sio.wavfile.read(raw_file)
+        raw_trackout = TrackOut.query.get(id)
+        trackout_name = raw_trackout.name
+        storage_name = f"{trackout_name}.wav"
+        firestore_path = f"trackouts/{id}/{storage_name}"
+        publish_to_file_store(firestore_path, raw_file)
         update_request = {
-            "file_binary": data.tobytes()
+            "path": firestore_path
         }
         db.session.query(TrackOut).filter_by(id=id).update(update_request)
         db.session.commit()
@@ -157,5 +167,53 @@ def add_update_wavfile(id):
         }
         response = APIResponse(payload, 200).response
         return response
+    except Exception as e:
+        abort(500, e)
+
+
+@trackouts_bp.route('%s/wav/<int:id>' % base_trackouts_url, methods=['GET'])
+def get_wav_from_trackout(id):
+    try:
+        # Get wav path from TrackOut then call firebase service
+        raw_trackout = TrackOut.query.get(id)
+        file_name = f"{raw_trackout.name}.wav"
+        firestore_path = raw_trackout.path
+        retreive_from_file_store(firestore_path)
+
+        # Get file saved to disk and convert into BytesIO
+        sam_rate, data = sio.wavfile.read("trackout.wav")
+        byte_io = BytesIO(bytes())
+        write(byte_io, sam_rate, data)
+        file = send_file(
+            byte_io,
+            attachment_filename=file_name,
+            as_attachment=True)
+        # Remove file from disk
+        remove("trackout.wav")
+        return file
+    except Exception as e:
+        abort(500, e)
+
+@trackouts_bp.route('%s/eq/<int:id>' % base_trackouts_url, methods=['GET'])
+def get_eq_from_trackout(id):
+    try:
+        # Get wav path from TrackOut then call firebase service
+        raw_trackout = TrackOut.query.get(id)
+        eq = raw_trackout.eq
+        firestore_path = eq.path
+        file_name = f"eq_results.wav"
+        retreive_from_file_store(firestore_path)
+
+        # Get file saved to disk and convert into BytesIO
+        sam_rate, data = sio.wavfile.read("trackout.wav")
+        byte_io = BytesIO(bytes())
+        write(byte_io, sam_rate, data)
+        file = send_file(
+            byte_io,
+            attachment_filename=file_name,
+            as_attachment=True)
+        # Remove file from disk
+        remove("trackout.wav")
+        return file
     except Exception as e:
         abort(500, e)
