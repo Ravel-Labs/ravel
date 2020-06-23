@@ -36,7 +36,6 @@ const tracks = {
         state.loading = true
       },
       'GET_TRACKOUTS_SUCCESS' (state, trackouts) {
-        console.log('trackouts: ', trackouts)
         state.loading = false
         state.current.trackouts = trackouts
       },
@@ -44,8 +43,9 @@ const tracks = {
         state.loading = false
         state.error = err
       },
-      'TRACK_FAILURE' (state) {
+      'TRACK_FAILURE' (state, error) {
         state.loading = false
+        state.error = error
       },
       'TRACKOUT_REQUEST' (state) {
         state.loading = true
@@ -55,12 +55,12 @@ const tracks = {
         state.current = trackout
         state.error = undefined
       },
-      'ADD_TRACKOUT_SUCCESS' (state, trackouts) {
+      'ADD_TRACKOUT_SUCCESS' (state, trackout) {
         state.loading = false
         state.error = undefined
         state.current.trackouts.push(trackout)
       },
-      'TRACKOUT_FAILURE' (state, error) {
+      'ADD_TRACKOUT_FAILURE' (state, error) {
         state.error = error
         state.loading = false
       },
@@ -80,7 +80,7 @@ const tracks = {
       }
     },
     actions: {
-      async create ({ commit, state }, track) {
+      async create ({ commit }, track) {
         try {
           commit('TRACK_REQUEST')
           let { data } = await API().post('/tracks', {
@@ -94,7 +94,7 @@ const tracks = {
           commit('TRACK_FAILURE', err)
         }
       },
-      async get ({ commit, state }) {
+      async get ({ commit }) {
         try {
           commit('TRACK_REQUEST')
           let { data } = await API().get('/tracks')
@@ -105,7 +105,7 @@ const tracks = {
           return err
         }
       },
-      async getTrackDetails ({ commit, dispatch }, id) {
+      async getTrackDetails ({ commit }, id) {
         try {
           commit('TRACK_REQUEST')
           let { data } = await API().get(`/tracks/${id}`)
@@ -157,7 +157,7 @@ const tracks = {
           console.error('failed to delete track')
         }
       },
-      async uploadFile ({ commit, state }, payload) {
+      async uploadFile ({ commit }, payload) {
         try {
           let { data } = await api.post(`/trackouts/wav/${payload.id}`)
           commit('UPLOAD_SUCCESS', data)
@@ -169,34 +169,38 @@ const tracks = {
           throw new Error(err)
         }
       },
-      async createTrackoutWithoutWav ({ commit, state }, trackout) {
+      async createTrackoutWithoutWav ({ commit }, trackout) {
         try {
-          const id = window.localStorage.getItem('user_id')
-          let { data } = await API().post('/trackouts', {
-            // TODO: set these correctly
-            owner_id : id,
-            user_id : id,
+          let payload = {
+            user_id : trackout.user_id,
             name : trackout.name,
             type : trackout.type,
-            settings : {
-              eq: {},
-              compression: {}
-            },
             wavefile : trackout.wavefile,
             track_id : trackout.track_id
-          })
+          }
+          console.log('attempting to create trackout with payload: ', payload)
+          let { data } = await API().post('/trackouts', payload)
           commit('ADD_TRACKOUT_SUCCESS', data)
         } catch (err) {
-          console.error(err)
-          throw new Error(err)
+          console.error('FAILED to create trackout without wav: ', err)
+          commit('ADD_TRACKOUT_FAILURE', err)
         }
       },
-      async updateTrackoutWithWav ({ commit, state }, formData) {
+      async updateTrackoutWithWav ({ commit }, payload) {
         try {
-          let { data } = await API().put()
+          let { data } = await API().put(`/trackouts/wav/${payload.id}`,
+            payload.formData,
+            {
+              headers: {
+                'Content-Type': 'multipart/form-data'
+              }
+            } 
+          )
+          console.log('uploaded successfully: ', data)
           commit('UPDATE_TRACKOUT_WAV_SUCCESS', data)
         } catch (err) {
-          console.error('update trackout wav success error: ', err)
+          console.error('wav upload failed: ', err)
+          return err
         }
       }
     }

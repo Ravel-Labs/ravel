@@ -25,8 +25,7 @@ base_trackouts_url = '/api/trackouts'
 @trackouts_bp.route(f"{base_trackouts_url}", methods=['POST'])
 def create_trackout():
     try:
-        # current_identity.id
-        user_id = 1
+        user_id = request.json.get('user_id')
         track_id = request.json.get('track_id')
         type_of_track = request.json.get('type')
         name = request.json.get('name')
@@ -46,6 +45,7 @@ def create_trackout():
         response = APIResponse(trackout, 201).response
         return response
     except Exception as e:
+        print(f'#### exception in POST: #### {e}')
         abort(500, e)
 
 
@@ -53,13 +53,12 @@ def create_trackout():
     GET all
 '''
 
-# TODO params not body
 @trackouts_bp.route(base_trackouts_url, methods={'GET'})
 def get_trackouts():
     try:
         track_id = request.args.get('track_id')
 
-        print(f'getting trackouts for track id: {track_id}')
+        print(f'###  Getting trackouts for track_id: {track_id}')
 
         # get trackouts by track_id
         if track_id:
@@ -158,8 +157,10 @@ def add_update_wavfile(id):
         update_request = {
             "path": firestore_path
         }
+        print(f'add update wavfile id: {id}')
         db.session.query(TrackOut).filter_by(id=id).update(update_request)
         db.session.commit()
+        print(f'committed: samplerate: {samplerate} - data: {len(data)}')
         payload = {
             "action": "update",
             "table": "trackout",
@@ -194,6 +195,7 @@ def get_wav_from_trackout(id):
     except Exception as e:
         abort(500, e)
 
+
 @trackouts_bp.route('%s/eq/<int:id>' % base_trackouts_url, methods=['GET'])
 def get_eq_from_trackout(id):
     try:
@@ -215,5 +217,19 @@ def get_eq_from_trackout(id):
         # Remove file from disk
         remove("trackout.wav")
         return file
+    except Exception as e:
+        abort(500, e)
+
+
+def get_trackout_wavfile(id):
+    try:
+        raw_trackout = db.session.query(TrackOut).filter_by(id=id).first()
+        if not raw_trackout:
+            abort(400, f"A Trackout with this id {id} does not exist")
+
+        print(f'raw trackout: {raw_trackout}')
+        print(f'trackout to dict: {raw_trackout.to_dict()}')
+            
+        pass
     except Exception as e:
         abort(500, e)
