@@ -15,7 +15,6 @@ from ravel.ravellib.lib.preprocessing import crest_factor, compute_lfe
 
 class Processor():
     def __init__(self, wavfile, listOfWavfiles, trackouts_binaries):
-        print(f'Creating Processor with wavfile')
         self.wavfile = wavfile
         self.all_trackout_binaries = trackouts_binaries
         self.listOfWavfiles = listOfWavfiles
@@ -66,28 +65,17 @@ class Equalize():
     """
 
     def __init__(self, main_trackout, other_trackouts):
-        self.wavfile = main_trackout
-        self.listOfWavfiles = other_trackouts
-
-    def create_npa_from_wav(self, wav_file):
-        load_bytes = BytesIO(wav_file)
-        load_bytes.seek(0)
-        picked_obj = pickle.dumps(load_bytes)
-        loaded_np = np.frombuffer(picked_obj, dtype=np.int32)
-        print(f"what is the type return {type(loaded_np)}")
-        return loaded_np
+        # trackout to be processed
+        self.main_trackout = main_trackout
+        # other trackouts does not contain main_trackout
+        self.other_trackouts = other_trackouts
 
     def equalize(self):
-        print(f'Equalizer.equalize()')
-        # REF: https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.io.wavfile.read.html
-        main_wav_np = self.wavfile
-        # List of eq created from the rest of the trackout set excluding one trackout
+        # List of EQSignals, which contain a mono signal npArray
         signals = list()
-        print(f"Creating signals npArray for {len(self.listOfWavfiles)}s")
-        if len(self.listOfWavfiles) == 0:
+        if len(self.other_trackouts) == 0:
             print("This will break things?")
-        for loaded_np in self.listOfWavfiles:
-            print(type(loaded_np))
+        for loaded_np in self.other_trackouts:
             _eq = EQSignal(loaded_np, 1024, 1024, 1024, -12, "vocal", 10, 3, -2)
             signals.append(_eq)
 
@@ -96,19 +84,12 @@ class Equalize():
                 1: numpy array
                 3: more to be desired...
         '''
-        eq = EQSignal(main_wav_np, 1024, 1024,
+        eq = EQSignal(self.main_trackout, 1024, 1024,
                       1024, -12, "vocal", 10, 3, -2)
-        print(f'eq signal: {eq}')
 
-        # signals is all of the other trackouts signals (aka numpy arrays)
+        # equalize the trackout and return
         params = eq.eq_params(signals)
-        print(f'params: {params}')
-
-        # equalize the track
         equalized = eq.equalization(params, 2)
-        print(f'equalized: {equalized}\ntype: {type(equalized)}')
-
-        # REF: https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.write.html
         print(f'returning eqwave of type {type(equalized)}: {equalized}')
         return equalized
 
@@ -122,15 +103,7 @@ class Compress():
         self.wavfile = wavfile
         self.all_trackout_binaries = all_trackout_binaries
         self.signal_aggregator = signal_aggregator
-        print("Creating a new Compressor: ", self)
 
-    def create_npa_from_wav(self, wav_file):
-        load_bytes = BytesIO(wav_file)
-        load_bytes.seek(0)
-        picked_obj = pickle.dumps(load_bytes)
-        loaded_np = np.frombuffer(picked_obj)
-        print(f"what is the type return {type(loaded_np)}")
-        return loaded_np
 
     def compress(self):
         """
@@ -155,11 +128,10 @@ class Compress():
         audio_type = "vocal"
 
         # do this for each track out in a track
-        for track in trackouts:
+        for np_arr_track in trackouts:
             # Convert wav binary to np_array
-            np_arr = self.create_npa_from_wav(track)
             cp = CompressSignal(
-                np_arr, 1024, 1024, 123,
+                np_arr_track, 1024, 1024, 123,
                 200, audio_type, 0.2, 1, 1000,
                 2, 0.08, 1.0)
 

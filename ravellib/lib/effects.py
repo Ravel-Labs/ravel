@@ -15,19 +15,10 @@ class Signal:
         self.window_size = window_size
         self.hop_length = hop_length
         self.signal = signal
-        print(type(signal))
         self.signal_db = librosa.amplitude_to_db(self.signal)
         self.peak = peak
         self.audio_type = audio_type
         self.x_norm = preprocessing.normalize(self.signal, self.peak)
-        print(type(self.n_fft ))
-
-        print(type(self.window_size))
-        print(type(self.n_fft ))
-        print(type(self.hop_length))
-    
-         
-        
         
         self.fft = np.abs(librosa.core.stft(self.signal, n_fft=self.n_fft, 
                                             win_length=self.window_size, hop_length=self.hop_length))
