@@ -2,10 +2,10 @@ from ravel.api.services.firestore import retreive_from_file_store, publish_to_fi
 from ravel.api.services.effects import reverb, equalizer, compressor, deesser
 from ravel.api.models.track_models import Equalizer, Deesser, Compressor
 from ravel.api.services.orchestration.processing import Processor
+from ravel.api.services.utility import create_trackout_exclusive_list, convert_to_mono_signal
 from ravel.api import db, Q, Job
 from scipy.io.wavfile import write
 from os import remove
-import librosa
 
 class Orchestrator():
     """
@@ -29,11 +29,12 @@ class Orchestrator():
         self.co_params = {"trackout_id": 1, "ratio": 1.1, "threshold": 1.0,
                           "knee_width": 1, "attack": 1.1, "release": 1.2}
         self.de_params = {"sharpness_avg": 1}
+
     def orchestrate(self):
         try:
-            self.convert_to_mono_signal()
+            self.mono_signal_trackouts = convert_to_mono_signal(self.all_trackouts, self.sample_rate)
             for i, raw_trackout in enumerate(self.all_trackouts):
-                self.create_trackout_exclusive_list(i)
+                self.main_trackout, self.other_trackouts = create_trackout_exclusive_list(self.mono_signal_trackouts, i)
                 # setup queue parameters and process
                 base_processing_args = [raw_trackout]
                 """Initiate Equalize"""
@@ -42,7 +43,7 @@ class Orchestrator():
                 print(f'processing job:  {processing_job}')
                 Q.put(processing_job)  # currently cannot return
                 
-                """Initiate Compress"""
+                """ Initiate Compress """
                 # co_args = base_processing_args + ["compress"]
                 # processing_job = Job(self.process_and_save, co_arguments)
                 # print(f'processing job:  {processing_job}')
@@ -54,7 +55,7 @@ class Orchestrator():
                 # print(f'processing job:  {processing_job}')
                 # Q.put(processing_job) # currently cannot return
                 
-                """Initiate Reverb"""
+                """ Initiate Reverb """
                 # rev_args = base_processing_args + ["reverb"]
                 # processing_job = Job(self.process_and_save, rev_args)
                 # print(f'processing job:  {processing_job}')
@@ -67,31 +68,6 @@ class Orchestrator():
             return True
         except Exception as err:
             raise Exception(f"Error occurred in orchestration:\n {err}")
-
-    def Builder(self):
-        """
-        The Handler works with the builder instance to create the processing
-        stack for each request.
-        """
-        return self._builder
-
-    def convert_to_mono_signal(self):
-        """
-        Convert all of the trackouts for a track into mono signals
-        """
-        for index, trackout in enumerate(self.all_trackouts):
-            # Fetch wavfile from firebase
-            path = trackout.path
-            retreive_from_file_store(path, str(index))
-            trackout_mono_signal, sr = librosa.load(f"trackout_{index}.wav", sr=self.sample_rate)
-            self.mono_signal_trackouts.append(trackout_mono_signal)
-    
-    def create_trackout_exclusive_list(self, index):
-        # Trackout to run processing on
-        self.main_trackout = self.mono_signal_trackouts[index]
-        # All other trackouts except main_trackout
-        self.other_trackouts = \
-            self.mono_signal_trackouts[:index-1] + self.mono_signal_trackouts[index:]
     
     def process_and_save(self, raw_trackout, effect):
         # def reverb_and_save(main_trackout, other_trackouts, all_trackouts, de_params, raw_trackout):
