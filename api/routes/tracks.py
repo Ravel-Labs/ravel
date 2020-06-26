@@ -2,28 +2,21 @@ from io import BytesIO
 from hashlib import md5
 from flask import Blueprint, abort, request, send_file
 from flask_jwt import jwt_required, current_identity
-from scipy.io.wavfile import write, read
 from ravel.api import db
-import numpy as np
 from ravel.api.models.track_models import Track, TrackOut
-from ravel.api.models.track_models import Equalizer
+from ravel.api.models.track_models import Equalizer, Deesser
 from ravel.api.services.firestore import retreive_from_file_store, publish_to_file_store
 from ravel.api.routes.trackOuts import get_wav_from_trackout
 from ravel.api import ADMINS_FROM_EMAIL_ADDRESS, mail, Q, Job
-from ravel.api.processing import Handler, Processor
+from ravel.api.services.orchestration.processing import Orchestrator, Processor
 from ravel.api.services.email.email import email_proxy
 from ravel.api.models.apiresponse import APIResponse
-from os import remove
 import json
-import time
-import scipy.io as sio
-import librosa
+
 
 tracks_bp = Blueprint('tracks_bp', __name__)
 base_tracks_url = '/api/tracks'
 
-# Creational pattern to the processing layer
-handler = Handler()
 
 # @jwt_required()
 @tracks_bp.route(base_tracks_url, methods=['POST'])
@@ -151,44 +144,12 @@ def process_track(id):
         # extract trackout data from track
         raw_track = Track.query.get(id)
         trackouts = raw_track.trackouts.all()
-        trackout_paths = [track_out.path for track_out in trackouts]
-        mono_signal_trackouts = list()
-        # load trackouts from firebase and create a list of mono signals
-        for index, path in enumerate(trackout_paths):
-            retreive_from_file_store(path, str(index))
-            trackout_mono_signal, sr = librosa.load(f"trackout_{index}.wav", sr=44100)
-            mono_signal_trackouts.append(trackout_mono_signal)
-
-        # process for each trackout
-        for i, raw_trackout in enumerate(trackouts):
-            # TODO get this from DB model
-            eq_params = {
-                "trackout_id": 1,
-                "freq": "1200",
-                "filter_type": 0,
-                "gain": 1
-            }
-            # Trackout to run processing on
-            main_trackout = mono_signal_trackouts[i]
-            # All other trackouts except main_trackout
-            remaining_trackouts = \
-                mono_signal_trackouts[:i-1] + mono_signal_trackouts[i:]
-            # setup queue parameters and process
-            eq_arguments = (
-                main_trackout,
-                remaining_trackouts,
-                mono_signal_trackouts,
-                eq_params,
-                raw_trackout)
-            processing_job = Job(process_and_save, eq_arguments)
-            print(f'processing job:  {processing_job}')
-            Q.put(processing_job) # currently cannot return
-            
-        # remove all trackouts stored on disk
-        for i, _ in enumerate(trackout_paths):
-            remove(f"trackout_{i}.wav")
+        orchestrator = Orchestrator(trackouts)
+        orchestrator.orchestrate()
         payload = {
-            "status": "processing"
+            "action": "processing",
+            "table": "track",
+            "id": id
         }
         response = APIResponse(payload, 200).response
         return response
@@ -196,34 +157,7 @@ def process_track(id):
         abort(500, e)
 
 
-def process_and_save(main_trackout, other_trackouts, all_trackouts, eq_params, raw_trackout):
-    print("Processing track")
-    sample_rate = 44100
-    trackout_id = raw_trackout.id
-    trackout_name = raw_trackout.name
-    storage_name = "eq_results.wav"
-    firestore_path = f"eq/{trackout_id}/{storage_name}"
-    # create and run processor for equalize
-    processor = Processor(main_trackout, other_trackouts, all_trackouts)
-    eq_wav = processor.equalize()
-    write(storage_name, sample_rate, eq_wav)
-    print(f"Processor.equalized completed: {bool(eq_wav.any())}")
-    # publish_to_file_store and remove
-    publish_to_file_store(firestore_path, storage_name)
-    remove(storage_name)
-    # save EQ results to database
-    raw_equalizer = Equalizer(
-        freq=eq_params["freq"],
-        filter_type=eq_params["filter_type"],
-        gain=eq_params["gain"],
-        path=firestore_path,
-        eq=raw_trackout  # Relationship with raw_trackout
-    )
-    db.session.add(raw_equalizer)
-    db.session.commit()
-
-
-# TODO Rething what blueprint this falls under
+# TODO Rethink what blueprint this falls under
 @tracks_bp.route(f'{base_tracks_url}/eq/<int:id>', methods={'GET'})
 def get_eq_results_by_trackout_id(id):
     try:

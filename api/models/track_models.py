@@ -115,6 +115,7 @@ class Deesser(db.Model):
         Configurable Fields
     '''
     sharpness_avg = db.Column(db.Float)
+    path = db.Column(db.String(1000))
 
     def to_dict(self):
         return {
@@ -139,6 +140,7 @@ class Compressor(db.Model):
     knee_width = db.Column(db.Float)
     attack = db.Column(db.Float)
     release = db.Column(db.Float)
+    path = db.Column(db.String(1000))
 
     def to_dict(self):
         return {
