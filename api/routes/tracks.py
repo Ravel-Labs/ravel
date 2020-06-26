@@ -3,12 +3,12 @@ from hashlib import md5
 from flask import Blueprint, abort, request, send_file
 from flask_jwt import jwt_required, current_identity
 from ravel.api import db
-from ravel.api.models.track_models import Track, TrackOut
-from ravel.api.models.track_models import Equalizer, Deesser
+from ravel.api.models.track_models import Track, TrackOut, Equalizer, Deesser
 from ravel.api.services.firestore import retreive_from_file_store, publish_to_file_store
 from ravel.api.routes.trackOuts import get_wav_from_trackout
 from ravel.api import ADMINS_FROM_EMAIL_ADDRESS, mail, Q, Job
-from ravel.api.services.orchestration.processing import Orchestrator, Processor
+from ravel.api.services.orchestration.processing import Processor
+from ravel.api.services.orchestration.orchestrator import Orchestrator
 from ravel.api.services.email.email import email_proxy
 from ravel.api.models.apiresponse import APIResponse
 import json
