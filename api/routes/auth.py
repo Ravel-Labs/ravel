@@ -73,6 +73,7 @@ def authentication_handler(email, password):
         return None
 
     if check_password_hash(user.password_hash, password):
+        print(f'found user in auth: {user}')
         return user
 
     return None

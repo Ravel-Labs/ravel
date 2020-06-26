@@ -32,6 +32,7 @@ const auth = {
        state.error = undefined
        state.token = token
        ls.setItem('token', token)
+       router.push({ name: 'tracks' })
     },
     'LOGIN_FAILURE' (state, error) {
       state.loading = false
@@ -68,7 +69,7 @@ const auth = {
     }
   },
   getters: {
-    token: () => ls.getItem('token'),
+    token: state => state.token,
     user: state => state.user
   },
   actions: {
@@ -80,7 +81,6 @@ const auth = {
           password: user.password,
         })
         commit('LOGIN_SUCCESS', data['access_token'])
-        commit('SET_USER', user)
       } catch (error) {
         commit('LOGIN_FAILURE', error)
       }

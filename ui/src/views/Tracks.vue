@@ -2,7 +2,7 @@
   <section class="section">
     <CreateTrack v-if="showModal"></CreateTrack>
     <div class="container">
-      <nav class="panel">
+      <nav class="panel" v-if="tracks">
         <p class="panel-heading">
             Tracks
         </p>

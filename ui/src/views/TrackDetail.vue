@@ -11,7 +11,7 @@
         </div>
 
         <!-- If Empty Trackouts -->
-        <div class="tile is-ancestor" v-if="!track.trackouts">
+        <div class="tile is-ancestor" v-if="track.trackouts.length < 1">
           <div class="tile is-vertical">
             <div class="tile">
               <div class="tile is-parent is-vertical">

@@ -65,19 +65,11 @@ export default {
   }),
   methods: {
     login (user) {
-      this.$store.dispatch('auth/login', user)
-      .then((data) => {
-        this.$buefy.toast.open({
-          message: 'Logged in.',
-          type: 'is-success'
+      return this.$store.dispatch('auth/login', user)
+        .then((data) => {
+          console.log('login return:', data)
         })
-
-        return data
-      })
-      .then((data) => {
-        router.push({ name: 'tracks' })
-        this.$store.dispatch('auth/check')
-      })
+        .catch((err) => console.error('login error:', err))
     }
   }
 };
