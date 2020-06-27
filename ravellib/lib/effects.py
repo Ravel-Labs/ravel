@@ -311,6 +311,7 @@ class DeEsserSignal(Signal):
         # fix padding that makes these dimensions not always aligned via stft
         # quick fix is a truncation of array 
         y = np.zeros((M, N))
+        # TODO uncomment this..
         for m in range(9):
             print(m)
             print(len(gain))
@@ -324,10 +325,10 @@ class DeEsserSignal(Signal):
 
 
 class ReverbSignal(Signal):
-    def __init__(self, path, signal, n_fft, window_size, hop_length, peak, audio_type,
+    def __init__(self, signal, n_fft, window_size, hop_length, peak, audio_type,
                 reverbance, hf_damping, room_scale, wet_gain, effect_percent, hp_freq, lp_freq, order,
                 stereo_depth, pre_delay):
-        super().__init__(path, signal, n_fft, window_size, hop_length, peak, audio_type)
+        super().__init__(signal, n_fft, window_size, hop_length, peak, audio_type)
         self.reverbance = reverbance
         self.hf_damping = hf_damping
         self.room_scale = room_scale
