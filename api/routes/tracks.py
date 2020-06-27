@@ -18,7 +18,8 @@ tracks_bp = Blueprint('tracks_bp', __name__)
 base_tracks_url = '/api/tracks'
 
 
-# @jwt_required()
+
+@jwt_required()
 @tracks_bp.route(base_tracks_url, methods=['POST'])
 def create_track():
     try:
@@ -50,7 +51,7 @@ def create_track():
 '''
 
 
-# @jwt_required()
+@jwt_required()
 @tracks_bp.route(base_tracks_url, methods={'GET'})
 def get_tracks():
     try:
@@ -64,7 +65,7 @@ def get_tracks():
         abort(500, e)
 
 
-# @jwt_required()
+@jwt_required()
 @tracks_bp.route('%s/<int:id>' % base_tracks_url, methods={'GET'})
 def get_track_by_id(id):
     try:
@@ -78,7 +79,7 @@ def get_track_by_id(id):
         abort(500, e)
 
 
-# @jwt_required()
+@jwt_required()
 @tracks_bp.route('%s/delete/<int:id>' % base_tracks_url, methods={'DELETE'})
 def delete_track_by_id(id):
     try:
@@ -98,7 +99,7 @@ def delete_track_by_id(id):
         abort(500, e)
 
 
-# @jwt_required()
+@jwt_required()
 @tracks_bp.route('%s/<int:id>' % base_tracks_url, methods=['PUT'])
 def update_track(id):
     try:
@@ -116,6 +117,7 @@ def update_track(id):
         abort(500, e)
 
 
+@jwt_required()
 @tracks_bp.route(f'{base_tracks_url}/trackouts/<int:id>', methods={'GET'})
 def get_trackouts_by_track_id(id):
     try:
@@ -130,7 +132,7 @@ def get_trackouts_by_track_id(id):
         abort(500, e)
 
 
-# @jwt_required()
+@jwt_required()
 @tracks_bp.route('%s/process/<int:id>' % base_tracks_url, methods=['PUT'])
 def process_track(id):
     try:
@@ -174,7 +176,7 @@ def process_track(id):
             print(f'processing job:  {processing_job}')
             resolved = Q.put(processing_job)
             print(f'Resolved: {type(resolved)}')
-            
+
         # Todo remove all trackouts in storage
         for i, _ in enumerate(trackout_paths):
             remove(f"trackout_{i}.wav")
@@ -200,7 +202,7 @@ def process_and_save(main_trackout, other_trackouts, all_trackouts, eq_params, r
     # publish_to_file_store
     publish_to_file_store(firestore_path, storage_name)
     remove(storage_name)
-    
+
     raw_equalizer = Equalizer(
         freq=eq_params["freq"],
         filter_type=eq_params["filter_type"],
