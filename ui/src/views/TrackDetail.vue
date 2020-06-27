@@ -10,13 +10,40 @@
           </div>
         </div>
 
+        <div class="columns">
+          <div class="column">
+            <b-button class="is-info" @click="toggleAddTrackout()">
+              Add Trackout
+            </b-button>
+          </div>
+        </div>
+
+        <div class="columns">
+          <div class="column">
+            <b-button class="is-success" @click="process()">Process</b-button>
+          </div>
+          <div class="column">
+            <b-switch v-model="isCompressed">
+              Compression
+            </b-switch>
+            <b-switch v-model="isEQ">
+              AI EQ
+            </b-switch>
+            <b-switch v-model="isReverbed">
+              Reverb
+            </b-switch>
+            <b-switch v-model="isVocal">
+              Vocal Treatment 
+            </b-switch>
+          </div>
+        </div>
         <!-- If Empty Trackouts -->
         <div class="tile is-ancestor" v-if="track.trackouts.length < 1">
           <div class="tile is-vertical">
             <div class="tile">
               <div class="tile is-parent is-vertical">
                 <article class="tile is-child notification is-primary is-vcentered">
-                  <p>You haven't created a trackout yet. Create one to get started!</p>
+                  <p>You haven't added a trackout yet. Add one to get started on your track!</p>
                   <p>
                     <b-button class="is-info" @click="toggleAddTrackout()">Create Trackout</b-button>
                   </p>
@@ -26,11 +53,6 @@
           </div>
         </div>
 
-        <div class="columns">
-          <b-button class="is-info" @click="toggleAddTrackout()">
-            Add Trackout
-          </b-button>
-        </div>
 
         <!-- Add Trackout Modal -->
         <div class="modal" v-bind:class="{ 'is-active': addTrackout }">
@@ -84,7 +106,6 @@
           <div class="card-content">
             <p>Created at: {{ t.created_at }}</p>
             <p>Type: {{ t.type }}</p>
-            <b-button @click="process()" class="is-success">Process</b-button>
             <!-- Manual settings
                   <!-- <b-field label="Compression">
                       <b-slider v-model="t.compression"></b-slider>
@@ -159,6 +180,10 @@ export default {
         name: "",
         type: ""
       },
+      isCompressed: false,
+      isReverbed: false,
+      isEQ: false,
+      isVocal: false,
       trackTypes: [
         {
           id: 1,
@@ -199,7 +224,7 @@ export default {
   },
   computed: {
     ...mapState({
-      track: state => state.tracks.current,
+      track: state => state.tracks.current || {},
       token: state => state.auth.token,
       user: state => state.user
     })
@@ -218,8 +243,7 @@ export default {
         id: this.$route.params.id
       };
       // attempt track creation and upload to it.
-      this.$store
-        .dispatch("tracks/createTrackoutWithoutWav", trackPayload)
+      this.$store.dispatch("tracks/createTrackoutWithoutWav", trackPayload)
         .then(data => {
           this.$store.dispatch("tracks/updateTrackoutWithWav", filePayload).then(data => {
             // everything succeeded

@@ -144,20 +144,75 @@ def process_track(id):
         # extract trackout data from track
         raw_track = Track.query.get(id)
         trackouts = raw_track.trackouts.all()
-        orchestrator = Orchestrator(trackouts)
-        orchestrator.orchestrate()
-        payload = {
-            "action": "processing",
-            "table": "track",
-            "id": id
-        }
-        response = APIResponse(payload, 200).response
+        trackout_paths = [track_out.path for track_out in trackouts]
+        mono_signal_trackouts = list()
+        # for each path request file from firebase
+        for index, path in enumerate(trackout_paths):
+            retreive_from_file_store(path, str(index))
+            sam_rate, main_trackout = sio.wavfile.read(f"trackout_{index}.wav")
+            raw_trackout_stereo_signal = main_trackout.astype(np.float32)
+            trackout_mono_signal = raw_trackout_stereo_signal.sum(axis=1) / 2
+            mono_signal_trackouts.append(trackout_mono_signal)
+        # Equalize each trackout A in a Set against the subset (totalSet - A)
+        for i, raw_trackout in enumerate(trackouts):
+            eq_params = {
+                "trackout_id": 1,
+                "freq": "1200",
+                "filter_type": 0,
+                "gain": 1
+            }
+            main_trackout = mono_signal_trackouts[i]
+            remaining_trackouts = \
+                mono_signal_trackouts[:i-1] + mono_signal_trackouts[i:]
+            eq_arguments = (
+                main_trackout,
+                remaining_trackouts,
+                mono_signal_trackouts,
+                eq_params,
+                raw_trackout)
+            processing_job = Job(process_and_save, eq_arguments)
+            print(f'processing job:  {processing_job}')
+            resolved = Q.put(processing_job)
+            print(f'Resolved: {type(resolved)}')
+            
+        # Todo remove all trackouts in storage
+        for i, _ in enumerate(trackout_paths):
+            remove(f"trackout_{i}.wav")
+        response = APIResponse({}, 200).response
         return response
     except Exception as e:
         abort(500, e)
 
 
-# TODO Rethink what blueprint this falls under
+def process_and_save(main_trackout, other_trackouts, all_trackouts, eq_params, raw_trackout):
+    print("Processing track")
+    # NB: Assumed sample rate of 44100
+    sample_rate = 44100
+    processor = Processor(main_trackout, other_trackouts, all_trackouts)
+    trackout_id = raw_trackout.id
+    eq_wav = processor.equalize()
+    storage_name = "eq_results.wav"
+    write(storage_name, sample_rate, eq_wav)
+    print(f"Processor.equalized completed: {bool(eq_wav.any())}")
+    print(f"Type of processor results: {type(eq_wav)}")
+    trackout_name = raw_trackout.name
+    firestore_path = f"eq/{trackout_id}/{storage_name}"
+    # publish_to_file_store
+    publish_to_file_store(firestore_path, storage_name)
+    remove(storage_name)
+    
+    raw_equalizer = Equalizer(
+        freq=eq_params["freq"],
+        filter_type=eq_params["filter_type"],
+        gain=eq_params["gain"],
+        path=firestore_path,
+        eq=raw_trackout  # Relationship with raw_trackout
+    )
+    db.session.add(raw_equalizer)
+    db.session.commit()
+
+
+# TODO Should be moved into its own blueprint /eq/<track_id>/<trackout_id>  = not totally correct
 @tracks_bp.route(f'{base_tracks_url}/eq/<int:id>', methods={'GET'})
 def get_eq_results_by_trackout_id(id):
     try:
