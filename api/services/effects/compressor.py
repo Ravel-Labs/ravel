@@ -7,7 +7,7 @@ class Compress():
     def __init__(self, all_trackouts, signal_aggregator):
         # TODO all of all - main_trackout
         self.all_trackouts = all_trackouts
-        self.signal_aggregator = signal_aggregator
+        self.agg = signal_aggregator
 
 
     def compress(self):
@@ -22,8 +22,6 @@ class Compress():
         audio_type = "vocal"
         num_signals = len(self.all_trackouts)
         print(self.all_trackouts[0].dtype)
-        sample_rate = 44100
-        agg = SignalAggregator(sample_rate, num_signals)
         comp_signals = []  # All the other trackouts in a track np array of signals
         comp_lfe = []  # Convenience methods
         comp_crest = []
@@ -40,12 +38,12 @@ class Compress():
             cp_lfe = cp.lfe
             comp_crest.append(cp_crest_factor)
             comp_lfe.append(cp_lfe)
-            cfa = self.signal_aggregator.cfa(comp_crest)
-            lfa = self.signal_aggregator.lfa(comp_lfe)
+            cfa = self.agg.cfa(comp_crest)
+            lfa = self.agg.lfa(comp_lfe)
             comp_params = cp.comp_params(cfa=cfa, lfa=lfa)
 
-        lfa = agg.lfa(comp_lfe)
-        cfa = agg.cfa(comp_crest)
+        lfa = self.agg.lfa(comp_lfe)
+        cfa = self.agg.cfa(comp_crest)
 
         for mono_signal in comp_signals:
             cp = mono_signal.comp_params(cfa, lfa)

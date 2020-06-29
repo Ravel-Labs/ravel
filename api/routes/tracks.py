@@ -143,7 +143,10 @@ def process_track(id):
 
         # extract trackout data from track
         raw_track = Track.query.get(id)
+        if not raw_track:
+            abort(404, f"There aren't any trackouts for track {id}")
         trackouts = raw_track.trackouts.all()
+
         orchestrator = Orchestrator(trackouts)
         orchestrator.orchestrate()
         payload = {

@@ -35,7 +35,7 @@ def create_app():
     ))
     CORS(app)
     from .models import User
-    from .models.track_models import TrackOut, Track, Equalizer, Compressor, Deesser
+    from .models.track_models import TrackOut, Track, Equalizer, Compressor, Deesser, Reverb
     from .routes.auth import authentication_handler, identity_handler
     JWT(app, authentication_handler, identity_handler)
 

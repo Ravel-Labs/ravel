@@ -1,11 +1,12 @@
 from ravel.api.services.firestore import retreive_from_file_store, publish_to_file_store
 from ravel.api.services.effects import reverb, equalizer, compressor, deesser
-from ravel.api.models.track_models import Equalizer, Deesser, Compressor
+from ravel.api.models.track_models import Equalizer, Deesser, Compressor, Reverb
 from ravel.api.services.orchestration.processing import Processor
 from ravel.api.services.utility import create_trackout_exclusive_list, convert_to_mono_signal
 from ravel.api import db, Q, Job
 from scipy.io.wavfile import write
 from os import remove
+
 
 class Orchestrator():
     """
@@ -45,21 +46,21 @@ class Orchestrator():
                 
                 """ Initiate Compress """
                 # co_args = base_processing_args + ["compress"]
-                # processing_job = Job(self.process_and_save, co_arguments)
+                # processing_job = Job(self.process_and_save, co_args)
                 # print(f'processing job:  {processing_job}')
                 # Q.put(processing_job) # currently cannot return
                 
                 """ Initiate Deessor """
-                # de_args = base_processing_args + ["deesser"]
-                # processing_job = Job(self.process_and_save, de_args)
-                # print(f'processing job:  {processing_job}')
-                # Q.put(processing_job) # currently cannot return
+                de_args = base_processing_args + ["deesser"]
+                processing_job = Job(self.process_and_save, de_args)
+                print(f'processing job:  {processing_job}')
+                Q.put(processing_job) # currently cannot return
                 
                 """ Initiate Reverb """
-                # rev_args = base_processing_args + ["reverb"]
-                # processing_job = Job(self.process_and_save, rev_args)
-                # print(f'processing job:  {processing_job}')
-                # Q.put(processing_job) # currently cannot return
+                rev_args = base_processing_args + ["reverb"]
+                processing_job = Job(self.process_and_save, rev_args)
+                print(f'processing job:  {processing_job}')
+                Q.put(processing_job) # currently cannot return
 
             # remove all trackouts stored on disk
             # TODO turn into function
@@ -81,21 +82,25 @@ class Orchestrator():
 
             processed_result = self.processor.reverb(self.main_trackout)
             # TODO Create db model
-            # db_model = Reverb(
-            #     sharpness_avg=de_params["sharpness_avg"],
-            #     path=firestore_path,
-            #     de=raw_trackout  # Relationship with raw_trackout
-            # )
+            db_model = Reverb(
+                path=firestore_path,
+                re=raw_trackout  # Relationship with raw_trackout
+            )
         elif effect == "deesser":
             effect_prefix = "de"
             storage_name = f"{effect_prefix}_results.wav"
             firestore_path = f"{effect_prefix}/{trackout_id}/{storage_name}"
             processed_result = self.processor.deesser(self.main_trackout)
+            db_model = Deesser(
+                sharpness_avg=self.de_params["sharpness_avg"],
+                path=firestore_path,
+                de=raw_trackout  # Relationship with raw_trackout
+            )
         elif effect == "compress":
             effect_prefix = "co"
             storage_name = f"{effect_prefix}_results.wav"
             firestore_path = f"{effect_prefix}/{trackout_id}/{storage_name}"
-            processed_result = self.processor.compress(self.all_trackouts)
+            processed_result = self.processor.compress(self.main_trackout)
             db_model = Compressor(
                 freq=self.co_params["freq"],
                 filter_type=self.co_params["filter_type"],
@@ -123,5 +128,6 @@ class Orchestrator():
         publish_to_file_store(firestore_path, storage_name)
         remove(storage_name)
         # save effect results to database
-        db.session.add(db_model)
-        db.session.commit()
+        if db_model:
+            db.session.add(db_model)
+            db.session.commit()

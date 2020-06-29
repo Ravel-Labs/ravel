@@ -15,8 +15,8 @@ class Processor():
         print(f"Successful equalization: \n\t {type(processed)}")
         return processed
 
-    def compress(self, all_trackouts):
-        co = compressor.Compress(all_trackouts, self.signal_aggregator)
+    def compress(self, main_trackout):
+        co = compressor.Compress(main_trackout, self.signal_aggregator)
         processed = co.compress()
         print(f"Successful compression of type {type(processed)}: \n\t{processed}")
         return processed
