@@ -55,8 +55,8 @@ class TrackOut(db.Model):
     type = db.Column(db.String(50))
     settings = db.Column(db.String(1000))
     eq = db.relationship("Equalizer", backref="eq", lazy='subquery', uselist=False)
-    de = db.relationship("Compressor", backref="de", uselist=False)
-    co = db.relationship("Deesser", backref="co", uselist=False)
+    de = db.relationship("Deesser", backref="de", uselist=False)
+    co = db.relationship("Compressor", backref="co", uselist=False)
 
     '''
     Wav File Representation

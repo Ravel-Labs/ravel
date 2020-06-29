@@ -220,16 +220,50 @@ def get_eq_from_trackout(id):
     except Exception as e:
         abort(500, e)
 
-
-def get_trackout_wavfile(id):
+@trackouts_bp.route('%s/co/<int:id>' % base_trackouts_url, methods=['GET'])
+def get_co_from_trackout(id):
     try:
-        raw_trackout = db.session.query(TrackOut).filter_by(id=id).first()
-        if not raw_trackout:
-            abort(400, f"A Trackout with this id {id} does not exist")
+        # Get wav path from TrackOut then call firebase service
+        raw_trackout = TrackOut.query.get(id)
+        co = raw_trackout.co
+        firestore_path = co.path
+        file_name = f"co_results.wav"
+        retreive_from_file_store(firestore_path)
 
-        print(f'raw trackout: {raw_trackout}')
-        print(f'trackout to dict: {raw_trackout.to_dict()}')
-            
-        pass
+        # Get file saved to disk and convert into BytesIO
+        sam_rate, data = sio.wavfile.read("trackout.wav")
+        byte_io = BytesIO(bytes())
+        write(byte_io, sam_rate, data)
+        file = send_file(
+            byte_io,
+            attachment_filename=file_name,
+            as_attachment=True)
+        # Remove file from disk
+        remove("trackout.wav")
+        return file
+    except Exception as e:
+        abort(500, e)
+
+@trackouts_bp.route('%s/de/<int:id>' % base_trackouts_url, methods=['GET'])
+def get_de_from_trackout(id):
+    try:
+        # Get wav path from TrackOut then call firebase service
+        raw_trackout = TrackOut.query.get(id)
+        de = raw_trackout.de
+        firestore_path = de.path
+        file_name = f"de_results.wav"
+        retreive_from_file_store(firestore_path)
+
+        # Get file saved to disk and convert into BytesIO
+        sam_rate, data = sio.wavfile.read("trackout.wav")
+        byte_io = BytesIO(bytes())
+        write(byte_io, sam_rate, data)
+        file = send_file(
+            byte_io,
+            attachment_filename=file_name,
+            as_attachment=True)
+        # Remove file from disk
+        remove("trackout.wav")
+        return file
     except Exception as e:
         abort(500, e)
