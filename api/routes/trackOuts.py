@@ -150,6 +150,8 @@ def add_update_wavfile(id):
     try:
         raw_file = request.files['file']
         raw_trackout = TrackOut.query.get(id)
+        if not raw_trackout:
+            abort(404, f"There isn't a trackout id {id}")
         trackout_name = raw_trackout.name
         storage_name = f"{trackout_name}.wav"
         firestore_path = f"trackouts/{id}/{storage_name}"
@@ -160,7 +162,6 @@ def add_update_wavfile(id):
         print(f'add update wavfile id: {id}')
         db.session.query(TrackOut).filter_by(id=id).update(update_request)
         db.session.commit()
-        print(f'committed: samplerate: {samplerate} - data: {len(data)}')
         payload = {
             "action": "update",
             "table": "trackout",

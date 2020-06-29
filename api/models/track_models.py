@@ -57,6 +57,7 @@ class TrackOut(db.Model):
     eq = db.relationship("Equalizer", backref="eq", lazy='subquery', uselist=False)
     de = db.relationship("Deesser", backref="de", uselist=False)
     co = db.relationship("Compressor", backref="co", uselist=False)
+    re = db.relationship("Reverb", backref="re", uselist=False)
 
     '''
     Wav File Representation
@@ -122,6 +123,25 @@ class Deesser(db.Model):
             "id": self.id,
             "trackout_id": self.trackout_id,
             "sharpness_avg": self.sharpness_avg
+        }
+
+
+class Reverb(db.Model):
+    '''
+        Database Generated Fields
+    '''
+    id = db.Column(db.Integer, primary_key=True)
+    trackout_id = db.Column(db.Integer, db.ForeignKey("track_out.id"))
+
+    '''
+        Configurable Fields
+    '''
+    path = db.Column(db.String(1000))
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "trackout_id": self.trackout_id,
         }
 
 
