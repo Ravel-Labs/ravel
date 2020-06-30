@@ -146,7 +146,8 @@ def process_track(id):
         if not raw_track:
             abort(404, f"There aren't any trackouts for track {id}")
         trackouts = raw_track.trackouts.all()
-
+        for x in trackouts:
+            print(x.path)
         orchestrator = Orchestrator(trackouts)
         orchestrator.orchestrate()
         payload = {
