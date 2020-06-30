@@ -25,9 +25,8 @@
                     <input class="input" v-model="user.password" type="password" placeholder="password">
                   </div>
                 </div>
-
                 <div class="field level-item">
-                  <button class="button is-medium" @click="signup(user)">Sign up</button>
+                  <button class="button is-medium" @click="handleSignup(user)">Sign up</button>
                 </div>
               </article>
             </div>
@@ -39,6 +38,7 @@
 </template>
 <script>
 import { mapActions } from 'vuex'
+import router from '@/router'
 
 export default {
   data () {
@@ -51,30 +51,22 @@ export default {
     }
   },
   methods: {
-    ...mapActions('auth', [
-      'signup'
-    ])
-  },
-  handleSignup(user) {
-    this.$store.dispatch('auth/signup', user)
-    .then((data) => {
-      this.$buefy.toast.open({
-        message: 'You\'re ready to go!',
-        type: 'is-success'
-      }) 
-
-      this.$store.dispatch('auth/login')
+    handleSignup(user) {
+      this.$store.dispatch('auth/signup', user)
       .then((data) => {
-        router.push({ name: 'tracks' })
+        this.$buefy.toast.open({
+          message: 'You\'re ready to go!',
+          type: 'is-success'
+        }) 
       })
-    })
-    .catch((err) => {
-      console.error(err)
-      this.$buefy.toast.open({
-        message: `Something went wrong.`,
-        type: 'is-danger'
+      .catch((err) => {
+        console.error('handleSignup() error:', err)
+        this.$buefy.toast.open({
+          message: `Something went wrong: ${err}`,
+          type: 'is-danger'
+        })
       })
-    })
+    },
   }
 }
 </script>

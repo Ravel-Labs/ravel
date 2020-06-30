@@ -68,3 +68,24 @@ _Cheers!_
 
 ### Using pythons unittest
 *python -m unittest tests 
+
+# Deployment 
+How to deploy the Ravel app for production
+
+## Firebase Connection 
+Firebase requires these two environment variables to be set 
+
+```bash
+FB_API_KEY
+RAVEL_FB_ID
+```
+
+## Email Configuration
+Email requires these environment variables to be set:
+
+```bash
+SENDGRID_API_KEY
+```
+
+## Flask 
+1. Turn debugging  OFF `debug=False` 

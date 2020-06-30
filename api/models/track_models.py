@@ -27,6 +27,10 @@ class Track(db.Model):
     name = db.Column(db.String(1000))
     artist = db.Column(db.String(200))
     info = db.Column(db.Text)
+    compression = db.Column(db.Boolean)
+    reverb = db.Column(db.Boolean)
+    eq = db.Column(db.Boolean)
+    deess = db.Column(db.Boolean)
 
     def to_dict(self):
         return {
@@ -35,7 +39,11 @@ class Track(db.Model):
             "user_id": self.user_id,
             "artist": self.artist,
             "info": self.info,
-            "created_at": self.created_at
+            "created_at": self.created_at,
+            "compression": self.compression,
+            "reverb": self.reverb,
+            "eq": self.eq,
+            "deess": self.deess
         }
 
 
