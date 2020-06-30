@@ -21,7 +21,7 @@ def publish_to_file_store(path, file):
         fb_store_url = storage.child(path).get_url(firebase)
         return fb_store_url
     except Exception as e:
-        raise Exception(f"{e}")
+        raise Exception(f"Firebase:{e}")
 
 
 def retreive_from_file_store(path, index=""):

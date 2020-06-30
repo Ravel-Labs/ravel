@@ -178,6 +178,8 @@ def get_wav_from_trackout(id):
     try:
         # Get wav path from TrackOut then call firebase service
         raw_trackout = TrackOut.query.get(id)
+        if not raw_trackout:
+            abort(404, f"Trackout {id} not found")
         file_name = f"{raw_trackout.name}.wav"
         firestore_path = raw_trackout.path
         retreive_from_file_store(firestore_path)
@@ -202,6 +204,8 @@ def get_eq_from_trackout(id):
     try:
         # Get wav path from TrackOut then call firebase service
         raw_trackout = TrackOut.query.get(id)
+        if not raw_trackout:
+            abort(404, f"Trackout {id} not found")
         eq = raw_trackout.eq
         firestore_path = eq.path
         file_name = f"eq_results.wav"
@@ -226,6 +230,8 @@ def get_co_from_trackout(id):
     try:
         # Get wav path from TrackOut then call firebase service
         raw_trackout = TrackOut.query.get(id)
+        if not raw_trackout:
+            abort(404, f"Trackout {id} not found")
         co = raw_trackout.co
         firestore_path = co.path
         file_name = f"co_results.wav"
@@ -250,9 +256,40 @@ def get_de_from_trackout(id):
     try:
         # Get wav path from TrackOut then call firebase service
         raw_trackout = TrackOut.query.get(id)
+        if not raw_trackout:
+            abort(404, f"Trackout {id} not found")
         de = raw_trackout.de
         firestore_path = de.path
         file_name = f"de_results.wav"
+        retreive_from_file_store(firestore_path)
+
+        # Get file saved to disk and convert into BytesIO
+        sam_rate, data = sio.wavfile.read("trackout.wav")
+        byte_io = BytesIO(bytes())
+        write(byte_io, sam_rate, data)
+        file = send_file(
+            byte_io,
+            attachment_filename=file_name,
+            as_attachment=True)
+        # Remove file from disk
+        remove("trackout.wav")
+        return file
+    except Exception as e:
+        abort(500, e)
+
+
+# // TODO maybe turn all of the effect gets into one method and request.body for specific details
+@trackouts_bp.route('%s/re/<int:id>' % base_trackouts_url, methods=['GET'])
+def get_re_from_trackout(id):
+    try:
+        # Get wav path from TrackOut then call firebase service
+        raw_trackout = TrackOut.query.get(id)
+        if not raw_trackout:
+            abort(404, f"Trackout {id} not found")
+        re = raw_trackout.re
+        firestore_path = re.path
+        print(firestore_path)
+        file_name = f"re_results.wav"
         retreive_from_file_store(firestore_path)
 
         # Get file saved to disk and convert into BytesIO
