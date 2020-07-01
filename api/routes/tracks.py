@@ -22,9 +22,8 @@ base_tracks_url = '/api/tracks'
 @jwt_required()
 def create_track():
     try:
-        name = request.json.get('name')
         user_id = current_identity.id
-        print(f'getting tracks for current user; ', user_id)
+        name = request.json.get('name')
         artist = request.json.get('artist')
         info = request.json.get('info')
 
@@ -61,10 +60,15 @@ def get_tracks():
             abort(400, "A track with id %s does not exist" % user_id)
         tracks = [raw_track.to_dict() for raw_track in raw_tracks]
         if not tracks:
-            abort(400)
+            # handle empty tracks list
+            response = APIResponse([], 200).response
+            return response
+
         response = APIResponse(tracks, 200).response
+        print(f'responding with: ', response)
         return response
     except Exception as e:
+        print(f'get_tracks error: {e}')
         abort(500, e)
 
 
