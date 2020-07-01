@@ -97,6 +97,7 @@ const tracks = {
       async get ({ commit }) {
         try {
           commit('TRACK_REQUEST')
+          console.log('API(): ', API())
           let { data } = await API().get('/tracks')
           console.table(data.payload)
           commit('TRACK_SUCCESS', data.payload)

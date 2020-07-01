@@ -27,9 +27,26 @@
         </div>
 
         <div class="columns">
-          <b-button class="is-info" @click="toggleAddTrackout()">
-            Add Trackout
-          </b-button>
+          <div class="column">
+            <b-button class="is-info" @click="toggleAddTrackout()">
+              Add Trackout
+            </b-button>
+          </div>
+          <div class="column">
+            <!-- Processing toggles -->
+            <b-switch v-model="isDeessed">
+              De-Esser
+            </b-switch>
+            <b-switch v-model="isEQed">
+              EQ Magic
+            </b-switch>
+            <b-switch v-model="isReverbed">
+              Reverb
+            </b-switch>
+            <b-switch v-model="isCompressed">
+              Compression
+            </b-switch>
+          </div>
         </div>
 
         <!-- Add Trackout Modal -->
@@ -84,58 +101,6 @@
           <div class="card-content">
             <p>Created at: {{ t.created_at }}</p>
             <p>Type: {{ t.type }}</p>
-            <b-button @click="process()" class="is-success">Process</b-button>
-            <!-- Manual settings
-                  <!-- <b-field label="Compression">
-                      <b-slider v-model="t.compression"></b-slider>
-                  </b-field>
-
-                  <b-field label="Reverb">
-                      <b-slider v-model="t.reverb"></b-slider>
-                  </b-field>
-
-                  <b-field label="EQ">
-                      <b-slider v-model="t.eq"></b-slider>
-                  </b-field> -->
-
-            <!-- Presets -->
-            <!-- <div class="columns">
-                    <div class="column">
-                    <b-field>
-                    </b-field>
-                      <b-switch v-model="t.vocal_magic">
-                        Vocal Magic
-                      </b-switch>
-                    </div>
-                    <div class="column">
-                      <b-switch v-model="t.drum_booster">
-                        Drum Booster
-                      </b-switch>
-                    </div>
-
-                    <div class="column">
-                      <b-switch v-model="t.deesser">
-                          De-Esser
-                      </b-switch>
-                    </div>
-                  </div>
-
-                  <div class="columns">
-                    <div class="column">
-                    <b-field label="Track Type">
-                        <b-select
-                        placeholder="What instrument is this trackout?">
-                            <option
-                              v-for="option in trackTypes"
-                              :value="option.name"
-                              :key="option.id">
-                              {{ option.name }}
-                            </option>
-                        </b-select>
-                    </b-field>
-                    </div>
-                  </div>
-                <br> -->
           </div>
         </b-collapse>
       </div>
@@ -153,6 +118,10 @@ export default {
       file: {
         name: ""
       },
+      isDeessed: false,
+      isEQed: false,
+      isReverbed: false,
+      isCompressed: false,
       dropFiles: [],
       addTrackout: false,
       trackout: {
@@ -204,6 +173,20 @@ export default {
       user: state => state.user
     })
   },
+  watch: {
+    isCompressed: function(val) {
+      this.updateTrackSettings()
+    },
+    isReverbed: function(val) {
+      this.updateTrackSettings()
+    },
+    isEQed: function(val) {
+      this.updateTrackSettings()
+    },
+    isDeessed: function(val) {
+      this.updateTrackSettings()
+    }
+  },
   methods: {
     submitFile() {
       let formData = new FormData();
@@ -246,10 +229,22 @@ export default {
       console.log("addTrackout after: ", this.addTrackout);
     },
     process() {
-      this.$store.dispatch('tracks/process')
+      this.$store.dispatch("tracks/process");
     },
-    update () {
-      this.$store.dispatch('track/updateSettings', {})
+    update() {
+      this.$store.dispatch("track/updateSettings", {});
+    },
+    updateTrackSettings() {
+      const settings = {
+        compression: this.isCompressed,
+        deesser: this.isDeessed,
+        eq: this.isEQed,
+        reverb: this.isReverbed
+      }
+      console.log(settings)
+      // this.$store.dispatch('tracks/updateTrackSettings', {
+
+      // })
     }
   }
 };
