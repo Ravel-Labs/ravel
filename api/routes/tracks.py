@@ -148,7 +148,7 @@ def process_track(id):
         trackouts = raw_track.trackouts.all()
         for x in trackouts:
             print(x.path)
-        orchestrator = Orchestrator(trackouts)
+        orchestrator = Orchestrator(trackouts, raw_track)
         orchestrator.orchestrate()
         payload = {
             "action": "processing",

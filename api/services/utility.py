@@ -46,5 +46,5 @@ def create_trackout_exclusive_list(all_trackouts, index):
     main_trackout = all_trackouts[index]
     # All other trackouts except main_trackout
     other_trackouts = \
-        all_trackouts[:index-1] + all_trackouts[index:]
+        all_trackouts[:index] + all_trackouts[index+1:]
     return (main_trackout, other_trackouts)

@@ -5,6 +5,7 @@ from flask_jwt import JWT
 from os import environ
 from flask_mail import Mail
 from ravel.api.queueWorker import Q, Job, worker
+
 from flaskthreads import AppContextThread
 db = SQLAlchemy()
 
@@ -17,7 +18,6 @@ def create_app():
     # Todo: Make this handle environment configs better
     app = Flask(__name__)
     app.config['FLASK_ENV'] = environ.get('FLASK_ENV')
-    print(environ.get("FLASK_ENV"))
     app.config["SECRET_KEY"] = "thisshouldbesetforproduction"
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"  # url
     app.config["JWT_AUTH_URL_RULE"] = "/api/auth/login"

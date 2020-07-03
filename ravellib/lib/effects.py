@@ -311,13 +311,6 @@ class DeEsserSignal(Signal):
         # fix padding that makes these dimensions not always aligned via stft
         # quick fix is a truncation of array 
         y = np.zeros((M, N))
-        # TODO uncomment this..
-        for m in range(9):
-            print(m)
-            print(len(gain))
-            print(len(y))
-            print(len(frame_sig))
-            y[m] = gain[m] * frame_sig[m]
         y = y.flatten('F')
         n = y.shape[0]
         y_out[:n] = y
@@ -401,7 +394,7 @@ class Mixer:
         self.output_path = output_path
         self.sr = sr
 
-    def mix(self): 
+    def mix(self):
         output = np.sum(self.signals, axis=0)
         return output.astype(np.float32)
 
