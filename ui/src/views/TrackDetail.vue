@@ -31,6 +31,9 @@
             <b-button class="is-info" @click="toggleAddTrackout()">
               Add Trackout
             </b-button>
+            <b-button style="margin-left: 10px;" class="is-info" @click="process()">
+              Process
+            </b-button>
           </div>
           <div class="column">
             <!-- Processing toggles -->
@@ -115,9 +118,7 @@ export default {
   name: "trackDetails",
   data() {
     return {
-      file: {
-        name: ""
-      },
+      file: '',
       isDeessed: false,
       isEQed: false,
       isReverbed: false,
@@ -190,8 +191,11 @@ export default {
   methods: {
     submitFile() {
       let formData = new FormData();
+      console.log("processing file: ", this.file)
+      formData.append('file', this.file)
+
+      // set payloads up 
       const trackPayload = {
-        user_id: 1,
         track_id: this.$route.params.id,
         name: this.trackout.name,
         type: this.trackout.type
@@ -204,17 +208,20 @@ export default {
       this.$store
         .dispatch("tracks/createTrackoutWithoutWav", trackPayload)
         .then(data => {
-          this.$store.dispatch("tracks/updateTrackoutWithWav", filePayload).then(data => {
-            // everything succeeded
-            this.$store.dispatch("tracks/getTrackouts", this.$route.params.id);
+          console.log('created track without wav: ', data)
+          console.log("file payload: ", filePayload)
+          this.$store.dispatch("tracks/updateTrackoutWithWav", filePayload)
+            .then(data => {
+              // everything succeeded
+              this.$store.dispatch("tracks/getTrackouts", this.$route.params.id);
 
-            // fire notification and clean up
-            this.addTrackout = false;
-            this.$buefy.notification.open({
-              message: "Uploaded trackout!",
-              type: "is-success"
+              // fire notification and clean up
+              this.addTrackout = false;
+              this.$buefy.notification.open({
+                message: "Uploaded trackout!",
+                type: "is-success"
+              });
             });
-          });
         })
         .catch(err => {
           console.log("error creating trackout: ", err);
@@ -229,7 +236,7 @@ export default {
       console.log("addTrackout after: ", this.addTrackout);
     },
     process() {
-      this.$store.dispatch("tracks/process");
+      this.$store.dispatch("tracks/process", this.$route.params.id);
     },
     update() {
       this.$store.dispatch("track/updateSettings", {});

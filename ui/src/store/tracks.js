@@ -77,6 +77,10 @@ const tracks = {
         state.error = ""
         state.loading = false
         console.log('update trackout wav success: ', data)
+      },
+      'TRACK_PROCESS_REQUEST' (state, data) {
+        state.error = ""
+        console.log('track_process_request data: ', data)
       }
     },
     actions: {
@@ -153,20 +157,48 @@ const tracks = {
         try {
           let { data } = await api.delete(`/tracks/${track.id}`)
           commit('DELETE_TRACK_SUCCESS')
+          return data
         } catch (err) {
           commit('DELETE_TRACK_FAILURE', err)
           console.error('failed to delete track')
+          return err
+        }
+      },
+      async process ({ commit }, trackID) {
+        try {
+          let { data } = await API().put(`/tracks/process/${trackID}`)
+          if (data.status === "404") {
+            commit('TRACK_FAILURE', `Track #${trackID} not found.`)
+            return
+          }
+
+          if (data.status === "500") {
+            commit('TRACK_FAILURE', `Failed to start track processing: ${err}`)
+            return
+          }
+          commit('TRACK_PROCESS_REQUEST', data)
+          return data
+        } catch (err) {
+          console.log('error processing track: ', err)
+          commit('TRACK_FAILURE', err)
+          return err
         }
       },
       async uploadFile ({ commit }, payload) {
+        console.log("payload: ", payload)
         try {
-          let { data } = await api.post(`/trackouts/wav/${payload.id}`)
-          commit('UPLOAD_SUCCESS', data)
-        } catch (err) {
-          if (err.response) {
-            console.log('error response: ', err.response)
+          console.log('payload: ', payload)
+          let { data } = await api.post(`/trackouts/wav/${payload.id}`, payload.formData)
+          console.log('wav upload response: ', data)
+          if (data.status === "500") {
+            commit('TRACK_FAILURE', `Failed to upload track: ${data.message}`)
+            return data
           }
-          console.error('error uploading file: ', err)
+
+          // commit('UPLOAD_SUCCESS', data)
+          return data
+        } catch (err) {
+          console.log('error uploading file: ', err)
           throw new Error(err)
         }
       },
