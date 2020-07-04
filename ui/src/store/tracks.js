@@ -81,6 +81,16 @@ const tracks = {
       'TRACK_PROCESS_REQUEST' (state, data) {
         state.error = ""
         console.log('track_process_request data: ', data)
+      },
+      'WAVEFILE_REQUEST' (state, data) {
+        console.log('wavefile request: ', data)
+      },
+      'WAVEFILE_FAILURE' (state, err) {
+        console.log('wavefile failure: ', err)
+        state.error = err
+      },
+      'WAVEFILE_SUCCESS' (state, data) {
+        console.log('wavefile success: ', data)
       }
     },
     actions: {
@@ -169,18 +179,31 @@ const tracks = {
           let { data } = await API().put(`/tracks/process/${trackID}`)
           if (data.status === "404") {
             commit('TRACK_FAILURE', `Track #${trackID} not found.`)
-            return
+            throw new Error(`track ${id} does not exist`)
           }
 
           if (data.status === "500") {
             commit('TRACK_FAILURE', `Failed to start track processing: ${err}`)
-            return
+            throw new Error(`internal server error: ${err}`)
           }
+
           commit('TRACK_PROCESS_REQUEST', data)
+          console.log('processed track: ', data)
           return data
         } catch (err) {
           console.log('error processing track: ', err)
           commit('TRACK_FAILURE', err)
+          return err
+        }
+      },
+
+      async getWavefile ({ commit }, trackID) {
+        try {
+         let { data } = await API().get(`/tracks/wav/${trackID}`)
+         console.log('got wavfile response: ', data)
+         return data
+        } catch (err) {
+          console.log('error getting wavefile: ', err) 
           return err
         }
       },

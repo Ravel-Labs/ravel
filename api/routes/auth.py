@@ -68,7 +68,6 @@ def check():
 
 def authentication_handler(email, password):
     user = User.query.filter_by(email=email).first()
-
     if user is None:
         return None
 

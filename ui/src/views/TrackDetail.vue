@@ -66,6 +66,7 @@
               </b-field>
 
               <b-field label="Type">
+                <!-- This should be "vocals" or "instrument" types -->
                 <b-input v-model="trackout.type"></b-input>
               </b-field>
 
@@ -118,7 +119,7 @@ export default {
   name: "trackDetails",
   data() {
     return {
-      file: '',
+      file: [],
       isDeessed: false,
       isEQed: false,
       isReverbed: false,

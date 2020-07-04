@@ -148,6 +148,7 @@ def update_trackout(id):
 @trackouts_bp.route('%s/wav/<int:id>' % base_trackouts_url, methods=['PUT'])
 def add_update_wavfile(id):
     try:
+        print(f'hit file upload: ', request)
         raw_file = request.files['file']
         raw_trackout = TrackOut.query.get(id)
         if not raw_trackout:
