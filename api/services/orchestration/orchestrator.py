@@ -2,6 +2,7 @@ from ravel.api.services.firestore import retreive_from_file_store, publish_to_fi
 from ravel.api.services.effects import reverb, equalizer, compressor, deesser
 from ravel.api.models.track_models import Equalizer, Deesser, Compressor, Reverb
 from ravel.api.services.orchestration.processing import Processor
+from ravel.api.services.email.email import email_proxy
 from ravel.api.services.utility import create_trackout_exclusive_list, convert_to_mono_signal
 from ravel.api import db, Q, Job
 from scipy.io.wavfile import write
@@ -75,20 +76,27 @@ class Orchestrator():
             self.compress_trackouts()
             self.engage_trackout_effects()
             Q.join()
-            while Q.qsize() != 0:
-                time.sleep(1)
-            print("FINISHED")
-            print(len(self.processed_signals))
-            for x in self.processed_signals:
-                print(x)
             storage_name = f"{self.track.id}_results.wav"
+
+            # every track has for settings for all of the equations
             mixer = Mixer(self.processed_signals, storage_name, self.sample_rate)
             mixed_result = mixer.mix()
             mixer.output_wav(mixed_result)
+            
             firestore_path = f"finalized/{storage_name}"
-            publish_to_file_store(firestore_path, storage_name)
-            remove(storage_name)
+            download_url = publish_to_file_store(firestore_path, storage_name)
+            with open(storage_name, 'rb') as fin:
+                data = fin.read()
+            email_proxy(
+                title="NewTrackout",
+                template_type="status",
+                user_to_email_address="gabeaboy@gmail.com",
+                user_name="name",
+                button_title="Processed Results",
+                button_link=download_url,
+                sound_file=data)
             # remove all trackouts stored on disk
+            remove(storage_name)
             print("DONE!")
             for file in self.files_to_remove:
                 remove(file)
@@ -105,7 +113,6 @@ class Orchestrator():
         effect_prefix = "co"
         self.compressed_result = self.processor.compress(self.mono_signal_trackouts)
         correlation = zip(all_trackouts, self.compressed_result)
-        all_models = list()
         for index, (raw_trackout, processed_result) in enumerate(correlation):
             trackout_id = raw_trackout.id
             trackout_name = raw_trackout.name
@@ -125,12 +132,9 @@ class Orchestrator():
                 path=firestore_path,
                 co=raw_trackout  # Relationship with raw_trackout
             )
-            all_models.append(db_model)
-        # current_db_sessions = db_session.object_session(db_model)
-        # current_db_sessions.add(db_model)
-        #How can I batch save here
-        # db.session.add_all(all_models)
-        # db.session.commit()
+            local_object = db.session.merge(db_model)
+            db.session.add(local_object)
+            db.session.commit()
 
 
     def process_and_save(self, raw_trackout, effect, main_trackout, other_trackouts):
@@ -181,7 +185,6 @@ class Orchestrator():
             self.processed_signals.append(processed_result)
         self.files_to_remove.append(storage_name)
         # save effect results to database
-        # current_db_sessions = db_session.object_session(db_model)
-        # current_db_sessions.add(db_model)
-        # db.session.add(db_model)
-        # db.session.commit()
+        local_object = db.session.merge(db_model)
+        db.session.add(local_object)
+        db.session.commit()
