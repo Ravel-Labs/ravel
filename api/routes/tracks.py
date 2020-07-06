@@ -135,20 +135,17 @@ def get_trackouts_by_track_id(id):
 def process_track(id):
     try:
         # Dispatch email processing progress, managed by queueWorker
-        # email_proxy(
-        #     template_type="status",
-        #     user_to_email_address=email,
-        #     user_name=name,
-        #     button_title="")
-
+        email_proxy(
+            template_type="status",
+            user_to_email_address=email,
+            user_name=name,
+            button_title="")
         # extract trackout data from track
         raw_track = Track.query.get(id)
         if not raw_track:
             abort(404, f"There aren't any trackouts for track {id}")
         trackouts = raw_track.trackouts.all()
-        for x in trackouts:
-            print(x.path)
-        orchestrator = Orchestrator(trackouts)
+        orchestrator = Orchestrator(trackouts, raw_track)
         orchestrator.orchestrate()
         payload = {
             "action": "processing",

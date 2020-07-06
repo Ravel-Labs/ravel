@@ -3,9 +3,11 @@ from ravel.api import ADMINS_FROM_EMAIL_ADDRESS, mail, Q, Job
 from flask_mail import Message
 
 
-def send_email(title, sender, receivers, html_body):
+def send_email(title, sender, receivers, html_body, sound_file):
     msg = Message(title, sender=sender, recipients=receivers)
     msg.html = html_body
+    if sound_file:
+        msg.attach("results.wav", "audio/wav", sound_file)
     mail.send(msg)
 
 
@@ -28,7 +30,8 @@ def email_proxy(
     broadcast_msg_one="",
     broadcast_msg_two="",
     button_title="",
-    button_link=""
+    button_link="",
+    sound_file=""
 ):
 
     try:
@@ -42,7 +45,6 @@ def email_proxy(
 
         button_link = button_link or "google.com"
         intro = intro or default_intro
-
         # Documentation requires a list of emails
         if not isinstance(user_to_email_address, list):
             user_to_email_address = [user_to_email_address]
@@ -74,6 +76,7 @@ def email_proxy(
             broadcast_msg_two = broadcast_msg_two or "Check it out later"
             # TODO Download link and conditional html for download button
             button_title = button_title or "Download"
+            custom_url = button_link or "404"
         else:
             raise ValueError("Template type does not exist")
 
@@ -83,7 +86,9 @@ def email_proxy(
             intro=intro,
             message_part_one=broadcast_msg_one,
             message_part_two=broadcast_msg_two,
-            button_title=button_title)
+            button_title=button_title,
+            custom_url=custom_url,
+            sound_file=sound_file)
 
         '''
             Send email job out into the queue
@@ -92,7 +97,8 @@ def email_proxy(
             title,
             ADMINS_FROM_EMAIL_ADDRESS[0],
             user_to_email_address,
-            template)
+            template,
+            sound_file)
         email_job = Job(send_email, function_arguments)
         Q.put(email_job)
     except Exception as e:

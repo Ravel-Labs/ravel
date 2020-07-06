@@ -21,7 +21,6 @@ class Compress():
 
         audio_type = "vocal"
         num_signals = len(self.all_trackouts)
-        print(self.all_trackouts[0].dtype)
         comp_signals = []  # All the other trackouts in a track np array of signals
         comp_lfe = []  # Convenience methods
         comp_crest = []
