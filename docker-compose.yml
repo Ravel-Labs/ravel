@@ -12,10 +12,12 @@ services:
 
   ui:
     build:
-      context: ui/
-      dockerfile: ui/Dockerfile
+      context: ./ui
+      dockerfile: Dockerfile
     container_name: ui
     restart: always
+    env_file:
+      - ui/.env.local
     ports:
       - "8000:80"
     volumes:
