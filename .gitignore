@@ -5,5 +5,7 @@
 db/data
 db.sqlite
 
+ui/.env.*
+
 *.pyc
 .DS_Store
