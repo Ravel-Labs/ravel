@@ -1,4 +1,4 @@
-from ravel.ravellib.lib.effects import EQSignal
+from ravellib.lib.effects import EQSignal
 class Equalize():
     """
         Please define Equalize

@@ -1,4 +1,4 @@
-from ravel.ravellib.lib.effects import DeEsserSignal
+from ravellib.lib.effects import DeEsserSignal
 class Deesser():
     def __init__(self, main_trackout):
         self.main_trackout = main_trackout

@@ -1,12 +1,12 @@
 from flask import Blueprint, jsonify, abort, request, send_file
 from flask_jwt import jwt_required, current_identity
 
-from ravel.api.services.firestore import publish_to_file_store, retreive_from_file_store
-from ravel.api.models.track_models import TrackOut, Track
-from ravel.api.models.User import User
+from api.services.firestore import publish_to_file_store, retreive_from_file_store
+from api.models.track_models import TrackOut, Track
+from api.models.User import User
+from api.models.apiresponse import APIResponse
+from api import db
 from scipy.io.wavfile import write, read
-from ravel.api.models.apiresponse import APIResponse
-from ravel.api import db
 import requests
 import scipy.io as sio
 import wave

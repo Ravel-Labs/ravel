@@ -4,10 +4,12 @@ from flask_cors import CORS
 from flask_jwt import JWT
 from os import environ
 from flask_mail import Mail
-from ravel.api.queueWorker import Q, Job, worker
+from api.queueWorker import Q, Job, worker
 
 from flaskthreads import AppContextThread
 db = SQLAlchemy()
+
+
 
 # administrator list
 ADMINS_FROM_EMAIL_ADDRESS = ['aboy.gabriel@outlook.com']

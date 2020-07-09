@@ -1,4 +1,4 @@
-from ravel.api.services.firestore import retreive_from_file_store, publish_to_file_store
+from api.services.firestore import retreive_from_file_store, publish_to_file_store
 import librosa
 import re
 

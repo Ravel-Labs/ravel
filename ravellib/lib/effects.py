@@ -1,4 +1,4 @@
-import ravel.ravellib.lib.preprocessing as preprocessing
+import ravellib.lib.preprocessing as preprocessing
 import librosa
 import numpy as np
 import pyloudnorm as pyln

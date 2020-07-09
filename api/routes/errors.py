@@ -1,5 +1,5 @@
 from flask import Blueprint
-from ravel.api.models.errors import BaseException
+from api.models.errors import BaseException
 
 errors_bp = Blueprint('errors_bp', __name__)
 

@@ -1,5 +1,5 @@
 from datetime import datetime
-from ravel.api import db
+from api import db
 
 '''
     This file contains the database relational schema

@@ -1,4 +1,4 @@
-from ravel.ravellib.lib.effects import CompressSignal
+from ravellib.lib.effects import CompressSignal
 class Compress():
     """
     Creates a new Compressor channel
