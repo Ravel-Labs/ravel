@@ -1,13 +1,13 @@
-from ravel.api.services.firestore import retreive_from_file_store, publish_to_file_store
-from ravel.api.services.effects import reverb, equalizer, compressor, deesser
-from ravel.api.models.track_models import Equalizer, Deesser, Compressor, Reverb
-from ravel.api.services.orchestration.processing import Processor
-from ravel.api.services.email.email import email_proxy
-from ravel.api.services.utility import create_trackout_exclusive_list, convert_to_mono_signal
-from ravel.api import db, Q, Job
+from api.services.firestore import retreive_from_file_store, publish_to_file_store
+from api.services.effects import reverb, equalizer, compressor, deesser
+from api.models.track_models import Equalizer, Deesser, Compressor, Reverb
+from api.services.orchestration.processing import Processor
+from api.services.email.email import email_proxy
+from api.services.utility import create_trackout_exclusive_list, convert_to_mono_signal
+from api import db, Q, Job
 from scipy.io.wavfile import write
 from os import remove
-from ravel.ravellib.lib.effects import Mixer
+from ravellib.lib.effects import Mixer
 
 
 class Orchestrator():

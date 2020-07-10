@@ -1,5 +1,5 @@
 from flask_login import UserMixin
-from ravel.api import db
+from api import db
 import datetime
 
 

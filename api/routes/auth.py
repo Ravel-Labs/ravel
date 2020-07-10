@@ -1,10 +1,10 @@
 from flask import Blueprint, request, abort
 from flask_jwt import jwt_required, current_identity
 from werkzeug.security import generate_password_hash, check_password_hash
-from ravel.api.models.apiresponse import APIResponse
-from ravel.api.models.User import User
-from ravel.api.services.email.email import email_proxy
-from ravel.api import db
+from api.models.apiresponse import APIResponse
+from api.models.User import User
+from api.services.email.email import email_proxy
+from api import db
 
 
 auth_bp = Blueprint('auth_bp', __name__)

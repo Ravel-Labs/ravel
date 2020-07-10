@@ -1,5 +1,5 @@
-from ravel.api.services.effects import reverb, equalizer, compressor, deesser
-from ravel.ravellib.lib.effects import SignalAggregator
+from api.services.effects import reverb, equalizer, compressor, deesser
+from ravellib.lib.effects import SignalAggregator
 
 
 class Processor():

@@ -1,4 +1,4 @@
-from ravel.ravellib.lib.effects import ReverbSignal
+from ravellib.lib.effects import ReverbSignal
 class Reverb():
     def __init__(self, main_trackout):
         self.main_trackout = main_trackout
