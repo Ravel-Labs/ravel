@@ -55,7 +55,6 @@ def create_track():
 @jwt_required()
 def get_tracks():
     try:
-        print(f'getting tracks for {current_identity}')
         raw_tracks = Track.query.filter_by(user_id=current_identity.id)
         tracks = [raw_track.to_dict() for raw_track in raw_tracks]
         if not tracks:
