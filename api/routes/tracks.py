@@ -18,12 +18,13 @@ tracks_bp = Blueprint('tracks_bp', __name__)
 base_tracks_url = '/api/tracks'
 
 
-# @jwt_required()
 @tracks_bp.route(base_tracks_url, methods=['POST'])
+@jwt_required()
 def create_track():
     try:
         name = request.json.get('name')
-        user_id = 1
+        user_id = current_identity.id
+        print(f'getting tracks for current user; ', user_id)
         artist = request.json.get('artist')
         info = request.json.get('info')
 
@@ -50,11 +51,12 @@ def create_track():
 '''
 
 
-# @jwt_required()
 @tracks_bp.route(base_tracks_url, methods={'GET'})
+@jwt_required()
 def get_tracks():
     try:
-        raw_tracks = Track.query.filter_by(user_id=1)
+        print(f'getting tracks for {current_identity}')
+        raw_tracks = Track.query.filter_by(user_id=current_identity.id)
         tracks = [raw_track.to_dict() for raw_track in raw_tracks]
         if not tracks:
             abort(400)
@@ -64,8 +66,8 @@ def get_tracks():
         abort(500, e)
 
 
-# @jwt_required()
 @tracks_bp.route('%s/<int:id>' % base_tracks_url, methods={'GET'})
+@jwt_required()
 def get_track_by_id(id):
     try:
         raw_track = Track.query.get(id)
@@ -78,8 +80,8 @@ def get_track_by_id(id):
         abort(500, e)
 
 
-# @jwt_required()
 @tracks_bp.route('%s/delete/<int:id>' % base_tracks_url, methods={'DELETE'})
+@jwt_required()
 def delete_track_by_id(id):
     try:
         raw_track = Track.query.get(id)
@@ -98,8 +100,8 @@ def delete_track_by_id(id):
         abort(500, e)
 
 
-# @jwt_required()
 @tracks_bp.route('%s/<int:id>' % base_tracks_url, methods=['PUT'])
+@jwt_required()
 def update_track(id):
     try:
         # TODO Effected by an updated trackout
@@ -117,6 +119,7 @@ def update_track(id):
 
 
 @tracks_bp.route(f'{base_tracks_url}/trackouts/<int:id>', methods={'GET'})
+@jwt_required()
 def get_trackouts_by_track_id(id):
     try:
         raw_tracks = Track.query.get(id)
@@ -130,8 +133,8 @@ def get_trackouts_by_track_id(id):
         abort(500, e)
 
 
-# @jwt_required()
 @tracks_bp.route('%s/process/<int:id>' % base_tracks_url, methods=['PUT'])
+@jwt_required()
 def process_track(id):
     try:
         # Dispatch email processing progress, managed by queueWorker
@@ -160,6 +163,7 @@ def process_track(id):
 
 # TODO Rethink what blueprint this falls under
 @tracks_bp.route(f'{base_tracks_url}/eq/<int:id>', methods={'GET'})
+@jwt_required()
 def get_eq_results_by_trackout_id(id):
     try:
         raw_tracks = Track.query.get(id)
