@@ -69,12 +69,12 @@ const router = new Router({
 })
 
 router.beforeEach((to, from, next) => {
-  console.log('hitting before each')
   if (to.meta.requireAuth) {
     // NB: Get the authtoken _after_ the requireAuth 
     // is checked or else there will be async issues.
     const authtoken = store.getters['auth/token']
     if (!authtoken) {
+      console.error('ERRAUTHTOKEN: no auth token present - rerouting to login.')
       router.push('login')
     }
   }
