@@ -23,7 +23,8 @@ base_tracks_url = '/api/tracks'
 def create_track():
     try:
         name = request.json.get('name')
-        user_id = 1
+        user_id = current_identity.id
+        print(f'getting tracks for current user; ', user_id)
         artist = request.json.get('artist')
         info = request.json.get('info')
 
@@ -121,7 +122,10 @@ def update_track(id):
 
 @tracks_bp.route(f'{base_tracks_url}/trackouts/<int:id>', methods={'GET'})
 @jwt_required()
+<<<<<<< HEAD
 
+=======
+>>>>>>> 7470af1c438b0dc9662070970aa0c56fd2d1d7dc
 def get_trackouts_by_track_id(id):
     try:
         raw_tracks = Track.query.get(id)
@@ -165,6 +169,7 @@ def process_track(id):
 
 # TODO Rethink what blueprint this falls under
 @tracks_bp.route(f'{base_tracks_url}/eq/<int:id>', methods={'GET'})
+@jwt_required()
 def get_eq_results_by_trackout_id(id):
     try:
         raw_tracks = Track.query.get(id)
