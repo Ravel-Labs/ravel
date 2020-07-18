@@ -17,7 +17,7 @@ class Track(db.Model):
         Database Generated Fields
     '''
     id = db.Column(db.Integer, primary_key=True)
-    trackouts = db.relationship('TrackOut', backref='trackouts', lazy='dynamic')
+    trackouts = db.relationship('TrackOut', backref='trackouts', cascade="all, delete-orphan", lazy='dynamic')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     '''
