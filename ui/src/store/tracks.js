@@ -125,7 +125,7 @@ const tracks = {
           commit('TRACK_REQUEST')
           console.log('API(): ', API())
           let { data } = await API().get('/tracks')
-          console.table(data.payload)
+          if (data.status )
           commit('TRACK_SUCCESS', data.payload)
         } catch (err) {
           console.log('error getting tracks: ', err)
@@ -160,9 +160,11 @@ const tracks = {
         try {
           commit('TRACK_REQUEST')
           let { data } = await API().post('/trackouts', trackout)
+          console.log('add trackout: ', data)
           commit('ADD_TRACKOUT_SUCCESS', data.payload)
         } catch (err) {
-          throw new Error('error processing trackout: ', err)
+          console.error('error adding trackout: ', err)
+          return new Error('error processing trackout: ', err)
         }
       },
       async update({ commit }, track) {
@@ -175,14 +177,39 @@ const tracks = {
           console.log('error updating track: ', err)
         }
       },
-      async delete ({ commit }, track) {
+      async delete ({ commit, dispatch }, track) {
         try {
-          let { data } = await api.delete(`/tracks/${track.id}`)
-          commit('DELETE_TRACK_SUCCESS')
+          let { data } = await API().delete(`/tracks/delete/${track.id}`)
+          console.log('removing track:', data)
+          if (data.payload) {
+            commit('DELETE_TRACK_SUCCESS')
+            router.push('/tracks')
+            dispatch('get')
+            return data
+          }
+
+          if (data.message) {
+            if (data.status === "500") {
+              commit('DELETE_TRACK_FAILURE', data.message)
+              return new Error(data.message)
+            }
+          }
+
+          console.log('data.payload: ', data.payload)
           return data
         } catch (err) {
           commit('DELETE_TRACK_FAILURE', err)
-          console.error('failed to delete track')
+          console.error('failed to delete track: ', err)
+          return err
+        }
+      },
+      async deleteTrackout ({ commit }, trackoutID) {
+        try {
+          let { data } = await API().delete(`/trackouts/delete/${trackoutID}`)
+          console.log('delete trackout response data: ', data)
+          return data
+        } catch (err) {
+          console.error('error deleting trackout: ', err)
           return err
         }
       },

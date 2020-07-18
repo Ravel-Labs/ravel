@@ -51,8 +51,6 @@ def create_track():
 
     tracks that belong to the currently logged in user
 '''
-
-
 @tracks_bp.route(base_tracks_url, methods={'GET'})
 @jwt_required()
 def get_tracks():
@@ -155,11 +153,6 @@ def process_track(id):
         print(f'toggle_effects_params: {toggle_effects_params}')
         if not raw_track:
             abort(404, f"There aren't any trackouts for track {id}")
-        
-        # extract trackout data from track
-        raw_trackouts = raw_track.trackouts.all()
-        orchestrator = Orchestrator(current_user, raw_trackouts, raw_track, toggle_effects_params)
-        orchestrator.orchestrate()
 
         # Dispatch email processing progress, managed by queueWorker
         email_proxy(
@@ -169,6 +162,11 @@ def process_track(id):
             user_name=current_user.name,
             button_title="")
 
+        # extract trackout data from track
+        raw_trackouts = raw_track.trackouts.all()
+        orchestrator = Orchestrator(current_user, raw_trackouts, raw_track, toggle_effects_params)
+        orchestrator.orchestrate()
+
         payload = {
             "action": "processing",
             "table": "track",
@@ -176,49 +174,5 @@ def process_track(id):
         }
         response = APIResponse(payload, 200).response
         return response
-    except Exception as e:
-        abort(500, e)
-
-
-# TODO Rethink what blueprint this falls under
-@tracks_bp.route(f'{base_tracks_url}/eq/<int:id>', methods={'GET'})
-@jwt_required()
-def get_eq_results_by_trackout_id(id):
-    try:
-        raw_tracks = Track.query.get(id)
-        raw_trackouts = raw_tracks.trackouts.all()
-        # For each raw_trackout lets get their EQ and return them all
-        trackout_eq = dict()
-        '''
-            This dict will contain meta data described below
-            {
-                # TODO Think about adding more meta data so subsuquent calls aren't necessary
-                track_id: String,
-                trackout_id_0: EQ File or Binary,
-                trackout_id_1: EQ File or Binary,
-            }
-        '''
-        trackout_eq["track_id"] = id
-
-        for raw_trackout in raw_trackouts:
-            '''
-            trackout:
-                @methods
-                    def eq
-                    def de
-                    def comp
-            '''
-            print(f'raw_trackout: {raw_trackout}')
-            raw_eq = raw_trackout.eq
-            eq_id = raw_eq.id
-            print(f'eq_id: {eq_id}')
-            eq_binary = raw_eq.equalized_binary
-            print(type(eq_binary))
-            trackout_eq[eq_id] = eq_binary
-            samplerate = 44100
-            return send_file(
-                BytesIO(eq_binary),
-                attachment_filename="wavFile.wav",
-                as_attachment=True)
     except Exception as e:
         abort(500, e)

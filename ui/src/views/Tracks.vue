@@ -27,7 +27,7 @@
           </router-link>
         </a>
         <a v-if="tracks.length === 0" class="panel-block is-active">
-          You haven't creatd any tracks yet. <a href="/tracks/create">
+          You haven't created any tracks yet. <a href="/tracks/create">
             Make one now!
         </a>
         </a>

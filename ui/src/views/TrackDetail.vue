@@ -35,16 +35,13 @@
               Process
             </b-button>
           </div>
-          <div class="column">
+          <div class="column" v-if="track.trackouts">
             <!-- Processing toggles -->
             <b-switch v-model="isDeessed">
               De-Esser
             </b-switch>
             <b-switch v-model="isEQed">
-              EQ Magic
-            </b-switch>
-            <b-switch v-model="isReverbed">
-              Reverb
+              EQ
             </b-switch>
             <b-switch v-model="isCompressed">
               Compression
@@ -84,7 +81,7 @@
             </section>
             <footer class="modal-card-foot">
               <button class="button is-primary" @click="submitFile()">Upload</button>
-              <button class="button">Cancel</button>
+              <button class="button" @click="toggleAddTrackout()">Cancel</button>
             </footer>
           </div>
         </div>
@@ -105,8 +102,13 @@
           <div class="card-content">
             <p>Created at: {{ t.created_at }}</p>
             <p>Type: {{ t.type }}</p>
+            <button class="button is-danger is-small" @click="handleDeleteTrackOut()">Remove Trackout</button>
           </div>
         </b-collapse>
+
+        <div>
+          <button class="button is-danger is-small" @click="handleDeleteTrack()">Delete Track</button>
+        </div>
       </div>
     </div>
     <section></section>
@@ -120,10 +122,9 @@ export default {
   data() {
     return {
       file: [],
-      isDeessed: false,
-      isEQed: false,
-      isReverbed: false,
-      isCompressed: false,
+      isDeessed: localStorage.getItem(`${this.$route.params.id}:settings:de`) || false,
+      isEQed: localStorage.getItem(`${this.$route.params.id}:settings:eq`) || false,
+      isCompressed: localStorage.getItem(`${this.$route.params.id}:settings:co`) || false,
       dropFiles: [],
       addTrackout: false,
       trackout: {
@@ -177,16 +178,13 @@ export default {
   },
   watch: {
     isCompressed: function(val) {
-      this.updateTrackSettings()
-    },
-    isReverbed: function(val) {
-      this.updateTrackSettings()
+      localStorage.setItem(`${this.$route.params.id}:settings:co`, val)
     },
     isEQed: function(val) {
-      this.updateTrackSettings()
+      localStorage.setItem(`${this.$route.params.id}:settings:eq`, val)
     },
     isDeessed: function(val) {
-      this.updateTrackSettings()
+      localStorage.setItem(`${this.$route.params.id}:settings:de`, val)
     }
   },
   methods: {
@@ -209,9 +207,8 @@ export default {
       this.$store
         .dispatch("tracks/createTrackoutWithoutWav", trackPayload)
         .then(data => {
-          console.log('created track without wav: ', data)
-          console.log("file payload: ", filePayload)
           this.$store.dispatch("tracks/updateTrackoutWithWav", filePayload)
+            // TODO show a loading bar 
             .then(data => {
               // everything succeeded
               this.$store.dispatch("tracks/getTrackouts", this.$route.params.id);
@@ -226,6 +223,7 @@ export default {
         })
         .catch(err => {
           console.log("error creating trackout: ", err);
+          return err
         });
     },
     deleteDropFile(index) {
@@ -237,22 +235,13 @@ export default {
       console.log("addTrackout after: ", this.addTrackout);
     },
     process() {
+      // TODO: add params to this processing request 
       this.$store.dispatch("tracks/process", this.$route.params.id);
     },
-    update() {
-      this.$store.dispatch("track/updateSettings", {});
-    },
-    updateTrackSettings() {
-      const settings = {
-        compression: this.isCompressed,
-        deesser: this.isDeessed,
-        eq: this.isEQed,
-        reverb: this.isReverbed
-      }
-      console.log(settings)
-      // this.$store.dispatch('tracks/updateTrackSettings', {
-
-      // })
+    handleDeleteTrack() {
+      this.$store.dispatch('tracks/delete', {
+        id: this.$route.params.id
+      })
     }
   }
 };
