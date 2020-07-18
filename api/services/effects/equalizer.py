@@ -14,7 +14,7 @@ class Equalize():
         # List of EQSignals, which contain a mono signal npArray
         signals = list()
         if len(self.other_trackouts) == 0:
-            print("This will break things?")
+            self.other_trackouts.append(self.main_trackout)
         for loaded_np in self.other_trackouts:
             _eq = EQSignal(loaded_np, 1024, 1024, 1024, -12, "vocal", 10, 3, -2)
             signals.append(_eq)

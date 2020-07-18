@@ -3,6 +3,7 @@ from hashlib import md5
 from flask import Blueprint, abort, request, send_file
 from flask_jwt import jwt_required, current_identity
 from api import db
+from api.models.User import User
 from api.models.track_models import Track, TrackOut, Equalizer, Deesser
 from api.services.firestore import retreive_from_file_store, publish_to_file_store
 from api.routes.trackOuts import get_wav_from_trackout
@@ -12,6 +13,7 @@ from api.services.orchestration.orchestrator import Orchestrator
 from api.services.email.email import email_proxy
 from api.models.apiresponse import APIResponse
 import json
+import logging
 
 
 tracks_bp = Blueprint('tracks_bp', __name__)
@@ -37,6 +39,7 @@ def create_track():
         db.session.commit()
 
         track = raw_track.to_dict()
+
         response = APIResponse(track, 201).response
         return response
     except Exception as e:
@@ -143,19 +146,29 @@ def get_trackouts_by_track_id(id):
 @jwt_required()
 def process_track(id):
     try:
-        # Dispatch email processing progress, managed by queueWorker
-        email_proxy(
-            template_type="status",
-            user_to_email_address=email,
-            user_name=name,
-            button_title="")
-        # extract trackout data from track
+
+        # Track should contain user
+        current_user = User.query.get(current_identity.id)
         raw_track = Track.query.get(id)
+        toggle_effects_params = request.json.get('toggle_effects_params')
+        
+        print(f'toggle_effects_params: {toggle_effects_params}')
         if not raw_track:
             abort(404, f"There aren't any trackouts for track {id}")
-        trackouts = raw_track.trackouts.all()
-        orchestrator = Orchestrator(trackouts, raw_track)
+        
+        # extract trackout data from track
+        raw_trackouts = raw_track.trackouts.all()
+        orchestrator = Orchestrator(current_user, raw_trackouts, raw_track, toggle_effects_params)
         orchestrator.orchestrate()
+
+        # Dispatch email processing progress, managed by queueWorker
+        email_proxy(
+            title="Initiating Processing",
+            template_type="status",
+            user_to_email_address=current_user.email,
+            user_name=current_user.name,
+            button_title="")
+
         payload = {
             "action": "processing",
             "table": "track",

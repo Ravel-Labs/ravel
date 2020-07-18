@@ -1,6 +1,10 @@
 import pyrebase
 from os import environ
-print(environ.get("FB_API_KEY"))
+
+
+print(f'### firebase key: {environ.get("FB_API_KEY")}')
+
+
 firebaseConfig = {
     "apiKey": environ.get("FB_API_KEY"),
     "appId": environ.get("RAVEL_FB_ID"),

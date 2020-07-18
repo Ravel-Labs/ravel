@@ -12,7 +12,8 @@ const tracks = {
         trackouts: [],
       },
       error: "",
-      loading: false
+      loading: false,
+      processing: false
     },
     mutations: {
       'TRACK_REQUEST' (state) {
@@ -91,6 +92,17 @@ const tracks = {
       },
       'WAVEFILE_SUCCESS' (state, data) {
         console.log('wavefile success: ', data)
+        state.message = data
+      },
+      'PROCESS_REQUEST' (state, data) {
+        console.log('process request kicked off')
+        state.processing = true
+        state.loading = false
+      },
+      'PROCESS_SUCCESS' (state, data) {
+        state.processing = false
+        state.message = "Successfully processed. Check your email."
+        state.loading = false
       }
     },
     actions: {
@@ -176,20 +188,21 @@ const tracks = {
       },
       async process ({ commit }, trackID) {
         try {
-          let { data } = await API().put(`/tracks/process/${trackID}`)
-          if (data.status === "404") {
-            commit('TRACK_FAILURE', `Track #${trackID} not found.`)
-            throw new Error(`track ${id} does not exist`)
+          commit('PROCESS_REQUEST', trackID)
+          let { data } = await API().put(`/tracks/process/${trackID}`, {
+            'toggle_effects_params': {
+              'co': true,
+              'eq': true,
+              'de': true
+            }
+          })
+          console.log('process request data: ', data)
+          if (data.status === "200") {
+            commit('TRACK_SUCCESS', `Processing! You should be receiving an email with a download link shortly.`)
+            return data
           }
 
-          if (data.status === "500") {
-            commit('TRACK_FAILURE', `Failed to start track processing: ${err}`)
-            throw new Error(`internal server error: ${err}`)
-          }
-
-          commit('TRACK_PROCESS_REQUEST', data)
-          console.log('processed track: ', data)
-          return data
+          console.log('got past success: ', data)
         } catch (err) {
           console.log('error processing track: ', err)
           commit('TRACK_FAILURE', err)
@@ -208,11 +221,8 @@ const tracks = {
         }
       },
       async uploadFile ({ commit }, payload) {
-        console.log("payload: ", payload)
         try {
-          console.log('payload: ', payload)
           let { data } = await api.post(`/trackouts/wav/${payload.id}`, payload.formData)
-          console.log('wav upload response: ', data)
           if (data.status === "500") {
             commit('TRACK_FAILURE', `Failed to upload track: ${data.message}`)
             return data
@@ -221,8 +231,8 @@ const tracks = {
           // commit('UPLOAD_SUCCESS', data)
           return data
         } catch (err) {
-          console.log('error uploading file: ', err)
-          throw new Error(err)
+          console.error('error uploading file: ', err)
+          return Error(err)
         }
       },
       async createTrackoutWithoutWav ({ commit }, trackout) {
