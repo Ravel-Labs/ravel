@@ -122,10 +122,6 @@ def update_track(id):
 
 @tracks_bp.route(f'{base_tracks_url}/trackouts/<int:id>', methods={'GET'})
 @jwt_required()
-<<<<<<< HEAD
-
-=======
->>>>>>> 7470af1c438b0dc9662070970aa0c56fd2d1d7dc
 def get_trackouts_by_track_id(id):
     try:
         raw_tracks = Track.query.get(id)
