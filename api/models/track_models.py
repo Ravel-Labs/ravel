@@ -17,7 +17,7 @@ class Track(db.Model):
         Database Generated Fields
     '''
     id = db.Column(db.Integer, primary_key=True)
-    trackouts = db.relationship('TrackOut', backref='trackouts', lazy='dynamic')
+    trackouts = db.relationship('TrackOut', backref='trackouts', cascade="all, delete-orphan", lazy='dynamic')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     '''
@@ -62,10 +62,10 @@ class TrackOut(db.Model):
     name = db.Column(db.String(1000))
     type = db.Column(db.String(50))
     settings = db.Column(db.String(1000))
-    eq = db.relationship("Equalizer", backref="eq", lazy='subquery', uselist=False)
-    de = db.relationship("Deesser", backref="de", lazy='subquery', uselist=False)
-    co = db.relationship("Compressor", backref="co", lazy='subquery', uselist=False)
-    re = db.relationship("Reverb", backref="re", lazy='subquery', uselist=False)
+    eq = db.relationship("Equalizer", backref="eq", cascade="all, delete-orphan", lazy='subquery', uselist=False)
+    de = db.relationship("Deesser", backref="de", cascade="all, delete-orphan", lazy='subquery', uselist=False)
+    co = db.relationship("Compressor", backref="co", cascade="all, delete-orphan", lazy='subquery', uselist=False)
+    re = db.relationship("Reverb", backref="re", cascade="all, delete-orphan", lazy='subquery', uselist=False)
 
     '''
     Wav File Representation
