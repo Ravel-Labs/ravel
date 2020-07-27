@@ -56,7 +56,7 @@ def create_track():
 def get_tracks():
     try:
         user_id = current_identity.id
-        raw_tracks = Track.query.filter_by(user_id=user_id).first()
+        raw_tracks = Track.query.filter_by(user_id=user_id).all()
         if not raw_tracks:
             abort(400, "A track with id %s does not exist" % user_id)
         tracks = [raw_track.to_dict() for raw_track in raw_tracks]
