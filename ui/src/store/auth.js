@@ -77,17 +77,12 @@ const auth = {
   actions: {
     async login({ commit }, user) {
       try {
-        console.log('login hit', user)
         commit("LOGIN_REQUEST", user);
         let { data } = await API().post("/auth/login", {
           username: user.email,
           password: user.password
         });
         commit("LOGIN_SUCCESS", data["access_token"]);
-        // commit("SET_USER", user);
-        router.push({
-          name: "tracks"
-        });
         return data;
       } catch (err) {
         commit("LOGIN_FAILURE", err);
@@ -97,9 +92,6 @@ const auth = {
     async logout({ commit }) {
       try {
         commit("LOGOUT_SUCCESS");
-        router.push({
-          name: "login"
-        });
       } catch (error) {
         commit("LOGOUT_FAILURE", error);
       }
@@ -112,8 +104,6 @@ const auth = {
           password: user.password,
           name: user.name
         });
-
-        console.log('signup data: ', data)
 
         // successfully signed up
         if (data.status === 201) {
