@@ -15,7 +15,7 @@
             </span>
           </p>
         </div> -->
-        <a v-for="track in tracks"
+        <a v-if="tracks" v-for="track in tracks"
         :key="track.id"
         class="panel-block is-active">
           <router-link

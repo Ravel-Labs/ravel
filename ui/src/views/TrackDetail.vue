@@ -10,22 +10,6 @@
           </div>
         </div>
 
-        <!-- If Empty Trackouts -->
-        <div class="tile is-ancestor" v-if="!track.trackouts">
-          <div class="tile is-vertical">
-            <div class="tile">
-              <div class="tile is-parent is-vertical">
-                <article class="tile is-child notification is-primary is-vcentered">
-                  <p>You haven't created a trackout yet. Create one to get started!</p>
-                  <p>
-                    <b-button class="is-info" @click="toggleAddTrackout()">Create Trackout</b-button>
-                  </p>
-                </article>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div class="columns">
           <div class="column">
             <b-button class="is-info" @click="toggleAddTrackout()">
@@ -46,6 +30,22 @@
             <b-switch v-model="isCompressed">
               Compression
             </b-switch>
+          </div>
+        </div>
+
+        <!-- If Empty Trackouts -->
+        <div class="tile is-ancestor" v-if="track.trackouts.length == 0">
+          <div class="tile is-vertical">
+            <div class="tile">
+              <div class="tile is-parent is-vertical">
+                <article class="tile is-child notification is-primary is-vcentered">
+                  <p>You haven't created a trackout yet. Create one to get started!</p>
+                  <p>
+                    <b-button class="is-info" @click="toggleAddTrackout()">Create Trackout</b-button>
+                  </p>
+                </article>
+              </div>
+            </div>
           </div>
         </div>
 
