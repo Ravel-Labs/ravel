@@ -10,7 +10,7 @@ const api = axios.create({
 
 api.interceptors.response.use((response) => {
   console.log('axios response: ', response)
-  return Promise.resolve(response) 
+  return response
 }, (err) => {
   if (err == "Error: Request failed with status code 401") {
     // handle missing token or token invalidation error
