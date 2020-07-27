@@ -38,6 +38,15 @@ const tracks = {
       },
       'GET_TRACKOUTS_SUCCESS' (state, trackouts) {
         state.loading = false
+        if (trackouts == undefined) {
+          state.current.trackouts = []
+          return
+        }
+        if (trackouts.length === 0) {
+          state.current.trackouts = []
+          return
+        } 
+
         state.current.trackouts = trackouts
       },
       'GET_TRACKOUTS_FAILURE' (state, err) {
@@ -65,10 +74,10 @@ const tracks = {
         state.error = error
         state.loading = false
       },
-      'DELETE_TRACK_SUCCESS' (state, track_id) {
-        // TODO: Remove track from list with splice
+      'DELETE_TRACK_SUCCESS' (state, i) {
         state.loading = false
         state.error = undefined
+        state.list.splice(1, i)
       }, 
       'DELETE_TRACK_FAILURE' (state, error) {
         state.error = error
@@ -147,6 +156,11 @@ const tracks = {
               track_id: trackID
             }
           })
+          console.log('getTrackouts: ', data)
+          if (data.message == "500 Internal Server Error: 400 Bad Request: No trackouts have been created yet") {
+            commit('GET_TRACKOUTS_SUCCESS', [])
+            return []
+          }
           commit('GET_TRACKOUTS_SUCCESS', data.payload)
         } catch (err) {
           commit('GET_TRACKOUTS_FAILURE', err)
