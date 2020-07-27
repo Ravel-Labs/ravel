@@ -123,9 +123,7 @@ const tracks = {
       async get ({ commit }) {
         try {
           commit('TRACK_REQUEST')
-          console.log('API(): ', API())
           let { data } = await API().get('/tracks')
-          if (data.status )
           commit('TRACK_SUCCESS', data.payload)
         } catch (err) {
           console.log('error getting tracks: ', err)
