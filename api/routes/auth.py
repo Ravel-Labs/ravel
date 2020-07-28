@@ -60,15 +60,31 @@ def signup_users():
         abort(500, e)
 
 
+'''
+    Check
+
+    Check will validate your authentication status with the server. 
+
+    It will return an OK 200 response if you're authenticated. 
+'''
+
+
 @auth_bp.route('%s/check' % base_auth_url)
 @jwt_required()
 def check():
     return APIResponse("OK", 200).response
 
 
+'''
+    authentication_handler is a Flask-JWT specific handler. 
+
+    It takes the email and password given by a login function 
+    and returns the result of checking their password.
+'''
+
+
 def authentication_handler(email, password):
     user = User.query.filter_by(email=email).first()
-
     if user is None:
         return None
 
@@ -76,6 +92,13 @@ def authentication_handler(email, password):
         return user
 
     return None
+
+
+'''
+    identity_handler is a Flask-JWT specific handler.
+
+    It returns the identity of a given request.
+'''
 
 
 def identity_handler(payload):

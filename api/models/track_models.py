@@ -17,7 +17,7 @@ class Track(db.Model):
         Database Generated Fields
     '''
     id = db.Column(db.Integer, primary_key=True)
-    trackouts = db.relationship('TrackOut', backref='trackouts', cascade="all, delete-orphan", lazy='dynamic')
+    trackouts = db.relationship('TrackOut', backref=db.backref('trackouts', passive_deletes=True), lazy='dynamic')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     '''
@@ -52,7 +52,7 @@ class TrackOut(db.Model):
         Database Generated Fields
     '''
     id = db.Column(db.Integer, primary_key=True)
-    track_id = db.Column(db.Integer, db.ForeignKey('track.id'))
+    track_id = db.Column(db.Integer, db.ForeignKey('track.id', ondelete='CASCADE'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     '''
@@ -62,10 +62,10 @@ class TrackOut(db.Model):
     name = db.Column(db.String(1000))
     type = db.Column(db.String(50))
     settings = db.Column(db.String(1000))
-    eq = db.relationship("Equalizer", backref="eq", cascade="all, delete-orphan", lazy='subquery', uselist=False)
-    de = db.relationship("Deesser", backref="de", cascade="all, delete-orphan", lazy='subquery', uselist=False)
-    co = db.relationship("Compressor", backref="co", cascade="all, delete-orphan", lazy='subquery', uselist=False)
-    re = db.relationship("Reverb", backref="re", cascade="all, delete-orphan", lazy='subquery', uselist=False)
+    eq = db.relationship("Equalizer", backref=db.backref("eq", passive_deletes=True), lazy='subquery', uselist=False)
+    de = db.relationship("Deesser", backref=db.backref("de", passive_deletes=True), lazy='subquery', uselist=False)
+    co = db.relationship("Compressor", backref=db.backref("co", passive_deletes=True), lazy='subquery', uselist=False)
+    re = db.relationship("Reverb", backref=db.backref("re", passive_deletes=True), lazy='subquery', uselist=False)
 
     '''
     Wav File Representation
@@ -93,7 +93,7 @@ class Equalizer(db.Model):
         Database Generated Fields
     '''
     id = db.Column(db.Integer, primary_key=True)
-    trackout_id = db.Column(db.Integer, db.ForeignKey("track_out.id"))
+    trackout_id = db.Column(db.Integer, db.ForeignKey("track_out.id", ondelete='CASCADE'))
 
     '''
         Configurable Fields
@@ -118,7 +118,7 @@ class Deesser(db.Model):
         Database Generated Fields
     '''
     id = db.Column(db.Integer, primary_key=True)
-    trackout_id = db.Column(db.Integer, db.ForeignKey("track_out.id"))
+    trackout_id = db.Column(db.Integer, db.ForeignKey("track_out.id", ondelete='CASCADE'))
 
     '''
         Configurable Fields
@@ -139,7 +139,7 @@ class Reverb(db.Model):
         Database Generated Fields
     '''
     id = db.Column(db.Integer, primary_key=True)
-    trackout_id = db.Column(db.Integer, db.ForeignKey("track_out.id"))
+    trackout_id = db.Column(db.Integer, db.ForeignKey("track_out.id", ondelete='CASCADE'))
 
     '''
         Configurable Fields
@@ -158,7 +158,7 @@ class Compressor(db.Model):
         Database Generated Fields
     '''
     id = db.Column(db.Integer, primary_key=True)
-    trackout_id = db.Column(db.Integer, db.ForeignKey("track_out.id"))
+    trackout_id = db.Column(db.Integer, db.ForeignKey("track_out.id", ondelete='CASCADE'))
 
     '''
         Configurable Fields

@@ -23,9 +23,10 @@ base_trackouts_url = '/api/trackouts'
 
 
 @trackouts_bp.route(f"{base_trackouts_url}", methods=['POST'])
+@jwt_required()
 def create_trackout():
     try:
-        user_id = request.json.get('user_id')
+        user_id = current_identity.id
         track_id = request.json.get('track_id')
         type_of_track = request.json.get('type')
         name = request.json.get('name')
@@ -53,7 +54,9 @@ def create_trackout():
     GET all
 '''
 
+
 @trackouts_bp.route(base_trackouts_url, methods={'GET'})
+@jwt_required()
 def get_trackouts():
     try:
         track_id = request.args.get('track_id')
@@ -83,6 +86,7 @@ def get_trackouts():
     GET by ID
 '''
 @trackouts_bp.route('%s/<int:id>' % base_trackouts_url, methods={'GET'})
+@jwt_required()
 def get_trackout_by_id(id):
     try:
         raw_trackout = TrackOut.query.get(id)
@@ -99,6 +103,7 @@ def get_trackout_by_id(id):
     DELETE
 '''
 @trackouts_bp.route('%s/<int:id>' % base_trackouts_url, methods={'DELETE'})
+@jwt_required()
 def delete_trackout_by_id(id):
     try:
         raw_trackout = TrackOut.query.get(id)
@@ -123,6 +128,7 @@ def delete_trackout_by_id(id):
 
 
 @trackouts_bp.route('%s/<int:id>' % base_trackouts_url, methods=['PUT'])
+@jwt_required()
 def update_trackout(id):
     try:
         # TODO republish a process for a newly updated wavfile
@@ -146,8 +152,10 @@ def update_trackout(id):
 
 
 @trackouts_bp.route('%s/wav/<int:id>' % base_trackouts_url, methods=['PUT'])
+@jwt_required()
 def add_update_wavfile(id):
     try:
+        print(f'hit file upload: ', request)
         raw_file = request.files['file']
         raw_trackout = TrackOut.query.get(id)
         if not raw_trackout:
@@ -174,6 +182,7 @@ def add_update_wavfile(id):
 
 
 @trackouts_bp.route('%s/wav/<int:id>' % base_trackouts_url, methods=['GET'])
+@jwt_required()
 def get_wav_from_trackout(id):
     try:
         # Get wav path from TrackOut then call firebase service
@@ -192,6 +201,7 @@ def get_wav_from_trackout(id):
             byte_io,
             attachment_filename=file_name,
             as_attachment=True)
+
         # Remove file from disk
         remove("trackout.wav")
         return file
@@ -200,6 +210,7 @@ def get_wav_from_trackout(id):
 
 
 @trackouts_bp.route('%s/eq/<int:id>' % base_trackouts_url, methods=['GET'])
+@jwt_required()
 def get_eq_from_trackout(id):
     try:
         # Get wav path from TrackOut then call firebase service
@@ -225,7 +236,9 @@ def get_eq_from_trackout(id):
     except Exception as e:
         abort(500, e)
 
+
 @trackouts_bp.route('%s/co/<int:id>' % base_trackouts_url, methods=['GET'])
+@jwt_required()
 def get_co_from_trackout(id):
     try:
         # Get wav path from TrackOut then call firebase service
@@ -251,7 +264,9 @@ def get_co_from_trackout(id):
     except Exception as e:
         abort(500, e)
 
+
 @trackouts_bp.route('%s/de/<int:id>' % base_trackouts_url, methods=['GET'])
+@jwt_required()
 def get_de_from_trackout(id):
     try:
         # Get wav path from TrackOut then call firebase service
@@ -280,6 +295,7 @@ def get_de_from_trackout(id):
 
 # // TODO maybe turn all of the effect gets into one method and request.body for specific details
 @trackouts_bp.route('%s/re/<int:id>' % base_trackouts_url, methods=['GET'])
+@jwt_required()
 def get_re_from_trackout(id):
     try:
         # Get wav path from TrackOut then call firebase service

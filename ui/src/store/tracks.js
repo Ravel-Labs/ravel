@@ -12,7 +12,8 @@ const tracks = {
         trackouts: [],
       },
       error: "",
-      loading: false
+      loading: false,
+      processing: false
     },
     mutations: {
       'TRACK_REQUEST' (state) {
@@ -37,6 +38,15 @@ const tracks = {
       },
       'GET_TRACKOUTS_SUCCESS' (state, trackouts) {
         state.loading = false
+        if (trackouts == undefined) {
+          state.current.trackouts = []
+          return
+        }
+        if (trackouts.length === 0) {
+          state.current.trackouts = []
+          return
+        } 
+
         state.current.trackouts = trackouts
       },
       'GET_TRACKOUTS_FAILURE' (state, err) {
@@ -64,10 +74,10 @@ const tracks = {
         state.error = error
         state.loading = false
       },
-      'DELETE_TRACK_SUCCESS' (state, track_id) {
-        // TODO: Remove track from list with splice
+      'DELETE_TRACK_SUCCESS' (state, i) {
         state.loading = false
         state.error = undefined
+        state.list.splice(1, i)
       }, 
       'DELETE_TRACK_FAILURE' (state, error) {
         state.error = error
@@ -77,6 +87,31 @@ const tracks = {
         state.error = ""
         state.loading = false
         console.log('update trackout wav success: ', data)
+      },
+      'TRACK_PROCESS_REQUEST' (state, data) {
+        state.error = ""
+        console.log('track_process_request data: ', data)
+      },
+      'WAVEFILE_REQUEST' (state, data) {
+        console.log('wavefile request: ', data)
+      },
+      'WAVEFILE_FAILURE' (state, err) {
+        console.log('wavefile failure: ', err)
+        state.error = err
+      },
+      'WAVEFILE_SUCCESS' (state, data) {
+        console.log('wavefile success: ', data)
+        state.message = data
+      },
+      'PROCESS_REQUEST' (state, data) {
+        console.log('process request kicked off')
+        state.processing = true
+        state.loading = false
+      },
+      'PROCESS_SUCCESS' (state, data) {
+        state.processing = false
+        state.message = "Successfully processed. Check your email."
+        state.loading = false
       }
     },
     actions: {
@@ -98,7 +133,6 @@ const tracks = {
         try {
           commit('TRACK_REQUEST')
           let { data } = await API().get('/tracks')
-          console.table(data.payload)
           commit('TRACK_SUCCESS', data.payload)
         } catch (err) {
           console.log('error getting tracks: ', err)
@@ -122,6 +156,10 @@ const tracks = {
               track_id: trackID
             }
           })
+          if (data.message == "500 Internal Server Error: 400 Bad Request: No trackouts have been created yet") {
+            commit('GET_TRACKOUTS_SUCCESS', [])
+            return []
+          }
           commit('GET_TRACKOUTS_SUCCESS', data.payload)
         } catch (err) {
           commit('GET_TRACKOUTS_FAILURE', err)
@@ -135,7 +173,8 @@ const tracks = {
           let { data } = await API().post('/trackouts', trackout)
           commit('ADD_TRACKOUT_SUCCESS', data.payload)
         } catch (err) {
-          throw new Error('error processing trackout: ', err)
+          console.error('error adding trackout: ', err)
+          return new Error('error processing trackout: ', err)
         }
       },
       async update({ commit }, track) {
@@ -148,25 +187,81 @@ const tracks = {
           console.log('error updating track: ', err)
         }
       },
-      async delete ({ commit }, track) {
+      async delete ({ commit, dispatch }, track) {
         try {
-          let { data } = await api.delete(`/tracks/${track.id}`)
-          commit('DELETE_TRACK_SUCCESS')
+          let { data } = await API().delete(`/tracks/delete/${track.id}`)
+          if (data.payload) {
+            commit('DELETE_TRACK_SUCCESS')
+            router.push('/tracks')
+            dispatch('get')
+            return data
+          }
+
+          if (data.message) {
+            if (data.status === "500") {
+              commit('DELETE_TRACK_FAILURE', data.message)
+              return new Error(data.message)
+            }
+          }
+
+          console.log('data.payload: ', data.payload)
+          return data
         } catch (err) {
           commit('DELETE_TRACK_FAILURE', err)
-          console.error('failed to delete track')
+          console.error('failed to delete track: ', err)
+          return err
+        }
+      },
+      async deleteTrackout ({ commit }, trackoutID) {
+        try {
+          let { data } = await API().delete(`/trackouts/delete/${trackoutID}`)
+          return data
+        } catch (err) {
+          console.error('error deleting trackout: ', err)
+          return err
+        }
+      },
+      async process ({ commit }, payload) {
+        try {
+          commit('PROCESS_REQUEST', payload.trackID)
+          let { data } = await API().put(`/tracks/process/${payload.trackID}`, {
+            'toggle_effects_params': {
+              'co': payload.co,
+              'eq': payload.eq,
+              'de': payload.de 
+            }
+          })
+          return data
+        } catch (err) {
+          console.log('error processing track: ', err)
+          commit('TRACK_FAILURE', err)
+          return err
+        }
+      },
+
+      async getWavefile ({ commit }, trackID) {
+        try {
+         let { data } = await API().get(`/tracks/wav/${trackID}`)
+         console.log('got wavfile response: ', data)
+         return data
+        } catch (err) {
+          console.log('error getting wavefile: ', err) 
+          return err
         }
       },
       async uploadFile ({ commit }, payload) {
         try {
-          let { data } = await api.post(`/trackouts/wav/${payload.id}`)
-          commit('UPLOAD_SUCCESS', data)
-        } catch (err) {
-          if (err.response) {
-            console.log('error response: ', err.response)
+          let { data } = await api.post(`/trackouts/wav/${payload.id}`, payload.formData)
+          if (data.status === "500") {
+            commit('TRACK_FAILURE', `Failed to upload track: ${data.message}`)
+            return data
           }
+
+          // commit('UPLOAD_SUCCESS', data)
+          return data
+        } catch (err) {
           console.error('error uploading file: ', err)
-          throw new Error(err)
+          return Error(err)
         }
       },
       async createTrackoutWithoutWav ({ commit }, trackout) {

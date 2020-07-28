@@ -7,6 +7,8 @@ from flask_mail import Mail
 from api.queueWorker import Q, Job, worker
 
 from flaskthreads import AppContextThread
+from datetime import timedelta
+import logging
 db = SQLAlchemy()
 
 
@@ -24,7 +26,10 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"  # url
     app.config["JWT_AUTH_URL_RULE"] = "/api/auth/login"
     app.config["JWT_SECRET_KEY"] = "thisshouldbesetforproduction"
+    app.config["JWT_EXPIRATION_DELTA"] = timedelta(days=1)
+
     # app.config['SQLALCHEMY_ECHO'] = True
+    app.logger.setLevel(logging.ERROR)
     # Email configuration
     app.config.update(dict(
         DEBUG=True,

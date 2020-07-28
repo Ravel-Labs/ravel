@@ -10,8 +10,31 @@
           </div>
         </div>
 
+        <div class="columns">
+          <div class="column">
+            <b-button class="is-info" @click="toggleAddTrackout()">
+              Add Trackout
+            </b-button>
+            <b-button style="margin-left: 10px;" class="is-info" @click="process()">
+              Process
+            </b-button>
+          </div>
+          <div class="column" v-if="track.trackouts">
+            <!-- Processing toggles -->
+            <b-switch v-model="isDeessed">
+              De-Esser
+            </b-switch>
+            <b-switch v-model="isEQed">
+              EQ
+            </b-switch>
+            <b-switch v-model="isCompressed">
+              Compression
+            </b-switch>
+          </div>
+        </div>
+
         <!-- If Empty Trackouts -->
-        <div class="tile is-ancestor" v-if="!track.trackouts">
+        <div class="tile is-ancestor" v-if="track.trackouts.length == 0">
           <div class="tile is-vertical">
             <div class="tile">
               <div class="tile is-parent is-vertical">
@@ -24,12 +47,6 @@
               </div>
             </div>
           </div>
-        </div>
-
-        <div class="columns">
-          <b-button class="is-info" @click="toggleAddTrackout()">
-            Add Trackout
-          </b-button>
         </div>
 
         <!-- Add Trackout Modal -->
@@ -46,6 +63,7 @@
               </b-field>
 
               <b-field label="Type">
+                <!-- This should be "vocals" or "instrument" types -->
                 <b-input v-model="trackout.type"></b-input>
               </b-field>
 
@@ -63,7 +81,7 @@
             </section>
             <footer class="modal-card-foot">
               <button class="button is-primary" @click="submitFile()">Upload</button>
-              <button class="button">Cancel</button>
+              <button class="button" @click="toggleAddTrackout()">Cancel</button>
             </footer>
           </div>
         </div>
@@ -84,60 +102,13 @@
           <div class="card-content">
             <p>Created at: {{ t.created_at }}</p>
             <p>Type: {{ t.type }}</p>
-            <b-button @click="process()" class="is-success">Process</b-button>
-            <!-- Manual settings
-                  <!-- <b-field label="Compression">
-                      <b-slider v-model="t.compression"></b-slider>
-                  </b-field>
-
-                  <b-field label="Reverb">
-                      <b-slider v-model="t.reverb"></b-slider>
-                  </b-field>
-
-                  <b-field label="EQ">
-                      <b-slider v-model="t.eq"></b-slider>
-                  </b-field> -->
-
-            <!-- Presets -->
-            <!-- <div class="columns">
-                    <div class="column">
-                    <b-field>
-                    </b-field>
-                      <b-switch v-model="t.vocal_magic">
-                        Vocal Magic
-                      </b-switch>
-                    </div>
-                    <div class="column">
-                      <b-switch v-model="t.drum_booster">
-                        Drum Booster
-                      </b-switch>
-                    </div>
-
-                    <div class="column">
-                      <b-switch v-model="t.deesser">
-                          De-Esser
-                      </b-switch>
-                    </div>
-                  </div>
-
-                  <div class="columns">
-                    <div class="column">
-                    <b-field label="Track Type">
-                        <b-select
-                        placeholder="What instrument is this trackout?">
-                            <option
-                              v-for="option in trackTypes"
-                              :value="option.name"
-                              :key="option.id">
-                              {{ option.name }}
-                            </option>
-                        </b-select>
-                    </b-field>
-                    </div>
-                  </div>
-                <br> -->
+            <button class="button is-danger is-small" @click="handleDeleteTrackOut()">Remove Trackout</button>
           </div>
         </b-collapse>
+
+        <div>
+          <button class="button is-danger is-small" @click="handleDeleteTrack()">Delete Track</button>
+        </div>
       </div>
     </div>
     <section></section>
@@ -150,9 +121,10 @@ export default {
   name: "trackDetails",
   data() {
     return {
-      file: {
-        name: ""
-      },
+      file: [],
+      isDeessed: localStorage.getItem(`${this.$route.params.id}:settings:de`) || false,
+      isEQed: localStorage.getItem(`${this.$route.params.id}:settings:eq`) || false,
+      isCompressed: localStorage.getItem(`${this.$route.params.id}:settings:co`) || false,
       dropFiles: [],
       addTrackout: false,
       trackout: {
@@ -204,11 +176,24 @@ export default {
       user: state => state.user
     })
   },
+  watch: {
+    isCompressed: function(val) {
+      localStorage.setItem(`${this.$route.params.id}:settings:co`, val)
+    },
+    isEQed: function(val) {
+      localStorage.setItem(`${this.$route.params.id}:settings:eq`, val)
+    },
+    isDeessed: function(val) {
+      localStorage.setItem(`${this.$route.params.id}:settings:de`, val)
+    }
+  },
   methods: {
     submitFile() {
       let formData = new FormData();
+      formData.append('file', this.file)
+
+      // set payloads up 
       const trackPayload = {
-        user_id: 1,
         track_id: this.$route.params.id,
         name: this.trackout.name,
         type: this.trackout.type
@@ -221,35 +206,48 @@ export default {
       this.$store
         .dispatch("tracks/createTrackoutWithoutWav", trackPayload)
         .then(data => {
-          this.$store.dispatch("tracks/updateTrackoutWithWav", filePayload).then(data => {
-            // everything succeeded
-            this.$store.dispatch("tracks/getTrackouts", this.$route.params.id);
+          this.$store.dispatch("tracks/updateTrackoutWithWav", filePayload)
+            // TODO show a loading bar 
+            .then(data => {
+              // everything succeeded
+              this.$store.dispatch("tracks/getTrackouts", this.$route.params.id);
 
-            // fire notification and clean up
-            this.addTrackout = false;
-            this.$buefy.notification.open({
-              message: "Uploaded trackout!",
-              type: "is-success"
+              // fire notification and clean up
+              this.addTrackout = false;
+              this.$buefy.notification.open({
+                message: "Uploaded trackout!",
+                type: "is-success"
+              });
             });
-          });
         })
         .catch(err => {
           console.log("error creating trackout: ", err);
+          return err
         });
     },
     deleteDropFile(index) {
       this.dropFiles.splice(index, 1);
     },
     toggleAddTrackout() {
-      console.log("addTrackout: ", this.addTrackout);
       this.addTrackout = !this.addTrackout;
-      console.log("addTrackout after: ", this.addTrackout);
     },
     process() {
-      this.$store.dispatch('tracks/process')
+      this.$store.dispatch("tracks/process", {
+        trackID: this.$route.params.id,
+        co: this.isCompressed,
+        eq: this.isEQed,
+        de: this.isDeessed
+      })
+      this.$buefy.notification.open({
+        message: "Process request received. Once your track is done processing we'll send you an email with a download link.",
+        type: "is-success",
+        duration: 5000
+      })
     },
-    update () {
-      this.$store.dispatch('track/updateSettings', {})
+    handleDeleteTrack() {
+      this.$store.dispatch('tracks/delete', {
+        id: this.$route.params.id
+      })
     }
   }
 };

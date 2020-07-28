@@ -3,6 +3,7 @@ from hashlib import md5
 from flask import Blueprint, abort, request, send_file
 from flask_jwt import jwt_required, current_identity
 from api import db
+from api.models.User import User
 from api.models.track_models import Track, TrackOut, Equalizer, Deesser
 from api.services.firestore import retreive_from_file_store, publish_to_file_store
 from api.routes.trackOuts import get_wav_from_trackout
@@ -12,6 +13,7 @@ from api.services.orchestration.orchestrator import Orchestrator
 from api.services.email.email import email_proxy
 from api.models.apiresponse import APIResponse
 import json
+import logging
 
 
 tracks_bp = Blueprint('tracks_bp', __name__)
@@ -22,9 +24,8 @@ base_tracks_url = '/api/tracks'
 @jwt_required()
 def create_track():
     try:
-        name = request.json.get('name')
         user_id = current_identity.id
-        print(f'getting tracks for current user; ', user_id)
+        name = request.json.get('name')
         artist = request.json.get('artist')
         info = request.json.get('info')
 
@@ -38,6 +39,7 @@ def create_track():
         db.session.commit()
 
         track = raw_track.to_dict()
+
         response = APIResponse(track, 201).response
         return response
     except Exception as e:
@@ -49,8 +51,6 @@ def create_track():
 
     tracks that belong to the currently logged in user
 '''
-
-
 @tracks_bp.route(base_tracks_url, methods={'GET'})
 @jwt_required()
 def get_tracks():
@@ -61,10 +61,15 @@ def get_tracks():
             abort(400, "A track with id %s does not exist" % user_id)
         tracks = [raw_track.to_dict() for raw_track in raw_tracks]
         if not tracks:
-            abort(400)
+            # handle empty tracks list
+            response = APIResponse([], 200).response
+            return response
+
         response = APIResponse(tracks, 200).response
+        print(f'responding with: ', response)
         return response
     except Exception as e:
+        print(f'get_tracks error: {e}')
         abort(500, e)
 
 
@@ -139,19 +144,29 @@ def get_trackouts_by_track_id(id):
 @jwt_required()
 def process_track(id):
     try:
-        # Dispatch email processing progress, managed by queueWorker
-        email_proxy(
-            template_type="status",
-            user_to_email_address=email,
-            user_name=name,
-            button_title="")
-        # extract trackout data from track
+
+        # Track should contain user
+        current_user = User.query.get(current_identity.id)
         raw_track = Track.query.get(id)
+        toggle_effects_params = request.json.get('toggle_effects_params')
+        
+        print(f'toggle_effects_params: {toggle_effects_params}')
         if not raw_track:
             abort(404, f"There aren't any trackouts for track {id}")
-        trackouts = raw_track.trackouts.all()
-        orchestrator = Orchestrator(trackouts, raw_track)
+
+        # Dispatch email processing progress, managed by queueWorker
+        email_proxy(
+            title="Initiating Processing",
+            template_type="status",
+            user_to_email_address=current_user.email,
+            user_name=current_user.name,
+            button_title="")
+
+        # extract trackout data from track
+        raw_trackouts = raw_track.trackouts.all()
+        orchestrator = Orchestrator(current_user, raw_trackouts, raw_track, toggle_effects_params)
         orchestrator.orchestrate()
+
         payload = {
             "action": "processing",
             "table": "track",
@@ -159,49 +174,5 @@ def process_track(id):
         }
         response = APIResponse(payload, 200).response
         return response
-    except Exception as e:
-        abort(500, e)
-
-
-# TODO Rethink what blueprint this falls under
-@tracks_bp.route(f'{base_tracks_url}/eq/<int:id>', methods={'GET'})
-@jwt_required()
-def get_eq_results_by_trackout_id(id):
-    try:
-        raw_tracks = Track.query.get(id)
-        raw_trackouts = raw_tracks.trackouts.all()
-        # For each raw_trackout lets get their EQ and return them all
-        trackout_eq = dict()
-        '''
-            This dict will contain meta data described below
-            {
-                # TODO Think about adding more meta data so subsuquent calls aren't necessary
-                track_id: String,
-                trackout_id_0: EQ File or Binary,
-                trackout_id_1: EQ File or Binary,
-            }
-        '''
-        trackout_eq["track_id"] = id
-
-        for raw_trackout in raw_trackouts:
-            '''
-            trackout:
-                @methods
-                    def eq
-                    def de
-                    def comp
-            '''
-            print(f'raw_trackout: {raw_trackout}')
-            raw_eq = raw_trackout.eq
-            eq_id = raw_eq.id
-            print(f'eq_id: {eq_id}')
-            eq_binary = raw_eq.equalized_binary
-            print(type(eq_binary))
-            trackout_eq[eq_id] = eq_binary
-            samplerate = 44100
-            return send_file(
-                BytesIO(eq_binary),
-                attachment_filename="wavFile.wav",
-                as_attachment=True)
     except Exception as e:
         abort(500, e)

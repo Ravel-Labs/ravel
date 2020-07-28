@@ -16,13 +16,15 @@ class Orchestrator():
     track.
     """
 
-    def __init__(self, all_trackouts, track):
+    def __init__(self, current_user, all_trackouts, track, toggle_effects_params):
         """
         creates a new builder
         """
         self.track = track
+        self.current_user = current_user
         self.files_to_remove = list()
         self.processed_signals = list()
+        self.toggle_effects_params = toggle_effects_params
         num_signals = len(all_trackouts)
         self.processor = Processor(num_signals)
         self.all_trackouts = all_trackouts
@@ -31,8 +33,7 @@ class Orchestrator():
         self.compressed_result = list()
         self.mono_signal_trackouts = list()
         # TODO get this from DB model
-        self.eq_params = {"trackout_id": 1, "freq": "1200",
-                          "filter_type": 0, "gain": 1}
+        self.eq_params = {"freq": "1200", "filter_type": 0, "gain": 1}
         self.co_params = {"ratio": 1.1, "threshold": 1.0,
                           "knee_width": 1, "attack": 1.1, "release": 1.2}
         self.de_params = {"sharpness_avg": 1}
@@ -51,20 +52,21 @@ class Orchestrator():
             base_processing_args = [raw_trackout]
 
             """Initiate Equalize"""
-            eq_args = base_processing_args + ["equalize", main_trackout, other_trackouts]
-            processing_job = Job(self.process_and_save, eq_args)
-            print(f'processing job:  {processing_job}')
-            Q.put(processing_job)  # currently cannot return
+            if self.toggle_effects_params.get('eq'):
+                eq_args = base_processing_args + ["equalize", main_trackout, other_trackouts]
+                processing_job = Job(self.process_and_save, eq_args)
+                print(f'processing job:  {processing_job}')
+                Q.put(processing_job)  # currently cannot return
             
             """ Initiate Deessor """
-            if raw_trackout.type == "vocals":
+            if raw_trackout.type == "vocals" and self.toggle_effects_params.get('de'):
                 de_args = base_processing_args + ["deesser", main_trackout, other_trackouts]
                 processing_job = Job(self.process_and_save, de_args)
                 print(f'processing job:  {processing_job}')
                 Q.put(processing_job)  # currently cannot return
             
             """ Initiate Reverb """
-            if raw_trackout.type == "vocals":
+            if raw_trackout.type == "vocals" and self.toggle_effects_params.get('re'):
                 rev_args = base_processing_args + ["reverb", main_trackout, other_trackouts]
                 processing_job = Job(self.process_and_save, rev_args)
                 print(f'processing job:  {processing_job}')
@@ -73,7 +75,8 @@ class Orchestrator():
     def orchestrate(self):
         try:
             self.mono_signal_trackouts = convert_to_mono_signal(self.all_trackouts, self.sample_rate)
-            self.compress_trackouts()
+            if self.toggle_effects_params.get('co'):
+                self.compress_trackouts()
             self.engage_trackout_effects()
             Q.join()
             storage_name = f"{self.track.id}_results.wav"
@@ -88,16 +91,15 @@ class Orchestrator():
             with open(storage_name, 'rb') as fin:
                 data = fin.read()
             email_proxy(
-                title="NewTrackout",
+                title="Audio Processing Complete",
                 template_type="status",
-                user_to_email_address="gabeaboy@gmail.com",
-                user_name="name",
+                user_to_email_address=self.current_user.email,
+                user_name=self.current_user.name,
                 button_title="Processed Results",
                 button_link=download_url,
                 sound_file=data)
             # remove all trackouts stored on disk
             remove(storage_name)
-            print("DONE!")
             for file in self.files_to_remove:
                 remove(file)
             for i, _ in enumerate(self.all_trackouts):

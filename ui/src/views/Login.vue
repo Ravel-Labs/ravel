@@ -78,6 +78,9 @@ export default {
         router.push({ name: 'tracks' })
         this.$store.dispatch('auth/check')
       })
+      .catch((err) => {
+        console.log("login view error: ", err)
+      })
     }
   }
 };

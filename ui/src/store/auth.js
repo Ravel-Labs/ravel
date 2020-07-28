@@ -9,7 +9,7 @@ const auth = {
     loading: false,
     token: ls.getItem("token"),
     user: {
-      id: "",
+      id: ls.getItem("user:id"),
       email: ls.getItem("user:email")
     },
     message: "",
@@ -55,9 +55,6 @@ const auth = {
     SIGNUP_SUCCESS(state, data) {
       state.loading = false;
       state.error = undefined;
-      router.push({
-        name: "tracks"
-      });
     },
     SIGNUP_FAILURE(state, err) {
       state.loading = false;
@@ -86,21 +83,15 @@ const auth = {
           password: user.password
         });
         commit("LOGIN_SUCCESS", data["access_token"]);
-        // commit("SET_USER", user);
-        router.push({ name: 'tracks' })
-        return data
+        return data;
       } catch (err) {
         commit("LOGIN_FAILURE", err);
-        throw new Error('failed to login')
+        throw new Error("failed to login");
       }
     },
     async logout({ commit }) {
       try {
         commit("LOGOUT_SUCCESS");
-        router.push({
-          name: "login"
-        });
-        location.reload();
       } catch (error) {
         commit("LOGOUT_FAILURE", error);
       }
@@ -117,25 +108,19 @@ const auth = {
         // successfully signed up
         if (data.status === 201) {
           commit("SIGNUP_SUCCESS", data.data.message);
-          dispatch('login', user)
-          return data
+          dispatch("login", user);
+          return data;
         }
 
         // email already exists
         if (data.data.status === "500") {
           commit("SIGNUP_FAILURE", data.data.message);
-          throw new Error(`${data.data.message}`);
-        }
-
-        // email not found
-        if (data.data.status === "404") {
-          commit("SIGNUP_FAILURE", data.data.message);
-          throw new Error("user not found: ", data.data.message);
+          return new Error(`${data.data.message}`);
         }
 
         // default error
         commit("SIGNUP_FAILURE", data.data.message);
-        throw new Error("unknown data payload", err);
+        return new Error("unknown data payload", err);
       } catch (err) {
         commit("SIGNUP_FAILURE", "Failed to signup.");
         throw new Error("error signing up");
@@ -143,9 +128,7 @@ const auth = {
     },
     async check({ commit, dispatch }) {
       try {
-        let {
-          data
-        } = await API().get("/auth/check");
+        let { data } = await API().get("/auth/check");
         commit("CHECK_SUCCESS", data);
       } catch (error) {
         if (error === "Request failed with status code 401") {
