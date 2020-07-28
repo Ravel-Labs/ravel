@@ -190,7 +190,6 @@ export default {
   methods: {
     submitFile() {
       let formData = new FormData();
-      console.log("processing file: ", this.file)
       formData.append('file', this.file)
 
       // set payloads up 
@@ -230,13 +229,20 @@ export default {
       this.dropFiles.splice(index, 1);
     },
     toggleAddTrackout() {
-      console.log("addTrackout: ", this.addTrackout);
       this.addTrackout = !this.addTrackout;
-      console.log("addTrackout after: ", this.addTrackout);
     },
     process() {
-      // TODO: add params to this processing request 
-      this.$store.dispatch("tracks/process", this.$route.params.id);
+      this.$store.dispatch("tracks/process", {
+        trackID: this.$route.params.id,
+        co: this.isCompressed,
+        eq: this.isEQed,
+        de: this.isDeessed
+      })
+      this.$buefy.notification.open({
+        message: "Process request received. Once your track is done processing we'll send you an email with a download link.",
+        type: "is-success",
+        duration: 5000
+      })
     },
     handleDeleteTrack() {
       this.$store.dispatch('tracks/delete', {

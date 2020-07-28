@@ -156,7 +156,6 @@ const tracks = {
               track_id: trackID
             }
           })
-          console.log('getTrackouts: ', data)
           if (data.message == "500 Internal Server Error: 400 Bad Request: No trackouts have been created yet") {
             commit('GET_TRACKOUTS_SUCCESS', [])
             return []
@@ -172,7 +171,6 @@ const tracks = {
         try {
           commit('TRACK_REQUEST')
           let { data } = await API().post('/trackouts', trackout)
-          console.log('add trackout: ', data)
           commit('ADD_TRACKOUT_SUCCESS', data.payload)
         } catch (err) {
           console.error('error adding trackout: ', err)
@@ -192,7 +190,6 @@ const tracks = {
       async delete ({ commit, dispatch }, track) {
         try {
           let { data } = await API().delete(`/tracks/delete/${track.id}`)
-          console.log('removing track:', data)
           if (data.payload) {
             commit('DELETE_TRACK_SUCCESS')
             router.push('/tracks')
@@ -218,30 +215,23 @@ const tracks = {
       async deleteTrackout ({ commit }, trackoutID) {
         try {
           let { data } = await API().delete(`/trackouts/delete/${trackoutID}`)
-          console.log('delete trackout response data: ', data)
           return data
         } catch (err) {
           console.error('error deleting trackout: ', err)
           return err
         }
       },
-      async process ({ commit }, trackID) {
+      async process ({ commit }, payload) {
         try {
-          commit('PROCESS_REQUEST', trackID)
-          let { data } = await API().put(`/tracks/process/${trackID}`, {
+          commit('PROCESS_REQUEST', payload.trackID)
+          let { data } = await API().put(`/tracks/process/${payload.trackID}`, {
             'toggle_effects_params': {
-              'co': true,
-              'eq': true,
-              'de': true
+              'co': payload.co,
+              'eq': payload.eq,
+              'de': payload.de 
             }
           })
-          console.log('process request data: ', data)
-          if (data.status === "200") {
-            commit('TRACK_SUCCESS', `Processing! You should be receiving an email with a download link shortly.`)
-            return data
-          }
-
-          console.log('got past success: ', data)
+          return data
         } catch (err) {
           console.log('error processing track: ', err)
           commit('TRACK_FAILURE', err)
