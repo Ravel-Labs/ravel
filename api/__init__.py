@@ -13,8 +13,8 @@ db = SQLAlchemy()
 
 
 
-# administrator list
-ADMINS_FROM_EMAIL_ADDRESS = ['aboy.gabriel@outlook.com']
+# administrator list - must be from domain confirmed with SendGrid
+ADMINS_FROM_EMAIL_ADDRESS = ['robot@ravelmusic.io']
 mail = Mail()
 
 
