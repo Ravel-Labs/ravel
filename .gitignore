@@ -11,3 +11,5 @@ db.sqlite
 
 *.pyc
 .DS_Store
+
+ecosystem.config.js
