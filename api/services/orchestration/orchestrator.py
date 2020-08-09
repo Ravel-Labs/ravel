@@ -37,40 +37,46 @@ class Orchestrator():
         self.co_params = {"ratio": 1.1, "threshold": 1.0,
                           "knee_width": 1, "attack": 1.1, "release": 1.2}
         self.de_params = {"sharpness_avg": 1}
+        app.logger.info(f'creating new track builder: {self}')
 
     def compress_trackouts(self):
         """ Initiate Compress """
         co_args = [self.all_trackouts]
         processing_job = Job(self.compress_and_save, co_args)
-        print(f'processing job:  {processing_job}')
+        app.logger.info(f'processing job: {processing_job}')
         Q.put(processing_job) # currently cannot return
 
     def engage_trackout_effects(self):
-        for i, raw_trackout in enumerate(self.all_trackouts):
-            main_trackout, other_trackouts = create_trackout_exclusive_list(self.mono_signal_trackouts, i)
-            # setup queue parameters and process
-            base_processing_args = [raw_trackout]
+        try:
+            for i, raw_trackout in enumerate(self.all_trackouts):
+                main_trackout, other_trackouts = create_trackout_exclusive_list(self.mono_signal_trackouts, i)
+                # setup queue parameters and process
+                base_processing_args = [raw_trackout]
+                app.logger.debug(f'checking fx params: {self.toggle_effects_params}')
 
-            """Initiate Equalize"""
-            if self.toggle_effects_params.get('eq'):
-                eq_args = base_processing_args + ["equalize", main_trackout, other_trackouts]
-                processing_job = Job(self.process_and_save, eq_args)
-                print(f'processing job:  {processing_job}')
-                Q.put(processing_job)  # currently cannot return
-            
-            """ Initiate Deessor """
-            if raw_trackout.type == "vocals" and self.toggle_effects_params.get('de'):
-                de_args = base_processing_args + ["deesser", main_trackout, other_trackouts]
-                processing_job = Job(self.process_and_save, de_args)
-                print(f'processing job:  {processing_job}')
-                Q.put(processing_job)  # currently cannot return
-            
-            """ Initiate Reverb """
-            if raw_trackout.type == "vocals" and self.toggle_effects_params.get('re'):
-                rev_args = base_processing_args + ["reverb", main_trackout, other_trackouts]
-                processing_job = Job(self.process_and_save, rev_args)
-                print(f'processing job:  {processing_job}')
-                Q.put(processing_job)  # currently cannot return
+                """Initiate Equalize"""
+                if self.toggle_effects_params.get('eq'):
+                    eq_args = base_processing_args + ["equalize", main_trackout, other_trackouts]
+                    processing_job = Job(self.process_and_save, eq_args)
+                    app.logger.info(f'processing job: {processing_job}')
+                    Q.put(processing_job)  # currently cannot return
+                
+                """ Initiate Deessor """
+                if raw_trackout.type == "vocals" and self.toggle_effects_params.get('de'):
+                    de_args = base_processing_args + ["deesser", main_trackout, other_trackouts]
+                    processing_job = Job(self.process_and_save, de_args)
+                    app.logger.info(f'processing job: {processing_job}')
+                    Q.put(processing_job)  # currently cannot return
+                
+                """ Initiate Reverb """
+                if raw_trackout.type == "vocals" and self.toggle_effects_params.get('re'):
+                    rev_args = base_processing_args + ["reverb", main_trackout, other_trackouts]
+                    processing_job = Job(self.process_and_save, rev_args)
+                    app.logger.info(f'processing job: {processing_job}')
+                    Q.put(processing_job)  # currently cannot return
+        except Exception as err:
+            app.logger.error(f"Error occurred in track fx: {err}")
+            raise Exception(f"Error occurred in track fx: {err}")
 
     def orchestrate(self):
         try:
@@ -90,6 +96,7 @@ class Orchestrator():
             download_url = publish_to_file_store(firestore_path, storage_name)
             with open(storage_name, 'rb') as fin:
                 data = fin.read()
+            app.logger.debug(f'successfully read file: {data}')
             email_proxy(
                 title="Audio Processing Complete",
                 template_type="status",
@@ -106,6 +113,7 @@ class Orchestrator():
                 remove(f"trackout_{i}.wav")
             return True
         except Exception as err:
+            app.logger.error(f"error in orchestration for trackID {self.track.id}:", e)
             raise Exception(f"Error occurred in orchestration:\n {err}")
 
     def compress_and_save(self, all_trackouts):
@@ -181,6 +189,8 @@ class Orchestrator():
 
         write(storage_name, self.sample_rate, processed_result)
         print(f"Completed processing {effect}: {bool(processed_result.any())}")
+        app.logger.info(f'completed processing for {effect}')
+        app.logger.info(f'processed result: ', processed_result)
         # publish_to_file_store and remove
         publish_to_file_store(firestore_path, storage_name)
         if bool(processed_result.any()):
