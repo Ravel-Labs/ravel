@@ -46,7 +46,8 @@ def create_trackout():
         response = APIResponse(trackout, 201).response
         return response
     except Exception as e:
-        print(f'#### exception in POST: #### {e}')
+        print(f'#### error creating trackout: {e}')
+        app.logger.error("error creating trackout:", e)
         abort(500, e)
 
 
@@ -60,7 +61,6 @@ def create_trackout():
 def get_trackouts():
     try:
         track_id = request.args.get('track_id')
-
         print(f'###  Getting trackouts for track_id: {track_id}')
 
         # get trackouts by track_id
@@ -178,6 +178,7 @@ def add_update_wavfile(id):
         response = APIResponse(payload, 200).response
         return response
     except Exception as e:
+        app.logger.error("error updating wav: ", e)
         abort(500, e)
 
 

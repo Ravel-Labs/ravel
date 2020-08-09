@@ -43,6 +43,7 @@ def create_track():
         response = APIResponse(track, 201).response
         return response
     except Exception as e:
+        app.logger.error("error creating track:", e)
         abort(500, e)
 
 
@@ -70,6 +71,7 @@ def get_tracks():
         return response
     except Exception as e:
         print(f'get_tracks error: {e}')
+        app.logger.error("error getting track:", e)
         abort(500, e)
 
 
@@ -104,6 +106,7 @@ def delete_track_by_id(id):
         response = APIResponse(payload, 200).response
         return response
     except Exception as e:
+        app.logger.error("error deleting track:", e)
         abort(500, e)
 
 
@@ -137,6 +140,7 @@ def get_trackouts_by_track_id(id):
         response = APIResponse(trackouts, 200).response
         return response
     except Exception as e:
+        app.logger.error("error getting track by ID:", e)
         abort(500, e)
 
 
@@ -149,8 +153,8 @@ def process_track(id):
         current_user = User.query.get(current_identity.id)
         raw_track = Track.query.get(id)
         toggle_effects_params = request.json.get('toggle_effects_params')
-        
-        print(f'toggle_effects_params: {toggle_effects_params}')
+        app.logger.error(f"processing {id} with params: {toggle_effects_params}")
+
         if not raw_track:
             abort(404, f"There aren't any trackouts for track {id}")
 
@@ -175,4 +179,5 @@ def process_track(id):
         response = APIResponse(payload, 200).response
         return response
     except Exception as e:
+        app.logger.error(f'error processing track {id}:', e)
         abort(500, e)

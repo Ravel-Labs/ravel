@@ -9,6 +9,8 @@ db.sqlite
 
 *.env.*
 
+*.log
+
 *.pyc
 .DS_Store
 
