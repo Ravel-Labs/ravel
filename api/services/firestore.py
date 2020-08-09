@@ -24,8 +24,8 @@ def publish_to_file_store(path, file):
         storage = firebase.storage()
         fb_info = storage.child(path).put(file)
         fb_store_url = storage.child(path).get_url(firebase)
-        app.logger.error(f"Firebase put{fb_info}")
-        app.logger.error(f"Firebase url{fb_store_url}")
+        app.logger.error(f"Firebase put {fb_info}")
+        app.logger.error(f"Firebase url {fb_store_url}")
         return fb_store_url
     except Exception as e:
         raise Exception(f"Firebase:{e}")
