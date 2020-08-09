@@ -11,21 +11,6 @@ auth_bp = Blueprint('auth_bp', __name__)
 base_auth_url = '/api/auth'
 
 '''
-    Server side rendering
-'''
-
-
-@auth_bp.route('%s/login' % base_auth_url)
-def login():
-    return "Login"
-
-
-@auth_bp.route('%s/signup' % base_auth_url)
-def signup():
-    return "Signup"
-
-
-'''
     Authentication methods
 
     Known request object attributes
@@ -57,6 +42,7 @@ def signup_users():
         email_proxy("welcome", email, name)
         return response
     except Exception as e:
+        app.logger.error("error signing up user:", e)
         abort(500, e)
 
 
