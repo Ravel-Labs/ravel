@@ -80,6 +80,7 @@ class Orchestrator():
 
     def orchestrate(self):
         try:
+            app.logger.error(f"Orchestrator.orchestrate()")
             self.mono_signal_trackouts = convert_to_mono_signal(self.all_trackouts, self.sample_rate)
             if self.toggle_effects_params.get('co'):
                 self.compress_trackouts()
