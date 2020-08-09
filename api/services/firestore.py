@@ -1,5 +1,6 @@
 import pyrebase
 from os import environ
+from flask import current_app as app
 
 
 print(f'### firebase key: {environ.get("FB_API_KEY")}')
@@ -23,6 +24,8 @@ def publish_to_file_store(path, file):
         storage = firebase.storage()
         fb_info = storage.child(path).put(file)
         fb_store_url = storage.child(path).get_url(firebase)
+        app.logger.error(f"Firebase put{fb_info}")
+        app.logger.error(f"Firebase url{fb_store_url}")
         return fb_store_url
     except Exception as e:
         raise Exception(f"Firebase:{e}")
@@ -34,6 +37,8 @@ def retreive_from_file_store(path, index=""):
         storage = firebase.storage()
         # Download wav to disk
         local_file_name = f"trackout_{index}.wav" if index else "trackout.wav"
-        return storage.child(path).download(local_file_name)
+        file = storage.child(path).download(local_file_name)
+        app.logger.error(f"Firebase file {file}")
+        return file
     except Exception as e:
         raise Exception(f"Firebase: {e}")
