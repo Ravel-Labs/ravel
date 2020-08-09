@@ -46,10 +46,10 @@ def create_trackout():
         trackout = raw_trackout.to_dict()
         response = APIResponse(trackout, 201).response
         return response
-    except Exception as e:
-        print(f'#### error creating trackout: {e}')
-        app.logger.error("error creating trackout:", e)
-        abort(500, e)
+    except Exception as err:
+        print(f'#### error creating trackout: {err}')
+        app.logger.error("error creating trackout:", err)
+        abort(500, err)
 
 
 '''
@@ -119,9 +119,9 @@ def delete_trackout_by_id(id):
         }
         response = APIResponse(payload, 200).response
         return response
-    except Exception as e:
-        app.logger.error(f'error deleting trackout: {e}')
-        abort(500, e)
+    except Exception as err:
+        app.logger.error(f'error deleting trackout: {err}')
+        abort(500, err)
 
 
 '''
@@ -179,9 +179,9 @@ def add_update_wavfile(id):
         }
         response = APIResponse(payload, 200).response
         return response
-    except Exception as e:
-        app.logger.error("error updating wav: ", e)
-        abort(500, e)
+    except Exception as err:
+        app.logger.error("error updating wav: ", err)
+        abort(500, err)
 
 
 @trackouts_bp.route('%s/wav/<int:id>' % base_trackouts_url, methods=['GET'])

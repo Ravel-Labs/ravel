@@ -41,10 +41,15 @@ class Orchestrator():
 
     def compress_trackouts(self):
         """ Initiate Compress """
-        co_args = [self.all_trackouts]
-        processing_job = Job(self.compress_and_save, co_args)
-        app.logger.info(f'processing job: {processing_job}')
-        Q.put(processing_job) # currently cannot return
+        try:
+            co_args = [self.all_trackouts]
+            processing_job = Job(self.compress_and_save, co_args)
+            app.logger.info(f'processing job: {processing_job}')
+            Q.put(processing_job) # currently cannot return
+        except Exception as err:
+            app.logger.error(f"error in process_and_save for trackID {self.track.id}:", err)
+            raise Exception(f"Error occurred in process_and_save:\n {err}")
+
 
     def engage_trackout_effects(self):
         try:
@@ -113,90 +118,97 @@ class Orchestrator():
                 remove(f"trackout_{i}.wav")
             return True
         except Exception as err:
-            app.logger.error(f"error in orchestration for trackID {self.track.id}:", e)
+            app.logger.error(f"error in orchestration for trackID {self.track.id}:", err)
             raise Exception(f"Error occurred in orchestration:\n {err}")
 
     def compress_and_save(self, all_trackouts):
         """
             Seperated method for effects that only needs to run once for all trackouts
         """
-        effect_prefix = "co"
-        self.compressed_result = self.processor.compress(self.mono_signal_trackouts)
-        correlation = zip(all_trackouts, self.compressed_result)
-        for index, (raw_trackout, processed_result) in enumerate(correlation):
-            trackout_id = raw_trackout.id
-            trackout_name = raw_trackout.name
-            storage_name = f"{effect_prefix}_{index+1}_results.wav"
-            firestore_path = f"{effect_prefix}/{trackout_id}/{storage_name}"
-            write(storage_name, self.sample_rate, processed_result)
-            print(f"Completed processing Compression: {bool(processed_result.any())}")
-            # publish_to_file_store and remove
-            publish_to_file_store(firestore_path, storage_name)
-            remove(storage_name)
-            db_model = Compressor(
-                ratio=self.co_params["ratio"],
-                threshold=self.co_params["threshold"],
-                knee_width=self.co_params["knee_width"],
-                attack=self.co_params["attack"],
-                release=self.co_params["release"],
-                path=firestore_path,
-                co=raw_trackout  # Relationship with raw_trackout
-            )
-            local_object = db.session.merge(db_model)
-            db.session.add(local_object)
-            db.session.commit()
-
+        try:
+            effect_prefix = "co"
+            self.compressed_result = self.processor.compress(self.mono_signal_trackouts)
+            correlation = zip(all_trackouts, self.compressed_result)
+            for index, (raw_trackout, processed_result) in enumerate(correlation):
+                trackout_id = raw_trackout.id
+                trackout_name = raw_trackout.name
+                storage_name = f"{effect_prefix}_{index+1}_results.wav"
+                firestore_path = f"{effect_prefix}/{trackout_id}/{storage_name}"
+                write(storage_name, self.sample_rate, processed_result)
+                print(f"Completed processing Compression: {bool(processed_result.any())}")
+                # publish_to_file_store and remove
+                publish_to_file_store(firestore_path, storage_name)
+                remove(storage_name)
+                db_model = Compressor(
+                    ratio=self.co_params["ratio"],
+                    threshold=self.co_params["threshold"],
+                    knee_width=self.co_params["knee_width"],
+                    attack=self.co_params["attack"],
+                    release=self.co_params["release"],
+                    path=firestore_path,
+                    co=raw_trackout  # Relationship with raw_trackout
+                )
+                local_object = db.session.merge(db_model)
+                db.session.add(local_object)
+                db.session.commit()
+        except Exception as err:
+            app.logger.error(f"error in compress_and_save for trackID {self.track.id}:", err)
+            raise Exception(f"Error occurred in compress_and_save:\n {err}") 
 
     def process_and_save(self, raw_trackout, effect, main_trackout, other_trackouts):
         # def reverb_and_save(main_trackout, other_trackouts, all_trackouts, de_params, raw_trackout):
-        print("Process and save effect")
-        trackout_id = raw_trackout.id
-        trackout_name = raw_trackout.name
-        if effect == "reverb":
-            effect_prefix = "re"
-            storage_name = f"{effect_prefix}_{trackout_id}_results.wav"
-            firestore_path = f"{effect_prefix}/{trackout_id}/{storage_name}"
+        try:
+            print("Process and save effect")
+            trackout_id = raw_trackout.id
+            trackout_name = raw_trackout.name
+            if effect == "reverb":
+                effect_prefix = "re"
+                storage_name = f"{effect_prefix}_{trackout_id}_results.wav"
+                firestore_path = f"{effect_prefix}/{trackout_id}/{storage_name}"
 
-            processed_result = self.processor.reverb(main_trackout)
-            db_model = Reverb(
-                path=firestore_path,
-                re=raw_trackout  # Relationship with raw_trackout
-            )
-        elif effect == "deesser":
-            effect_prefix = "de"
-            storage_name = f"{effect_prefix}_{trackout_id}_results.wav"
-            firestore_path = f"{effect_prefix}/{trackout_id}/{storage_name}"
-            processed_result = self.processor.deesser(main_trackout)
-            db_model = Deesser(
-                sharpness_avg=self.de_params["sharpness_avg"],
-                path=firestore_path,
-                de=raw_trackout  # Relationship with raw_trackout
-            )
-        elif effect == "equalize":
-            effect_prefix = "eq"
-            storage_name = f"{effect_prefix}_{trackout_id}_results.wav"
-            firestore_path = f"{effect_prefix}/{trackout_id}/{storage_name}"
-            processed_result = self.processor.equalize(main_trackout, other_trackouts)
-            db_model = Equalizer(
-                freq=self.eq_params["freq"],
-                filter_type=self.eq_params["filter_type"],
-                gain=self.eq_params["gain"],
-                path=firestore_path,
-                eq=raw_trackout  # Relationship with raw_trackout
-            )
-        else:
-            raise Exception("This effect function does not exist")
+                processed_result = self.processor.reverb(main_trackout)
+                db_model = Reverb(
+                    path=firestore_path,
+                    re=raw_trackout  # Relationship with raw_trackout
+                )
+            elif effect == "deesser":
+                effect_prefix = "de"
+                storage_name = f"{effect_prefix}_{trackout_id}_results.wav"
+                firestore_path = f"{effect_prefix}/{trackout_id}/{storage_name}"
+                processed_result = self.processor.deesser(main_trackout)
+                db_model = Deesser(
+                    sharpness_avg=self.de_params["sharpness_avg"],
+                    path=firestore_path,
+                    de=raw_trackout  # Relationship with raw_trackout
+                )
+            elif effect == "equalize":
+                effect_prefix = "eq"
+                storage_name = f"{effect_prefix}_{trackout_id}_results.wav"
+                firestore_path = f"{effect_prefix}/{trackout_id}/{storage_name}"
+                processed_result = self.processor.equalize(main_trackout, other_trackouts)
+                db_model = Equalizer(
+                    freq=self.eq_params["freq"],
+                    filter_type=self.eq_params["filter_type"],
+                    gain=self.eq_params["gain"],
+                    path=firestore_path,
+                    eq=raw_trackout  # Relationship with raw_trackout
+                )
+            else:
+                raise Exception("This effect function does not exist")
 
-        write(storage_name, self.sample_rate, processed_result)
-        print(f"Completed processing {effect}: {bool(processed_result.any())}")
-        app.logger.info(f'completed processing for {effect}')
-        app.logger.info(f'processed result: ', processed_result)
-        # publish_to_file_store and remove
-        publish_to_file_store(firestore_path, storage_name)
-        if bool(processed_result.any()):
-            self.processed_signals.append(processed_result)
-        self.files_to_remove.append(storage_name)
-        # save effect results to database
-        local_object = db.session.merge(db_model)
-        db.session.add(local_object)
-        db.session.commit()
+            write(storage_name, self.sample_rate, processed_result)
+            print(f"Completed processing {effect}: {bool(processed_result.any())}")
+            app.logger.info(f'completed processing for {effect}')
+            app.logger.info(f'processed result: ', processed_result)
+            # publish_to_file_store and remove
+            publish_to_file_store(firestore_path, storage_name)
+            if bool(processed_result.any()):
+                self.processed_signals.append(processed_result)
+            self.files_to_remove.append(storage_name)
+            # save effect results to database
+            local_object = db.session.merge(db_model)
+            db.session.add(local_object)
+            db.session.commit()
+        except Exception as err:
+            app.logger.error(f"error in process_and_save for trackID {self.track.id}:", err)
+            raise Exception(f"Error occurred in process_and_save:\n {err}")

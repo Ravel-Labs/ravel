@@ -42,9 +42,9 @@ def signup_users():
         response = APIResponse(user, 201, message="Created").response
         email_proxy("welcome", email, name)
         return response
-    except Exception as e:
-        app.logger.error("error signing up user:", e)
-        abort(500, e)
+    except Exception as err:
+        app.logger.error("error signing up user:", err)
+        abort(500, err)
 
 
 '''

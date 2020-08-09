@@ -42,9 +42,9 @@ def create_track():
 
         response = APIResponse(track, 201).response
         return response
-    except Exception as e:
-        app.logger.error("error creating track:", e)
-        abort(500, e)
+    except Exception as err:
+        app.logger.error("error creating track:", err)
+        abort(500, err)
 
 
 '''
@@ -69,10 +69,10 @@ def get_tracks():
         response = APIResponse(tracks, 200).response
         print(f'responding with: ', response)
         return response
-    except Exception as e:
-        print(f'get_tracks error: {e}')
-        app.logger.error("error getting track:", e)
-        abort(500, e)
+    except Exception as err:
+        print(f'get_tracks error: {err}')
+        app.logger.error("error getting track:", err)
+        abort(500, err)
 
 
 @tracks_bp.route('%s/<int:id>' % base_tracks_url, methods={'GET'})
@@ -105,9 +105,9 @@ def delete_track_by_id(id):
         }
         response = APIResponse(payload, 200).response
         return response
-    except Exception as e:
-        app.logger.error("error deleting track:", e)
-        abort(500, e)
+    except Exception as err:
+        app.logger.error("error deleting track:", err)
+        abort(500, err)
 
 
 @tracks_bp.route('%s/<int:id>' % base_tracks_url, methods=['PUT'])
@@ -139,9 +139,9 @@ def get_trackouts_by_track_id(id):
             abort(400)
         response = APIResponse(trackouts, 200).response
         return response
-    except Exception as e:
-        app.logger.error("error getting track by ID:", e)
-        abort(500, e)
+    except Exception as err:
+        app.logger.error("error getting track by ID:", err)
+        abort(500, err)
 
 
 @tracks_bp.route('%s/process/<int:id>' % base_tracks_url, methods=['PUT'])
@@ -178,6 +178,6 @@ def process_track(id):
         }
         response = APIResponse(payload, 200).response
         return response
-    except Exception as e:
-        app.logger.error(f'error processing track {id}:', e)
-        abort(500, e)
+    except Exception as err:
+        app.logger.error(f'error processing track {id}:', err)
+        abort(500, err)
