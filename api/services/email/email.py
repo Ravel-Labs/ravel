@@ -6,6 +6,9 @@ from flask_mail import Message
 def send_email(title, sender, receivers, html_body, sound_file):
     msg = Message(title, sender=sender, recipients=receivers)
     msg.html = html_body
+    # Commented code attaches the results file into the email
+    # Very significant application bottle neck
+    # Try to always send processing results via download link
     # if sound_file:
     #     msg.attach("results.wav", "audio/wav", sound_file)
     mail.send(msg)
