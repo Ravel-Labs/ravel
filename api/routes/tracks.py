@@ -163,8 +163,7 @@ def process_track(id):
             title="Initiating Processing",
             template_type="status",
             user_to_email_address=current_user.email,
-            user_name=current_user.name,
-            button_title="")
+            user_name=current_user.name)
 
         # extract trackout data from track
         raw_trackouts = raw_track.trackouts.all()

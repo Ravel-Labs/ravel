@@ -6,8 +6,11 @@ from flask_mail import Message
 def send_email(title, sender, receivers, html_body, sound_file):
     msg = Message(title, sender=sender, recipients=receivers)
     msg.html = html_body
-    if sound_file:
-        msg.attach("results.wav", "audio/wav", sound_file)
+    # Commented code attaches the results file into the email
+    # Very significant application bottle neck
+    # Try to always send processing results via download link
+    # if sound_file:
+    #     msg.attach("results.wav", "audio/wav", sound_file)
     mail.send(msg)
 
 
@@ -62,6 +65,7 @@ def email_proxy(
             broadcast_msg_two = broadcast_msg_two or "Here you"\
                 " can upload tracks and configure your music with trackouts!"
             button_title = button_title or "Lets Get Started"
+            button_link = "http://ravel.mosaiclabs.us"
         elif template_type == "broadcast":
             title = title or "Ravel Update"
             broadcast_msg_one = broadcast_msg_one or "We are"\
@@ -74,9 +78,7 @@ def email_proxy(
             broadcast_msg_one = broadcast_msg_one or "Our services"\
                 " are spinning fast to process your files."
             broadcast_msg_two = broadcast_msg_two or "Check it out later"
-            # TODO Download link and conditional html for download button
-            button_title = button_title or "Download"
-            button_link = button_link or "404"
+
         else:
             raise ValueError("Template type does not exist")
 
