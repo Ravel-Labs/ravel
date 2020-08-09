@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, abort, request, send_file
 from flask_jwt import jwt_required, current_identity
+from flask import current_app as app
 
 from api.services.firestore import publish_to_file_store, retreive_from_file_store
 from api.models.track_models import TrackOut, Track
@@ -119,6 +120,7 @@ def delete_trackout_by_id(id):
         response = APIResponse(payload, 200).response
         return response
     except Exception as e:
+        app.logger.error(f'error deleting trackout: {e}')
         abort(500, e)
 
 

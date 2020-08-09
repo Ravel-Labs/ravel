@@ -8,7 +8,7 @@ from api import db, Q, Job
 from scipy.io.wavfile import write
 from os import remove
 from ravellib.lib.effects import Mixer
-
+from flask import current_app as app
 
 class Orchestrator():
     """
@@ -52,7 +52,7 @@ class Orchestrator():
                 main_trackout, other_trackouts = create_trackout_exclusive_list(self.mono_signal_trackouts, i)
                 # setup queue parameters and process
                 base_processing_args = [raw_trackout]
-                app.logger.debug(f'checking fx params: {self.toggle_effects_params}')
+                app.logger.debug(f'toggling fx params: {self.toggle_effects_params}')
 
                 """Initiate Equalize"""
                 if self.toggle_effects_params.get('eq'):

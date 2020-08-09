@@ -5,6 +5,7 @@ from api.models.apiresponse import APIResponse
 from api.models.User import User
 from api.services.email.email import email_proxy
 from api import db
+from flask import current_app as app
 
 
 auth_bp = Blueprint('auth_bp', __name__)
