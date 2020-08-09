@@ -78,9 +78,7 @@ def email_proxy(
             broadcast_msg_one = broadcast_msg_one or "Our services"\
                 " are spinning fast to process your files."
             broadcast_msg_two = broadcast_msg_two or "Check it out later"
-            # TODO Download link and conditional html for download button
-            button_title = button_title or "Download"
-            button_link = button_link or "404"
+
         else:
             raise ValueError("Template type does not exist")
 
