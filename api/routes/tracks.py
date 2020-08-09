@@ -168,6 +168,7 @@ def process_track(id):
 
         # extract trackout data from track
         raw_trackouts = raw_track.trackouts.all()
+        app.logger.error(f"Processing {len(raw_trackouts)}# trackouts")
         orchestrator = Orchestrator(current_user, raw_trackouts, raw_track, toggle_effects_params)
         orchestrator.orchestrate()
 
