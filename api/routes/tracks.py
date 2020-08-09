@@ -2,6 +2,7 @@ from io import BytesIO
 from hashlib import md5
 from flask import Blueprint, abort, request, send_file
 from flask_jwt import jwt_required, current_identity
+from flask import current_app as app
 from api import db
 from api.models.User import User
 from api.models.track_models import Track, TrackOut, Equalizer, Deesser
@@ -13,7 +14,6 @@ from api.services.orchestration.orchestrator import Orchestrator
 from api.services.email.email import email_proxy
 from api.models.apiresponse import APIResponse
 import json
-import logging
 
 
 tracks_bp = Blueprint('tracks_bp', __name__)

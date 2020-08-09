@@ -1,5 +1,6 @@
 from flask import Blueprint, abort, request
 from flask_jwt import jwt_required, current_identity
+from flask import current_app as app
 from api import db
 from api.models.User import User
 from api.models.apiresponse import APIResponse
