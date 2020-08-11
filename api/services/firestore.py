@@ -24,11 +24,11 @@ def publish_to_file_store(path, file):
         storage = firebase.storage()
         fb_info = storage.child(path).put(file)
         fb_store_url = storage.child(path).get_url(firebase)
-        app.logger.error(f"Firebase put {fb_info}")
-        app.logger.error(f"Firebase url {fb_store_url}")
+        app.logger.info(f"Firebase put{fb_info}")
+        app.logger.info(f"Firebase url{fb_store_url}")
         return fb_store_url
     except Exception as e:
-        raise Exception(f"Firebase:{e}")
+        raise Exception(f"Firebase Publish Error:{e}")
 
 
 def retreive_from_file_store(path, index=""):
@@ -38,7 +38,7 @@ def retreive_from_file_store(path, index=""):
         # Download wav to disk
         local_file_name = f"trackout_{index}.wav" if index else "trackout.wav"
         file = storage.child(path).download(local_file_name)
-        app.logger.error(f"Firebase file {file}")
+        app.logger.info(f"Firebase file: {file}")
         return file
     except Exception as e:
-        raise Exception(f"Firebase: {e}")
+        raise Exception(f"Firebase Retrieve Error: {e}")
