@@ -1,5 +1,4 @@
 import API from "@/api";
-import router from "@/router";
 
 const ls = window.localStorage;
 
@@ -108,19 +107,18 @@ const auth = {
         // successfully signed up
         if (data.status === 201) {
           commit("SIGNUP_SUCCESS", data.data.message);
-          dispatch("login", user);
-          return data;
+          return Promise.resolve(data);
         }
 
         // email already exists
         if (data.data.status === "500") {
           commit("SIGNUP_FAILURE", data.data.message);
-          return new Error(`${data.data.message}`);
+          return Promise.reject(Error(`error signing up user: ${data.data.message}`))
         }
 
         // default error
         commit("SIGNUP_FAILURE", data.data.message);
-        return new Error("unknown data payload", err);
+        return Promise.reject(Error(`unknonw data payload: ${err}`))
       } catch (err) {
         commit("SIGNUP_FAILURE", "Failed to signup.");
         throw new Error("error signing up");

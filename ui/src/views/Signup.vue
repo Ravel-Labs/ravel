@@ -6,7 +6,7 @@
         <h1 class="is-size-2 has-text-centered">Signup</h1>
           <div class="tile">
             <div class="tile is-parent is-vertical">
-              <article class="tile is-child notification is-primary">
+              <article @keyup.enter="handleSignup(user)" class="tile is-child notification is-primary">
                 <div class="field">
                   <label class="label has-text-white">Name</label>
                   <div class="control">
@@ -58,13 +58,35 @@ export default {
           message: 'You\'re ready to go!',
           type: 'is-success'
         }) 
+        return data
+      })
+      .then((data) => {
+        this.$store.dispatch('auth/login', {
+          email: user.email,
+          password: user.password,
+        })
+        .then((data) => {
+          this.$buefy.toast.open({
+            message: `Success! You've been signed up.`,
+            type: 'is-success'
+          })
+          this.user.email = undefined
+          this.user.password = undefined
+          this.user.name = undefined
+          router.push({ name: 'tracks' })
+          return data
+        })
       })
       .catch((err) => {
-        console.error('handleSignup() error:', err)
+        console.error('ERRSIGNUP:', err)
         this.$buefy.toast.open({
           message: `Something went wrong: ${err}`,
           type: 'is-danger'
         })
+        this.user.email = undefined
+        this.user.password = undefined
+        this.user.name = undefined
+        return err
       })
     },
   }
