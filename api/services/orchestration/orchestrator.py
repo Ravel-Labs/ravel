@@ -62,6 +62,8 @@ class Orchestrator():
                 """Initiate Equalize"""
                 if self.toggle_effects_params.get('eq'):
                     eq_args = base_processing_args + ["equalize", main_trackout, other_trackouts]
+                    print(self.process_and_save)
+                    print(eq_args)
                     processing_job = Job(self.process_and_save, eq_args)
                     app.logger.info(f'processing job: {processing_job}')
                     Q.put(processing_job)  # currently cannot return
@@ -85,7 +87,7 @@ class Orchestrator():
 
     def orchestrate(self):
         try:
-            app.logger.error(f"Orchestrator.orchestrate()")
+            app.logger.info(f"Orchestrator.orchestrate()")
             self.mono_signal_trackouts = convert_to_mono_signal(self.all_trackouts, self.sample_rate)
             if self.toggle_effects_params.get('co'):
                 self.compress_trackouts()
@@ -102,21 +104,22 @@ class Orchestrator():
             download_url = publish_to_file_store(firestore_path, storage_name)
             with open(storage_name, 'rb') as fin:
                 data = fin.read()
-            app.logger.debug(f'successfully read file: {data}')
-            email_proxy(
-                title="Audio Processing Complete",
-                template_type="status",
-                user_to_email_address=self.current_user.email,
-                user_name=self.current_user.name,
-                button_title="Processed Results",
-                button_link=download_url,
-                sound_file=data)
+            if not data:
+                app.logger.error(f'Error reading result file')
+            # email_proxy(
+            #     title="Audio Processing Complete",
+            #     template_type="status",
+            #     user_to_email_address=self.current_user.email,
+            #     user_name=self.current_user.name,
+            #     button_title="Processed Results",
+            #     button_link=download_url,
+            #     sound_file=data)
             # remove all trackouts stored on disk
             remove(storage_name)
             for file in self.files_to_remove:
                 remove(file)
             for i, _ in enumerate(self.all_trackouts):
-                remove(f"trackout_{i}.wav")
+                remove(f"trackout_{i+1}.wav")
             return True
         except Exception as err:
             app.logger.error(f"error in orchestration for trackID {self.track.id}:", err)
@@ -135,7 +138,7 @@ class Orchestrator():
                 track_id = raw_trackout.trackouts.id
                 trackout_name = raw_trackout.name
                 storage_name = f"{track_id}_{effect_prefix}_{index+1}_results.wav"
-                firestore_path = f"track/{track_id}/{effect_prefix}/{trackout_id}/{storage_name}"
+                firestore_path = f"track/{track_id}/{effect_prefix}/{storage_name}"
                 write(storage_name, self.sample_rate, processed_result)
                 print(f"Completed processing Compression: {bool(processed_result.any())}")
                 # publish_to_file_store and remove
@@ -164,11 +167,11 @@ class Orchestrator():
             track_id = raw_trackout.trackouts.id
             trackout_id = raw_trackout.id
             trackout_name = raw_trackout.name
-            storage_name = f"{track_id}_{effect_prefix}_{trackout_id}_results.wav"
-            firestore_path = f"track/{track_id}/{effect_prefix}/{trackout_id}/{storage_name}"
+
             if effect == "reverb":
                 effect_prefix = "re"
-
+                storage_name = f"{track_id}_{effect_prefix}_{trackout_id}_results.wav"
+                firestore_path = f"track/{track_id}/{effect_prefix}/{storage_name}"
                 processed_result = self.processor.reverb(main_trackout)
                 db_model = Reverb(
                     path=firestore_path,
@@ -176,6 +179,8 @@ class Orchestrator():
                 )
             elif effect == "deesser":
                 effect_prefix = "de"
+                storage_name = f"{track_id}_{effect_prefix}_{trackout_id}_results.wav"
+                firestore_path = f"track/{track_id}/{effect_prefix}/{storage_name}"
                 processed_result = self.processor.deesser(main_trackout)
                 db_model = Deesser(
                     sharpness_avg=self.de_params["sharpness_avg"],
@@ -184,6 +189,8 @@ class Orchestrator():
                 )
             elif effect == "equalize":
                 effect_prefix = "eq"
+                storage_name = f"{track_id}_{effect_prefix}_{trackout_id}_results.wav"
+                firestore_path = f"track/{track_id}/{effect_prefix}/{storage_name}"
                 processed_result = self.processor.equalize(main_trackout, other_trackouts)
                 db_model = Equalizer(
                     freq=self.eq_params["freq"],
@@ -198,7 +205,7 @@ class Orchestrator():
             write(storage_name, self.sample_rate, processed_result)
             print(f"Completed processing {effect}: {bool(processed_result.any())}")
             app.logger.info(f'completed processing for {effect}')
-            app.logger.info(f'processed result: ', processed_result)
+            app.logger.info(f'processed result:  {bool(processed_result.any())}')
             # publish_to_file_store and remove
             publish_to_file_store(firestore_path, storage_name)
             if bool(processed_result.any()):

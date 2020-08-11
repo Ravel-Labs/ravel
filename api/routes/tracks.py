@@ -145,29 +145,29 @@ def get_trackouts_by_track_id(id):
 
 
 @tracks_bp.route('%s/process/<int:id>' % base_tracks_url, methods=['PUT'])
-@jwt_required()
+# @jwt_required()
 def process_track(id):
     try:
 
         # Track should contain user
-        current_user = User.query.get(current_identity.id)
+        current_user = User.query.get(1)
         raw_track = Track.query.get(id)
         toggle_effects_params = request.json.get('toggle_effects_params')
-        app.logger.error(f"processing {id} with params: {toggle_effects_params}")
+        app.logger.info(f"processing {id} with params: {toggle_effects_params}")
 
         if not raw_track:
             abort(404, f"There aren't any trackouts for track {id}")
 
         # Dispatch email processing progress, managed by queueWorker
-        email_proxy(
-            title="Initiating Processing",
-            template_type="status",
-            user_to_email_address=current_user.email,
-            user_name=current_user.name)
+        # email_proxy(
+        #     title="Initiating Processing",
+        #     template_type="status",
+        #     user_to_email_address=current_user.email,
+        #     user_name=current_user.name)
 
         # extract trackout data from track
         raw_trackouts = raw_track.trackouts.all()
-        app.logger.error(f"Processing {len(raw_trackouts)}# trackouts")
+        app.logger.info(f"Processing {len(raw_trackouts)}# trackouts")
         orchestrator = Orchestrator(current_user, raw_trackouts, raw_track, toggle_effects_params)
         orchestrator.orchestrate()
 
