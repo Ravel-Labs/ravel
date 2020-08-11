@@ -132,9 +132,10 @@ class Orchestrator():
             correlation = zip(all_trackouts, self.compressed_result)
             for index, (raw_trackout, processed_result) in enumerate(correlation):
                 trackout_id = raw_trackout.id
+                track_id = raw_trackout.trackouts.id
                 trackout_name = raw_trackout.name
-                storage_name = f"{effect_prefix}_{index+1}_results.wav"
-                firestore_path = f"{effect_prefix}/{trackout_id}/{storage_name}"
+                storage_name = f"{track_id}_{effect_prefix}_{index+1}_results.wav"
+                firestore_path = f"track/{track_id}/{effect_prefix}/{trackout_id}/{storage_name}"
                 write(storage_name, self.sample_rate, processed_result)
                 print(f"Completed processing Compression: {bool(processed_result.any())}")
                 # publish_to_file_store and remove
@@ -160,12 +161,13 @@ class Orchestrator():
         # def reverb_and_save(main_trackout, other_trackouts, all_trackouts, de_params, raw_trackout):
         try:
             print("Process and save effect")
+            track_id = raw_trackout.trackouts.id
             trackout_id = raw_trackout.id
             trackout_name = raw_trackout.name
+            storage_name = f"{track_id}_{effect_prefix}_{trackout_id}_results.wav"
+            firestore_path = f"track/{track_id}/{effect_prefix}/{trackout_id}/{storage_name}"
             if effect == "reverb":
                 effect_prefix = "re"
-                storage_name = f"{effect_prefix}_{trackout_id}_results.wav"
-                firestore_path = f"{effect_prefix}/{trackout_id}/{storage_name}"
 
                 processed_result = self.processor.reverb(main_trackout)
                 db_model = Reverb(
@@ -174,8 +176,6 @@ class Orchestrator():
                 )
             elif effect == "deesser":
                 effect_prefix = "de"
-                storage_name = f"{effect_prefix}_{trackout_id}_results.wav"
-                firestore_path = f"{effect_prefix}/{trackout_id}/{storage_name}"
                 processed_result = self.processor.deesser(main_trackout)
                 db_model = Deesser(
                     sharpness_avg=self.de_params["sharpness_avg"],
@@ -184,8 +184,6 @@ class Orchestrator():
                 )
             elif effect == "equalize":
                 effect_prefix = "eq"
-                storage_name = f"{effect_prefix}_{trackout_id}_results.wav"
-                firestore_path = f"{effect_prefix}/{trackout_id}/{storage_name}"
                 processed_result = self.processor.equalize(main_trackout, other_trackouts)
                 db_model = Equalizer(
                     freq=self.eq_params["freq"],
