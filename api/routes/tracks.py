@@ -145,7 +145,7 @@ def get_trackouts_by_track_id(id):
 
 
 @tracks_bp.route('%s/process/<int:id>' % base_tracks_url, methods=['PUT'])
-# @jwt_required()
+@jwt_required()
 def process_track(id):
     try:
 
@@ -159,11 +159,11 @@ def process_track(id):
             abort(404, f"There aren't any trackouts for track {id}")
 
         # Dispatch email processing progress, managed by queueWorker
-        # email_proxy(
-        #     title="Initiating Processing",
-        #     template_type="status",
-        #     user_to_email_address=current_user.email,
-        #     user_name=current_user.name)
+        email_proxy(
+            title="Initiating Processing",
+            template_type="status",
+            user_to_email_address=current_user.email,
+            user_name=current_user.name)
 
         # extract trackout data from track
         raw_trackouts = raw_track.trackouts.all()
