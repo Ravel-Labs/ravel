@@ -98,7 +98,7 @@ class Orchestrator():
             mixed_result = mixer.mix()
             mixer.output_wav(mixed_result)
             
-            firestore_path = f"track/{self.track.id}/song/{storage_name}"
+            firestore_path = f"track/{self.track.id}/song/{self.track.name}"
             download_url = publish_to_file_store(firestore_path, storage_name)
             with open(storage_name, 'rb') as fin:
                 data = fin.read()
@@ -135,7 +135,7 @@ class Orchestrator():
                 trackout_id = raw_trackout.id
                 track_id = raw_trackout.trackouts.id
                 trackout_name = raw_trackout.name
-                storage_name = f"{index+1}_results.wav"
+                storage_name = f"{trackout_name}.wav"
                 firestore_path = f"track/{track_id}/{effect_prefix}/{storage_name}"
                 write(storage_name, self.sample_rate, processed_result)
                 print(f"Completed processing Compression: {bool(processed_result.any())}")
@@ -165,7 +165,7 @@ class Orchestrator():
             track_id = raw_trackout.trackouts.id
             trackout_id = raw_trackout.id
             trackout_name = raw_trackout.name
-            storage_name = f"{trackout_id}_results.wav"
+            storage_name = f"{trackout_name}.wav"
 
             if effect == "reverb":
                 effect_prefix = "re"
