@@ -33,6 +33,11 @@ def create_trackout():
         name = request.json.get('name')
         settings = request.json.get('settings')
         raw_track = Track.query.get(track_id)
+        if track_id:
+            raw_trackouts = TrackOut.query.filter_by(track_id=track_id).all()
+            trackouts_names = [rt.name for rt in raw_trackouts]
+            if name in trackouts_names:
+                abort(400, f"{name} is not a unique trackout name for this track")
         print(f"raw track id: {raw_track.id}")
         raw_trackout = TrackOut(
             user_id=user_id,
@@ -163,8 +168,9 @@ def add_update_wavfile(id):
         if not raw_trackout:
             abort(404, f"There isn't a trackout id {id}")
         trackout_name = raw_trackout.name
+        track_id = raw_trackout.trackouts.id
         storage_name = f"{trackout_name}.wav"
-        firestore_path = f"trackouts/{id}/{storage_name}"
+        firestore_path = f"track/{track_id}/trackouts/{storage_name}"
         publish_to_file_store(firestore_path, raw_file)
         update_request = {
             "path": firestore_path
