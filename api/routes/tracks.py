@@ -150,7 +150,7 @@ def process_track(id):
     try:
 
         # Track should contain user
-        current_user = User.query.get(1)
+        current_user = User.query.get(current_identity.id)
         raw_track = Track.query.get(id)
         toggle_effects_params = request.json.get('toggle_effects_params')
         app.logger.info(f"processing {id} with params: {toggle_effects_params}")
