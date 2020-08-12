@@ -170,7 +170,7 @@ def add_update_wavfile(id):
         trackout_name = raw_trackout.name
         track_id = raw_trackout.trackouts.id
         storage_name = f"{trackout_name}.wav"
-        firestore_path = f"track/{track_id}/trackouts/{id}/{storage_name}"
+        firestore_path = f"track/{track_id}/trackouts/{storage_name}"
         publish_to_file_store(firestore_path, raw_file)
         update_request = {
             "path": firestore_path

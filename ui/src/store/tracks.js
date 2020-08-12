@@ -20,8 +20,15 @@ const tracks = {
         state.loading = true
       },
       'TRACK_SUCCESS' (state, tracks) {
+        if  (!tracks) {
+          // handle empty case
+          state.list = []
+        } else {
+          // happy path 
+          state.list = tracks
+        }
         state.loading = false
-        state.list = tracks
+        state.error = undefined
       },
       'GET_ONE_TRACK_SUCCESS' (state, track) {
         state.loading = false

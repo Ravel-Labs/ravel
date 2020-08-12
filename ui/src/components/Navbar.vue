@@ -51,11 +51,12 @@ export default {
       logout () {
         this.$store.dispatch('auth/logout')
         .then((data) => {
+          window.location.href = '/'
           this.$buefy.toast.open({
             message: 'Logged out.',
             type: 'is-info'
           })
-          this.$router.push({ name: 'login' })
+          return data
         })
         .catch((err) => {
           console.error(err)
@@ -63,8 +64,10 @@ export default {
             message: `There was an error.`,
             type: 'is-danger'
           })
+          return err
         })
       }
     }
 }
 </script>
+// 

@@ -59,7 +59,9 @@ def get_tracks():
         user_id = current_identity.id
         raw_tracks = Track.query.filter_by(user_id=user_id).all()
         if not raw_tracks:
-            abort(400, "A track with id %s does not exist" % user_id)
+            # handle empty raw tracks list
+            response = APIResponse([], 200).response
+            return response
         tracks = [raw_track.to_dict() for raw_track in raw_tracks]
         if not tracks:
             # handle empty tracks list
@@ -153,7 +155,7 @@ def process_track(id):
         current_user = User.query.get(current_identity.id)
         raw_track = Track.query.get(id)
         toggle_effects_params = request.json.get('toggle_effects_params')
-        app.logger.error(f"processing {id} with params: {toggle_effects_params}")
+        app.logger.info(f"processing {id} with params: {toggle_effects_params}")
 
         if not raw_track:
             abort(404, f"There aren't any trackouts for track {id}")
@@ -167,7 +169,7 @@ def process_track(id):
 
         # extract trackout data from track
         raw_trackouts = raw_track.trackouts.all()
-        app.logger.error(f"Processing {len(raw_trackouts)}# trackouts")
+        app.logger.info(f"Processing {len(raw_trackouts)}# trackouts")
         orchestrator = Orchestrator(current_user, raw_trackouts, raw_track, toggle_effects_params)
         orchestrator.orchestrate()
 

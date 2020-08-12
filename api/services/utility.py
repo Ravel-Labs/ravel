@@ -33,15 +33,16 @@ def convert_to_mono_signal(all_trackouts, sample_rate):
     Convert all of the trackouts for a track into mono signals
     """
     try:
-        app.logger.error(f"convert_to_mono_signal helper funciton {len(all_trackouts)}")
+        app.logger.info(f"convert_to_mono_signal helper funciton {len(all_trackouts)}")
         mono_signal_trackouts = []
         for index, trackout in enumerate(all_trackouts):
             # Fetch wavfile from firebase
+            i = str(index+1)
             path = trackout.path
-            retreive_from_file_store(path, str(index))
-            trackout_mono_signal, sr = librosa.load(f"trackout_{index}.wav", sr=sample_rate)
+            retreive_from_file_store(path, i)
+            trackout_mono_signal, sr = librosa.load(f"trackout_{i}.wav", sr=sample_rate)
             mono_signal_trackouts.append(trackout_mono_signal)
-        app.logger.error(f"Mono trackouts length {len(mono_signal_trackouts)}#")
+        app.logger.info(f"Mono trackouts length {len(mono_signal_trackouts)}#")
         return mono_signal_trackouts
     except Exception as err:
         app.logger.error(f"Error occurred in convert_to_mono_signal fx: {err}")
