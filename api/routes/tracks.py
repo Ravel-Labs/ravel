@@ -59,7 +59,9 @@ def get_tracks():
         user_id = current_identity.id
         raw_tracks = Track.query.filter_by(user_id=user_id).all()
         if not raw_tracks:
-            abort(400, "A track with id %s does not exist" % user_id)
+            # handle empty raw tracks list
+            response = APIResponse([], 200).response
+            return response
         tracks = [raw_track.to_dict() for raw_track in raw_tracks]
         if not tracks:
             # handle empty tracks list
