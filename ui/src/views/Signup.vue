@@ -73,7 +73,8 @@ export default {
           this.user.email = undefined
           this.user.password = undefined
           this.user.name = undefined
-          router.push({ name: 'tracks' })
+          // HACK: force a refresh of the page to update the API instance with localstorage.
+          window.location.href = "/tracks"
           return data
         })
       })

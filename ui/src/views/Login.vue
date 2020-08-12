@@ -75,7 +75,8 @@ export default {
         return data
       })
       .then((data) => {
-        router.push({ name: 'tracks' })
+        // HACK: force a refresh of the page to update the API instance with localstorage.
+        window.location.href = "/tracks"
         this.$store.dispatch('auth/check')
       })
       .catch((err) => {
