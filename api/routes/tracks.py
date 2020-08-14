@@ -155,6 +155,7 @@ def process_track(id):
         current_user = User.query.get(current_identity.id)
         raw_track = Track.query.get(id)
         toggle_effects_params = request.json.get('toggle_effects_params')
+        # TODO check all values in toggle_effects_params to evaluate to true
         app.logger.info(f"processing {id} with params: {toggle_effects_params}")
 
         if not raw_track:

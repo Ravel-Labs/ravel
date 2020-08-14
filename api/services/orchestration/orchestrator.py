@@ -130,6 +130,9 @@ class Orchestrator():
         try:
             effect_prefix = "co"
             self.compressed_result = self.processor.compress(self.mono_signal_trackouts)
+            app.logger.logger(f"compress_and_save: compressed results{len(self.compressed_result)}")
+            app.logger.logger(f"compress_and_save: mono_signal_trackouts{len(self.mono_signal_trackouts)}")
+            app.logger.logger(f"compress_and_save: all_trackouts{len(all_trackouts)}")
             correlation = zip(all_trackouts, self.compressed_result)
             for index, (raw_trackout, processed_result) in enumerate(correlation):
                 trackout_id = raw_trackout.id
