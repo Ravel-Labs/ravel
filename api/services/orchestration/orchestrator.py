@@ -98,7 +98,7 @@ class Orchestrator():
             mixed_result = mixer.mix()
             mixer.output_wav(mixed_result)
             
-            firestore_path = f"track/{self.track.id}/song/{self.track.name}"
+            firestore_path = f"track/{self.track.id}/song/{self.track.name}.wav"
             download_url = publish_to_file_store(firestore_path, storage_name)
             with open(storage_name, 'rb') as fin:
                 data = fin.read()
