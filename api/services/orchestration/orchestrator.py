@@ -60,6 +60,7 @@ class Orchestrator():
                 app.logger.debug(f'toggling fx params: {self.toggle_effects_params}')
 
                 """Initiate Equalize"""
+
                 if self.toggle_effects_params.get('eq'):
                     eq_args = base_processing_args + ["equalize", main_trackout, other_trackouts]
                     processing_job = Job(self.process_and_save, eq_args)
@@ -68,6 +69,7 @@ class Orchestrator():
                 
                 """ Initiate Deessor """
                 if raw_trackout.type == "vocals" and self.toggle_effects_params.get('de'):
+                    app.logger.logger(f"Initiate Deessor: {raw_trackout.type}")
                     de_args = base_processing_args + ["deesser", main_trackout, other_trackouts]
                     processing_job = Job(self.process_and_save, de_args)
                     app.logger.info(f'processing job: {processing_job}')
@@ -164,6 +166,7 @@ class Orchestrator():
     def process_and_save(self, raw_trackout, effect, main_trackout, other_trackouts):
         # def reverb_and_save(main_trackout, other_trackouts, all_trackouts, de_params, raw_trackout):
         try:
+            app.logger.logger(f"process_and_save: {effect}")
             print("Process and save effect")
             track_id = raw_trackout.trackouts.id
             trackout_id = raw_trackout.id
