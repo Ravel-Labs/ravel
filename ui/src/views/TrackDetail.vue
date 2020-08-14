@@ -206,7 +206,7 @@ export default {
       this.$store
         .dispatch("tracks/createTrackoutWithoutWav", trackPayload)
         .then(data => {
-          this.$store.dispatch("tracks/updateTrackoutWithWav", filePayload)
+          this.$store.dispatch("tracks/updateTrackoutWithWav", data)
             // TODO show a loading bar 
             .then(data => {
               // everything succeeded
