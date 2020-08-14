@@ -59,6 +59,11 @@ class Orchestrator():
                 base_processing_args = [raw_trackout]
                 app.logger.debug(f'toggling fx params: {self.toggle_effects_params}')
 
+                app.logger.info(f"Initiate Deessor: {raw_trackout.type}")
+                app.logger.info(f"Initiate Deessor: {bool(self.toggle_effects_params.get('de'))}")
+                app.logger.info(f"Initiate Deessor: {self.toggle_effects_params.get('de') is True}")
+
+
                 """Initiate Equalize"""
 
                 if self.toggle_effects_params.get('eq'):
@@ -69,7 +74,6 @@ class Orchestrator():
                 
                 """ Initiate Deessor """
                 if raw_trackout.type == "vocals" and self.toggle_effects_params.get('de'):
-                    app.logger.info(f"Initiate Deessor: {raw_trackout.type}")
                     de_args = base_processing_args + ["deesser", main_trackout, other_trackouts]
                     processing_job = Job(self.process_and_save, de_args)
                     app.logger.info(f'processing job: {processing_job}')
