@@ -69,7 +69,7 @@ class Orchestrator():
                 
                 """ Initiate Deessor """
                 if raw_trackout.type == "vocals" and self.toggle_effects_params.get('de'):
-                    app.logger.logger(f"Initiate Deessor: {raw_trackout.type}")
+                    app.logger.info(f"Initiate Deessor: {raw_trackout.type}")
                     de_args = base_processing_args + ["deesser", main_trackout, other_trackouts]
                     processing_job = Job(self.process_and_save, de_args)
                     app.logger.info(f'processing job: {processing_job}')
@@ -132,9 +132,9 @@ class Orchestrator():
         try:
             effect_prefix = "co"
             self.compressed_result = self.processor.compress(self.mono_signal_trackouts)
-            app.logger.logger(f"compress_and_save: compressed results{len(self.compressed_result)}")
-            app.logger.logger(f"compress_and_save: mono_signal_trackouts{len(self.mono_signal_trackouts)}")
-            app.logger.logger(f"compress_and_save: all_trackouts{len(all_trackouts)}")
+            app.logger.info(f"compress_and_save: compressed results{len(self.compressed_result)}")
+            app.logger.info(f"compress_and_save: mono_signal_trackouts{len(self.mono_signal_trackouts)}")
+            app.logger.info(f"compress_and_save: all_trackouts{len(all_trackouts)}")
             correlation = zip(all_trackouts, self.compressed_result)
             for index, (raw_trackout, processed_result) in enumerate(correlation):
                 trackout_id = raw_trackout.id
@@ -166,7 +166,7 @@ class Orchestrator():
     def process_and_save(self, raw_trackout, effect, main_trackout, other_trackouts):
         # def reverb_and_save(main_trackout, other_trackouts, all_trackouts, de_params, raw_trackout):
         try:
-            app.logger.logger(f"process_and_save: {effect}")
+            app.logger.info(f"process_and_save: {effect}")
             print("Process and save effect")
             track_id = raw_trackout.trackouts.id
             trackout_id = raw_trackout.id
