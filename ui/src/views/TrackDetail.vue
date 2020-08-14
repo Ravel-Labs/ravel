@@ -203,22 +203,25 @@ export default {
         id: this.$route.params.id
       };
       // attempt track creation and upload to it.
+      // TODO show a loading bar 
       this.$store
         .dispatch("tracks/createTrackoutWithoutWav", trackPayload)
         .then(data => {
-          this.$store.dispatch("tracks/updateTrackoutWithWav", data)
-            // TODO show a loading bar 
-            .then(data => {
-              // everything succeeded
-              this.$store.dispatch("tracks/getTrackouts", this.$route.params.id);
+          this.$store.dispatch("tracks/updateTrackoutWithWav", {
+            id: data.payload.id,
+            formData: formData,
+          })
+          .then(data => {
+            // everything succeeded
+            this.$store.dispatch("tracks/getTrackouts", this.$route.params.id);
 
-              // fire notification and clean up
-              this.addTrackout = false;
-              this.$buefy.notification.open({
-                message: "Uploaded trackout!",
-                type: "is-success"
-              });
+            // fire notification and clean up
+            this.addTrackout = false;
+            this.$buefy.notification.open({
+              message: "Uploaded trackout!",
+              type: "is-success"
             });
+          });
         })
         .catch(err => {
           console.log("error creating trackout: ", err);

@@ -256,21 +256,6 @@ const tracks = {
           return err
         }
       },
-      async uploadFile ({ commit }, payload) {
-        try {
-          let { data } = await api.post(`/trackouts/wav/${payload.id}`, payload.formData)
-          if (data.status === "500") {
-            commit('TRACK_FAILURE', `Failed to upload track: ${data.message}`)
-            return data
-          }
-
-          // commit('UPLOAD_SUCCESS', data)
-          return data
-        } catch (err) {
-          console.error('error uploading file: ', err)
-          return Error(err)
-        }
-      },
       async createTrackoutWithoutWav ({ commit }, trackout) {
         try {
           let payload = {
@@ -280,14 +265,16 @@ const tracks = {
             wavefile : trackout.wavefile,
             track_id : trackout.track_id
           }
-          console.log('attempting to create trackout with payload: ', payload)
           let { data } = await API().post('/trackouts', payload)
           commit('ADD_TRACKOUT_SUCCESS', data)
+          return Promise.resolve(data) 
         } catch (err) {
           console.error('FAILED to create trackout without wav: ', err)
           commit('ADD_TRACKOUT_FAILURE', err)
+          return Promise.reject(err)
         }
       },
+      // updateTrackoutWithWav takes a payload of `{ id: <id>, formData: {}}`
       async updateTrackoutWithWav ({ commit }, payload) {
         try {
           let { data } = await API().put(`/trackouts/wav/${payload.id}`,
@@ -300,9 +287,10 @@ const tracks = {
           )
           console.log('uploaded successfully: ', data)
           commit('UPDATE_TRACKOUT_WAV_SUCCESS', data)
+          return Promise.resolve(data)
         } catch (err) {
           console.error('wav upload failed: ', err)
-          return err
+          return Promise.resolve(err)
         }
       }
     }
