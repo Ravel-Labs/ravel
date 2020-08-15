@@ -150,11 +150,18 @@ def get_trackouts_by_track_id(id):
 @jwt_required()
 def process_track(id):
     try:
-
+        def str_to_bool(s):
+            if s == 'true':
+                return True
+            elif s == 'false':
+                return False
+            else:
+                return s
         # Track should contain user
         current_user = User.query.get(current_identity.id)
         raw_track = Track.query.get(id)
-        toggle_effects_params = request.json.get('toggle_effects_params')
+        raw_toggle_params = request.json.get('toggle_effects_params')
+        toggle_effects_params = {key: str_to_bool(val) for key, val in raw_toggle_params.items()}
         # TODO check all values in toggle_effects_params to evaluate to true
         app.logger.info(f"processing {id} with params: {toggle_effects_params}")
 
