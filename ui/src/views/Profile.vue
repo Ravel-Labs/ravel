@@ -1,8 +1,19 @@
 <template id="">
   <div class="container has-text-centered">
-    <div>
-      <h1 class="title is-4">Email: {{ user.email }}</h1>
-      <h1 class="title is-4">Ravel Beta Program: {{ active }}</h1>
+    <b-loading :is-full-page="true" v-model="loading" :can-cancel="true"></b-loading>
+    <div class="profile">
+      <div class="level">
+        <div class="tile is-child is-2 level-item">
+          <article class="tile is-child notification is-info">
+          <div class="fa fa-user fa-3x"></div>
+            <p class="title is-4">{{ user.email }}</p>
+            <p>{{ user.name }}</p>
+            <p>Member Since: {{ user.created_at }}</p>
+            <p>Ravel Beta Membership: {{ active}} </p>
+          </article>
+        </div>
+      </div>
+
       <button class="button is-danger" @click="confirmDelete()">Delete Account</button>
     </div>
   </div>
@@ -15,12 +26,14 @@ export default {
   data() {
     return {
       deleteModal: false,
-      active: "Active"
+      active: "Active",
+      loading: true
     };
   },
   computed: {
     ...mapState({
-      user: state => state.auth.user
+      user: state => state.auth.user,
+      // loading: state => state.auth.loading
     })
   },
   created () {
@@ -43,8 +56,9 @@ export default {
       this.deleteModal == !this.deleteModal;
     },
     handleDelete() {
+      console.log(this.user.id)
       return this.$store
-        .dispatch("auth/delete", userID)
+        .dispatch("auth/delete", this.user.id)
         .then(data => {
           this.$buefy.toast.open("Account deleted!")
           this.$store.dispatch('auth/logout')
@@ -58,3 +72,8 @@ export default {
   }
 };
 </script>
+<style>
+.profile {
+  margin: 20px;
+}
+</style>

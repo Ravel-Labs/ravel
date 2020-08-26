@@ -9,7 +9,9 @@ const auth = {
     token: ls.getItem("token"),
     user: {
       id: ls.getItem("user:id"),
-      email: ls.getItem("user:email")
+      email: ls.getItem("user:email"),
+      name: '',
+      created_at: '',
     },
     message: "",
     error: undefined
@@ -75,9 +77,26 @@ const auth = {
     PROFILE_SUCCESS(state, data) {
       state.loading = false
       state.error = ""
-      console.log('profile success mutation: ', data)
+      state.user.id = data.id
+      state.user.name = data.name
+      state.user.email = data.email
+      state.user.created_at = data.created_at
+      ls.setItem("user:email", data.email);
+      ls.setItem("user:id", data.id);
     },
     PROFILE_ERROR(state, err) {
+      state.loading = false
+      state.error = err
+    },
+    DELETE_REQUEST(state) {
+      state.loading = true
+    },
+    DELETE_SUCCESS(state) {
+      state.loading = false
+      state.error = ""
+      state.user = {}
+    },
+    DELETE_FAILURE(state, err) {
       state.loading = false
       state.error = err
     }
@@ -91,9 +110,8 @@ const auth = {
       try {
         commit("PROFILE_REQUEST")
         let { data } = await API().get("/auth/profile")
-        console.log("got profile data back: ", data)
-        commit("PROFILE_SUCCESS")
-        return Promise.resolve(data)
+        commit("PROFILE_SUCCESS", data.payload)
+        return Promise.resolve(data.payload)
       } catch (err) {
         commit("PROFILE_ERROR")
         console.error("Failed to fetch profile information: ", err)
@@ -172,9 +190,9 @@ const auth = {
         return error;
       }
     },
-    async delete({ commit, dispatch }, userID ) {
+    async delete({ commit }, userID ) {
       try {
-        let { data } = await API().delete(`/users/${id}`)
+        let { data } = await API().delete(`/users/${userID}`)
         commit('DELETE_SUCCESS')
         return Promise.resolve(data)
       } catch (err) {
