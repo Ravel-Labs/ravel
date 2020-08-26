@@ -6,6 +6,7 @@ import TermsOfService from './views/TermsOfService.vue'
 import PrivacyPolicy from './views/PrivacyPolicy.vue'
 import Login from './views/Login.vue'
 import Signup from './views/Signup.vue'
+import Profile from './views/Profile.vue'
 import Tracks from './views/Tracks.vue'
 import CreateTrack from './views/CreateTrack.vue'
 import TrackDetail from './views/TrackDetail.vue'
@@ -49,6 +50,7 @@ const router = new Router({
         {
           path: '/profile',
           name: 'profile',
+          component: Profile,
           meta: {
             requireAuth: true
           }

@@ -1,4 +1,5 @@
 import API from "@/api";
+import { delete } from "vue/types/umd";
 
 const ls = window.localStorage;
 
@@ -81,6 +82,9 @@ const auth = {
           username: user.email,
           password: user.password
         });
+        commit("SET_USER", {
+          email: user.email
+        })
         commit("LOGIN_SUCCESS", data["access_token"]);
         return data;
       } catch (err) {
@@ -107,6 +111,9 @@ const auth = {
         // successfully signed up
         if (data.status === 201) {
           commit("SIGNUP_SUCCESS", data.data.message);
+          commit('SET_USER', {
+            email: user.email
+          })
           return Promise.resolve(data);
         }
 
@@ -138,6 +145,16 @@ const auth = {
 
         dispatch("CHECK_FAILURE", error);
         return error;
+      }
+    },
+    async delete({ commit, dispatch }, userID ) {
+      try {
+        let { data } = await API().delete(`/users/${id}`)
+        commit('DELETE_SUCCESS')
+        return Promise.resolve(data)
+      } catch (err) {
+        console.log("error trying to delete user account: ", err)
+        return Promise.reject(err)
       }
     }
   }
