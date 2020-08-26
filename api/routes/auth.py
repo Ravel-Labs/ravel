@@ -63,6 +63,26 @@ def check():
 
 
 '''
+    Profile
+
+    Profile returns the current user's profile information.
+    It should NOT return the user password. It MUST check that 
+    the current user's ID is the same as the requested user's ID.
+    '''
+
+
+@auth_bp.route('%s/profile' % base_auth_url)
+@jwt_required()
+def profile():
+    user = User.query.filter_by(id=current_identity.id).first()
+    if user is None:
+        return abort(404, "User not found")
+    u = user.to_dict()
+    app.logger.info(f"returning profile information for {current_identity.id}: {u}")
+    return APIResponse(u, 200).response
+
+
+'''
     authentication_handler is a Flask-JWT specific handler. 
 
     It takes the email and password given by a login function 

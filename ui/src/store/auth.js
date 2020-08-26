@@ -1,5 +1,4 @@
 import API from "@/api";
-import { delete } from "vue/types/umd";
 
 const ls = window.localStorage;
 
@@ -68,6 +67,19 @@ const auth = {
       state.token = "";
       state.user = {};
       state.error = error;
+    },
+    PROFILE_REQUEST(state) {
+      state.loading = true
+      state.error = ""
+    },
+    PROFILE_SUCCESS(state, data) {
+      state.loading = false
+      state.error = ""
+      console.log('profile success mutation: ', data)
+    },
+    PROFILE_ERROR(state, err) {
+      state.loading = false
+      state.error = err
     }
   },
   getters: {
@@ -75,6 +87,19 @@ const auth = {
     user: state => state.user
   },
   actions: {
+    async profile({ commit }) {
+      try {
+        commit("PROFILE_REQUEST")
+        let { data } = await API().get("/auth/profile")
+        console.log("got profile data back: ", data)
+        commit("PROFILE_SUCCESS")
+        return Promise.resolve(data)
+      } catch (err) {
+        commit("PROFILE_ERROR")
+        console.error("Failed to fetch profile information: ", err)
+        return Promise.reject(err)
+      }
+    },
     async login({ commit }, user) {
       try {
         commit("LOGIN_REQUEST", user);
