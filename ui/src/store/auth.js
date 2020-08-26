@@ -9,7 +9,9 @@ const auth = {
     token: ls.getItem("token"),
     user: {
       id: ls.getItem("user:id"),
-      email: ls.getItem("user:email")
+      email: ls.getItem("user:email"),
+      name: '',
+      created_at: '',
     },
     message: "",
     error: undefined
@@ -67,6 +69,36 @@ const auth = {
       state.token = "";
       state.user = {};
       state.error = error;
+    },
+    PROFILE_REQUEST(state) {
+      state.loading = true
+      state.error = ""
+    },
+    PROFILE_SUCCESS(state, data) {
+      state.loading = false
+      state.error = ""
+      state.user.id = data.id
+      state.user.name = data.name
+      state.user.email = data.email
+      state.user.created_at = data.created_at
+      ls.setItem("user:email", data.email);
+      ls.setItem("user:id", data.id);
+    },
+    PROFILE_ERROR(state, err) {
+      state.loading = false
+      state.error = err
+    },
+    DELETE_REQUEST(state) {
+      state.loading = true
+    },
+    DELETE_SUCCESS(state) {
+      state.loading = false
+      state.error = ""
+      state.user = {}
+    },
+    DELETE_FAILURE(state, err) {
+      state.loading = false
+      state.error = err
     }
   },
   getters: {
@@ -74,6 +106,18 @@ const auth = {
     user: state => state.user
   },
   actions: {
+    async profile({ commit }) {
+      try {
+        commit("PROFILE_REQUEST")
+        let { data } = await API().get("/auth/profile")
+        commit("PROFILE_SUCCESS", data.payload)
+        return Promise.resolve(data.payload)
+      } catch (err) {
+        commit("PROFILE_ERROR")
+        console.error("Failed to fetch profile information: ", err)
+        return Promise.reject(err)
+      }
+    },
     async login({ commit }, user) {
       try {
         commit("LOGIN_REQUEST", user);
@@ -81,6 +125,9 @@ const auth = {
           username: user.email,
           password: user.password
         });
+        commit("SET_USER", {
+          email: user.email
+        })
         commit("LOGIN_SUCCESS", data["access_token"]);
         return data;
       } catch (err) {
@@ -107,6 +154,9 @@ const auth = {
         // successfully signed up
         if (data.status === 201) {
           commit("SIGNUP_SUCCESS", data.data.message);
+          commit('SET_USER', {
+            email: user.email
+          })
           return Promise.resolve(data);
         }
 
@@ -138,6 +188,16 @@ const auth = {
 
         dispatch("CHECK_FAILURE", error);
         return error;
+      }
+    },
+    async delete({ commit }, userID ) {
+      try {
+        let { data } = await API().delete(`/users/${userID}`)
+        commit('DELETE_SUCCESS')
+        return Promise.resolve(data)
+      } catch (err) {
+        console.log("error trying to delete user account: ", err)
+        return Promise.reject(err)
       }
     }
   }
