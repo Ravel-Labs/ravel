@@ -10,6 +10,7 @@ db.sqlite
 *.env.*
 
 *.log
+*.log.*
 
 *.pyc
 .DS_Store
