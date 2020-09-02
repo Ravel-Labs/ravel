@@ -36,7 +36,7 @@ def get_user_by_id(id):
         abort(500, e)
 
 
-@users_bp.route('%s/delete/<int:id>' % base_users_url, methods={'GET'})
+@users_bp.route('%s/<int:id>' % base_users_url, methods={'DELETE'})
 @jwt_required()
 def delete_user_by_id(id):
     try:
