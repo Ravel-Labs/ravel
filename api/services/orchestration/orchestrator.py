@@ -73,14 +73,17 @@ class Orchestrator():
                     Q.put(processing_job)  # currently cannot return
                 
                 """ Initiate Deessor """
-                if raw_trackout.type == "vocals" and self.toggle_effects_params.get('de'):
+                # Blocked by drop down trackout type enforecement 
+                #raw_trackout.type == "vocals" and 
+                if self.toggle_effects_params.get('de'):
                     de_args = base_processing_args + ["deesser", main_trackout, other_trackouts]
                     processing_job = Job(self.process_and_save, de_args)
                     app.logger.info(f'processing job: {processing_job}')
                     Q.put(processing_job)  # currently cannot return
                 
                 """ Initiate Reverb """
-                if raw_trackout.type == "vocals" and self.toggle_effects_params.get('re'):
+                #raw_trackout.type == "vocals" and 
+                if self.toggle_effects_params.get('re'):
                     rev_args = base_processing_args + ["reverb", main_trackout, other_trackouts]
                     processing_job = Job(self.process_and_save, rev_args)
                     app.logger.info(f'processing job: {processing_job}')
@@ -141,6 +144,10 @@ class Orchestrator():
             app.logger.info(f"compress_and_save: all_trackouts{len(all_trackouts)}")
             correlation = zip(all_trackouts, self.compressed_result)
             for index, (raw_trackout, processed_result) in enumerate(correlation):
+                # If the only effect applied is CO add compressed signals to final processed song results
+                if self.toggle_effects_params.get('co') and len(self.toggle_effects_params) == 1:
+                    self.processed_signals.append(processed_result)
+                # TODO add a dict to keep track of each trackouts processed results
                 trackout_id = raw_trackout.id
                 track_id = raw_trackout.trackouts.id
                 trackout_name = raw_trackout.name
@@ -206,7 +213,7 @@ class Orchestrator():
                     eq=raw_trackout  # Relationship with raw_trackout
                 )
             else:
-                raise Exception("This effect function does not exist")
+                app.logger.info(f"This effect function does not exist")
 
             write(storage_name, self.sample_rate, processed_result)
             print(f"Completed processing {effect}: {bool(processed_result.any())}")
