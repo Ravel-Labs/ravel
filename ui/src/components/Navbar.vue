@@ -2,6 +2,9 @@
     <b-navbar>
         <template slot="brand">
             <b-navbar-item class="has-text-weight-bold" tag="router-link" :to="{ path: '/' }">
+            <img src="../assets/logo.png" class="logo" alt="">
+            </b-navbar-item>
+            <b-navbar-item class="has-text-weight-bold" tag="router-link" :to="{ path: '/' }">
               <p class="is-size-4">Ravel Labs</p>
             </b-navbar-item>
         </template>
@@ -38,6 +41,9 @@
 <script>
 import { mapActions, mapState } from 'vuex'
 import router from '@/router'
+import logo from '@/assets/logo.png'
+
+const applogo = logo
 
 export default {
     name: 'Navbar',
@@ -70,4 +76,8 @@ export default {
     }
 }
 </script>
-// 
+<style>
+.logo {
+  height: 100%;
+}
+</style>

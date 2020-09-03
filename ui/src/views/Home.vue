@@ -1,29 +1,44 @@
 <template>
   <div class="home">
-    <section class="hero is-large is-primary">
-      <div class="hero-body">
-        <div class="container">
-          <h1 class="title has-text-centered is-size-1">
-            The future of audio processing
-          </h1>
-          <h2 class="subtitle has-text-centered is-size-4">
-            Try Ravel Labs now for free.
-          </h2>
-          <div class="level">
-            <div class="level-item has-text-centered">
-              <div>
-                <p><button class="button is-large is-white"><a href="/signup">Sign Up</a></button></p>
+    <div>
+      <section class="section columns">
+        <div class="column is-full">
+          <section class="hero is-twitter is-bold is-large">
+            <div class="hero-body">
+              <div class="container">
+                <h1 class="title is-1 has-text-centered">
+                  Welcome to Ravel Labs
+                </h1>
+                <h2 class="subtitle is-3 has-text-centered">
+                  The future of audio mixing and mastering.
+                </h2>
+                <h2 class="subtitle is-4 has-text-centered">
+                  Sign up now for free and try it out yourself.
+                </h2>
+                <h2 class="has-text-centered">
+                  <div class="level">
+                    <div class="level-item">
+                      <button class="button is-medium is-white"><b>Sign up now</b></button>
+                    </div>
+                  </div>
+                  <div class="level">
+                    <div class="level-item">Already a member? <a class="has-text-white" href="/login">Login here.</a></div>
+                  </div>
+                </h2>
               </div>
             </div>
-          </div>
+          </section>
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
     <footer class="footer">
       <div class="content has-text-centered">
-        <p>
-          <strong>Ravel</strong> by Ravel Labs.
-        </p>
+        <div class="level">
+          <div class="level-item">
+            <img class="logo" src="../assets/logo.png" alt="" />
+          </div>
+        </div>
+        <p><strong>Ravel</strong> by Ravel Labs.</p>
       </div>
     </footer>
   </div>
@@ -31,10 +46,13 @@
 
 <script>
 export default {
-  name: "home",
+  name: "home"
 };
 </script>
 
-
-<style  scoped>
+<style lang="scss" scoped>
+.logo {
+  height: 10rem;
+  width: 10rem;
+}
 </style>
