@@ -104,7 +104,11 @@ class Orchestrator():
 
             # every track has for settings for all of the equations
             mixer = Mixer(self.processed_signals, storage_name, self.sample_rate)
+            app.logger.info(f'processed signals')
+            app.logger.info(self.processed_signals)
+
             mixed_result = mixer.mix()
+            app.logger.info(f'mixed_results')
             mixer.output_wav(mixed_result)
             
             firestore_path = f"track/{self.track.id}/song/{self.track.name}.wav"
