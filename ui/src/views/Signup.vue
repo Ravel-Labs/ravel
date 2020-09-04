@@ -66,6 +66,7 @@ export default {
           password: user.password,
         })
         .then((data) => {
+          window.umami('user signup') // log signup event
           this.$buefy.toast.open({
             message: `Success! You've been signed up.`,
             type: 'is-success'
