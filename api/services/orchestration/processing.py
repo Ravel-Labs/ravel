@@ -1,6 +1,6 @@
 from api.services.effects import reverb, equalizer, compressor, deesser
 from ravellib.lib.effects import SignalAggregator
-
+from flask import current_app as app
 
 class Processor():
     def __init__(self, num_signals):
