@@ -148,8 +148,13 @@ class Orchestrator():
             app.logger.info(f"compress_and_save: all_trackouts{len(all_trackouts)}")
             correlation = zip(all_trackouts, self.compressed_result)
             for index, (raw_trackout, processed_result) in enumerate(correlation):
+                print(self.toggle_effects_params.get('co'))
+                print(self.toggle_effects_params)
+                print(len(self.toggle_effects_params))
                 # If the only effect applied is CO add compressed signals to final processed song results
+                print(processed_result)
                 if self.toggle_effects_params.get('co') and len(self.toggle_effects_params) == 1:
+                    print("If the only effect applied is CO add compressed signals to final processed song results")
                     self.processed_signals.append(processed_result)
                 # TODO add a dict to keep track of each trackouts processed results
                 trackout_id = raw_trackout.id
