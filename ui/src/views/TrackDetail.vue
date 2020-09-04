@@ -62,9 +62,12 @@
                 <b-input v-model="trackout.name"></b-input>
               </b-field>
 
-              <b-field label="Type">
-                <!-- This should be "vocals" or "instrument" types -->
-                <b-input v-model="trackout.type"></b-input>
+              <b-field label="Track Type">
+                <b-select v-model="trackout.type" placeholder="What type of track is this?">
+                  <option v-for="option in trackTypes" :value="option.name" :key="option.id">
+                    {{ option.name }}
+                  </option>
+                </b-select>
               </b-field>
 
               <b-field class="file">
@@ -105,9 +108,11 @@
             <button class="button is-danger is-small" @click="handleDeleteTrackOut()">Remove Trackout</button>
           </div>
         </b-collapse>
-
-        <div>
-          <button class="button is-danger is-small" @click="handleDeleteTrack()">Delete Track</button>
+        <br />
+        <div class="container columns toolbar">
+          <div class="column">
+            <button class="button is-danger is-small" @click="handleDeleteTrack()">Delete Track</button>
+          </div>
         </div>
       </div>
     </div>
@@ -134,31 +139,36 @@ export default {
       trackTypes: [
         {
           id: 1,
+          type: "full_track",
+          name: "full track"
+        },
+        {
+          id: 2,
           type: "vocals",
           name: "vocals"
         },
         {
-          id: 2,
+          id: 3,
           type: "drums",
           name: "drums"
         },
         {
-          id: 3,
+          id: 4,
           type: "piano",
           name: "piano"
         },
         {
-          id: 4,
+          id: 5,
           type: "guitar",
           name: "guitar"
         },
         {
-          id: 5,
+          id: 6,
           type: "bass",
           name: "bass"
         },
         {
-          id: 6,
+          id: 7,
           type: "synths / electronic",
           name: "synths / electronic"
         }
@@ -178,21 +188,21 @@ export default {
   },
   watch: {
     isCompressed: function(val) {
-      localStorage.setItem(`${this.$route.params.id}:settings:co`, val)
+      localStorage.setItem(`${this.$route.params.id}:settings:co`, val);
     },
     isEQed: function(val) {
-      localStorage.setItem(`${this.$route.params.id}:settings:eq`, val)
+      localStorage.setItem(`${this.$route.params.id}:settings:eq`, val);
     },
     isDeessed: function(val) {
-      localStorage.setItem(`${this.$route.params.id}:settings:de`, val)
+      localStorage.setItem(`${this.$route.params.id}:settings:de`, val);
     }
   },
   methods: {
     submitFile() {
       let formData = new FormData();
-      formData.append('file', this.file)
+      formData.append("file", this.file);
 
-      // set payloads up 
+      // set payloads up
       const trackPayload = {
         track_id: this.$route.params.id,
         name: this.trackout.name,
@@ -202,30 +212,30 @@ export default {
         formData: formData,
         id: this.$route.params.id
       };
-      // attempt track creation and upload to it.
-      // TODO show a loading bar 
+      // TODO: show a loading bar
       this.$store
         .dispatch("tracks/createTrackoutWithoutWav", trackPayload)
         .then(data => {
-          this.$store.dispatch("tracks/updateTrackoutWithWav", {
-            id: data.payload.id,
-            formData: formData,
-          })
-          .then(data => {
-            // everything succeeded
-            this.$store.dispatch("tracks/getTrackouts", this.$route.params.id);
+          this.$store
+            .dispatch("tracks/updateTrackoutWithWav", {
+              id: data.payload.id,
+              formData: formData,
+            })
+            .then(data => {
+              // everything succeeded
+              this.$store.dispatch("tracks/getTrackouts", this.$route.params.id);
 
-            // fire notification and clean up
-            this.addTrackout = false;
-            this.$buefy.notification.open({
-              message: "Uploaded trackout!",
-              type: "is-success"
+              // fire notification and clean up
+              this.addTrackout = false;
+              this.$buefy.notification.open({
+                message: "Uploaded trackout!",
+                type: "is-success"
+              });
             });
-          });
         })
         .catch(err => {
           console.log("error creating trackout: ", err);
-          return err
+          return err;
         });
     },
     deleteDropFile(index) {
@@ -240,17 +250,17 @@ export default {
         co: this.isCompressed,
         eq: this.isEQed,
         de: this.isDeessed
-      })
+      });
       this.$buefy.notification.open({
         message: "Process request received. Once your track is done processing we'll send you an email with a download link.",
         type: "is-success",
         duration: 5000
-      })
+      });
     },
     handleDeleteTrack() {
-      this.$store.dispatch('tracks/delete', {
+      this.$store.dispatch("tracks/delete", {
         id: this.$route.params.id
-      })
+      });
     }
   }
 };
@@ -266,5 +276,8 @@ export default {
 
 .upload-area {
   margin: 2rem;
+}
+.toolbar {
+  margin: 5px;
 }
 </style>
