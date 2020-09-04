@@ -81,6 +81,17 @@ const tracks = {
         state.error = error
         state.loading = false
       },
+      'DELETE_TRACKOUT_REQUEST' (state) {
+        state.error = ""
+        state.loading = true
+      },
+      'DELETE_TRACKOUT_SUCCESS' (state, data) {
+        state.loading = false
+      },
+      'DELETE_TRACKOUT_FAILURE' (state, err) {
+        state.loading = false
+        state.error = err
+      },
       'DELETE_TRACK_SUCCESS' (state, i) {
         state.loading = false
         state.error = undefined
@@ -98,17 +109,6 @@ const tracks = {
       'TRACK_PROCESS_REQUEST' (state, data) {
         state.error = ""
         console.log('track_process_request data: ', data)
-      },
-      'WAVEFILE_REQUEST' (state, data) {
-        console.log('wavefile request: ', data)
-      },
-      'WAVEFILE_FAILURE' (state, err) {
-        console.log('wavefile failure: ', err)
-        state.error = err
-      },
-      'WAVEFILE_SUCCESS' (state, data) {
-        console.log('wavefile success: ', data)
-        state.message = data
       },
       'PROCESS_REQUEST' (state, data) {
         console.log('process request kicked off')

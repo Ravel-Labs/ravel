@@ -1,6 +1,6 @@
 <template>
   <section class="section">
-    <div class="container">
+    <div class="container" v-if="!loading">
       <div class="trackouts container">
         <!-- Header -->
         <div class="columns">
@@ -70,7 +70,7 @@
                 </b-select>
               </b-field>
 
-              <b-field class="file">
+              <b-field class="file" v-if="!loading">
                 <b-upload v-model="file">
                   <a class="button is-primary">
                     <b-icon class="fa fa-arrow-up"></b-icon>
@@ -95,6 +95,7 @@
         <!-- Trackouts List -->
         <b-collapse v-for="t in track.trackouts" :key="t.id" class="card" animation="slide">
           <div slot="trigger" slot-scope="props" class="card-header" role="button" aria-controls="contentIdForA11y3">
+            <b-skeleton size="is-large" :active="loading"></b-skeleton>
             <p class="card-header-title">
               {{ t.name }}
             </p>
@@ -105,7 +106,7 @@
           <div class="card-content">
             <p>Created at: {{ t.created_at }}</p>
             <p>Type: {{ t.type }}</p>
-            <button class="button is-danger is-small" @click="handleDeleteTrackOut()">Remove Trackout</button>
+            <button class="button is-danger is-small" @click="handleDeleteTrackOut(t.id)">Remove Trackout</button>
           </div>
         </b-collapse>
         <br />
@@ -181,6 +182,7 @@ export default {
   },
   computed: {
     ...mapState({
+      loading: state => state.tracks.loading,
       track: state => state.tracks.current,
       token: state => state.auth.token,
       user: state => state.user
@@ -212,20 +214,29 @@ export default {
         formData: formData,
         id: this.$route.params.id
       };
-      // TODO: show a loading bar
+
+      // show a loading screen
+      const loadingComponent = this.$buefy.loading.open({
+        container: null
+      });
+
+      // hide add trackout modal
+      this.toggleAddTrackout = false
       this.$store
         .dispatch("tracks/createTrackoutWithoutWav", trackPayload)
         .then(data => {
+          // reset trackout form data
+          this.trackout = { name: "", type: "" };
+
+          // try to upload trackout to recently created track
           this.$store
             .dispatch("tracks/updateTrackoutWithWav", {
               id: data.payload.id,
-              formData: formData,
+              formData: formData
             })
             .then(data => {
-              // everything succeeded
+              loadingComponent.close();
               this.$store.dispatch("tracks/getTrackouts", this.$route.params.id);
-
-              // fire notification and clean up
               this.addTrackout = false;
               this.$buefy.notification.open({
                 message: "Uploaded trackout!",
@@ -234,6 +245,7 @@ export default {
             });
         })
         .catch(err => {
+          loadingComponent.close();
           console.log("error creating trackout: ", err);
           return err;
         });
@@ -256,6 +268,9 @@ export default {
         type: "is-success",
         duration: 5000
       });
+    },
+    handleDeleteTrackOut(id) {
+      this.$store.dispatch("tracks/deleteTrackout", id);
     },
     handleDeleteTrack() {
       this.$store.dispatch("tracks/delete", {
