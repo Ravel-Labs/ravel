@@ -18,7 +18,9 @@
                 <h2 class="has-text-centered">
                   <div class="level">
                     <div class="level-item">
-                      <button class="button is-medium is-white"><b>Sign up now</b></button>
+                      <a href="/signup">
+                        <button class="button is-medium is-white"><b>Sign up now</b></button>
+                      </a>
                     </div>
                   </div>
                   <div class="level">
