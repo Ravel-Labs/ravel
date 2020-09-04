@@ -399,13 +399,13 @@ class Mixer:
         return output.astype(np.float32)
 
     def output_wav(self, mixed_file): 
-        app.logger.info("output_wav")
-        app.logger.info(self.output_path)
-        app.logger.info("self.sr")
-        app.logger.info(self.sr)
-        app.logger.info("type(mixed_file)")
-        app.logger.info(type(mixed_file))
-        app.logger.info(mixed_file)
+        print("output_wav")
+        print(self.output_path)
+        print("self.sr")
+        print(self.sr)
+        print("type(mixed_file)")
+        print(type(mixed_file))
+        print(mixed_file)
 
         write(self.output_path, self.sr, mixed_file)
 
