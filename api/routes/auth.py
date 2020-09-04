@@ -78,7 +78,7 @@ def profile():
     if user is None:
         return abort(404, "User not found")
     u = user.to_dict()
-    app.logger.info(f"returning profile information for {current_identity.id}: {u}")
+    del u['password_hash']  # NB: Don't send password hash to user
     return APIResponse(u, 200).response
 
 
