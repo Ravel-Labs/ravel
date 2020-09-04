@@ -230,3 +230,4 @@ class Orchestrator():
             db.session.commit()
         except Exception as err:
             app.logger.error(f"error in process_and_save for trackID {self.track.id}:", err)
+            raise Exception(f"Error occurred in process_and_save:\n {err}")
