@@ -235,7 +235,8 @@ const tracks = {
             'toggle_effects_params': {
               'co': payload.co,
               'eq': payload.eq,
-              'de': payload.de 
+              'de': payload.de,
+              're': payload.re
             }
           })
           return data

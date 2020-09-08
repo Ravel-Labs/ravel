@@ -21,8 +21,8 @@
           </div>
           <div class="column" v-if="track.trackouts">
             <!-- Processing toggles -->
-            <b-switch v-model="isDeessed">
-              De-Esser
+            <b-switch v-model="isReverbed">
+              Reverb
             </b-switch>
             <b-switch v-model="isEQed">
               EQ
@@ -131,6 +131,7 @@ export default {
       isDeessed: localStorage.getItem(`${this.$route.params.id}:settings:de`) || false,
       isEQed: localStorage.getItem(`${this.$route.params.id}:settings:eq`) || false,
       isCompressed: localStorage.getItem(`${this.$route.params.id}:settings:co`) || false,
+      isReverbed: localStorage.getItem(`${this.$route.params.id}:settings:re`) || false,
       dropFiles: [],
       addTrackout: false,
       trackout: {
@@ -197,6 +198,9 @@ export default {
     },
     isDeessed: function(val) {
       localStorage.setItem(`${this.$route.params.id}:settings:de`, val);
+    },
+    isReverbed: function(val) {
+      localStorage.setItem(`${this.$route.params.id}:settings:re`, val);
     }
   },
   methods: {
@@ -259,9 +263,10 @@ export default {
     process() {
       this.$store.dispatch("tracks/process", {
         trackID: this.$route.params.id,
-        co: this.isCompressed,
-        eq: this.isEQed,
-        de: this.isDeessed
+        co: !!this.isCompressed,
+        eq: !!this.isEQed,
+        de: false, // NB: currently broken, so always send false
+        re: !!this.isReverbed
       });
       this.$buefy.notification.open({
         message: "Process request received. Once your track is done processing we'll send you an email with a download link.",
