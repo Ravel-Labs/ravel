@@ -7,20 +7,21 @@ from scipy.io.wavfile import write
 
 
 class Signal:
-    def __init__(self, signal, n_fft, window_size, hop_length, peak, audio_type):
+    def __init__(self, signal, n_fft, window_size, hop_length, peak, audio_type, sr):
         # self.path = path
         # self.sr = librosa.get_samplerate(self.path)
-        self.sr = 44100
+        self.sr = sr
         self.n_fft = n_fft
         self.window_size = window_size
         self.hop_length = hop_length
         self.signal = signal
-        self.signal_db = librosa.amplitude_to_db(self.signal)
+        self.mono_signal = librosa.to_mono(self.signal)
+        self.signal_db = librosa.amplitude_to_db(self.mono_signal)
         self.peak = peak
         self.audio_type = audio_type
-        self.x_norm = preprocessing.normalize(self.signal, self.peak)
+        self.x_norm = preprocessing.normalize(self.mono_signal, self.peak)
         
-        self.fft = np.abs(librosa.core.stft(self.signal, n_fft=self.n_fft, 
+        self.fft = np.abs(librosa.core.stft(self.mono_signal, n_fft=self.n_fft, 
                                             win_length=self.window_size, hop_length=self.hop_length))
         self.num_bins = self.fft.shape[0]
         self.fft_db = librosa.amplitude_to_db(self.fft)
@@ -29,9 +30,9 @@ class Signal:
 
 
 class EQSignal(Signal):
-    def __init__(self, signal, n_fft, window_size, hop_length, peak, audio_type, 
+    def __init__(self, signal, n_fft, window_size, hop_length, peak, audio_type, sr,
                 rank_threshold, max_n, max_eq):
-        super().__init__(signal, n_fft, window_size, hop_length, peak, audio_type)
+        super().__init__(signal, n_fft, window_size, hop_length, peak, audio_type, sr)
         self.fft_db_avg = np.mean(self.fft_db, axis=1)
         self.rank = preprocessing.rank_signal_1d(self.fft_db_avg)
         self.rank_threshold = rank_threshold
@@ -97,7 +98,9 @@ class EQSignal(Signal):
 
             elif eq_type == 4:
                 eq = AudioEffectsChain().highshelf(gain, freq)
-        return y
+        output = np.array(y)
+        write_output = output.T
+        return write_output
 
 
     # def compute_energy_percent(self):
@@ -133,20 +136,20 @@ class EQSignal(Signal):
 
 
 class CompressSignal(Signal):
-    def __init__(self, signal, n_fft, window_size, hop_length, peak, audio_type, 
+    def __init__(self, signal, n_fft, window_size, hop_length, peak, audio_type, sr,
                 time_constant, order, cutoff, std, attack_max, release_max):
-        super().__init__(signal, n_fft, window_size, hop_length, peak, audio_type)
+        super().__init__(signal, n_fft, window_size, hop_length, peak, audio_type, sr)
         self.time_constant = time_constant
         self.order = order
         self.cutoff = cutoff
         self.std = std
         self.attack_max = attack_max
         self.release_max = release_max
-        self.rms = librosa.feature.rms(signal, frame_length=self.window_size, hop_length=self.hop_length)
+        self.rms = librosa.feature.rms(self.mono_signal, frame_length=self.window_size, hop_length=self.hop_length)
         self.rms_db = np.mean(librosa.amplitude_to_db(self.rms))
         self.peak_db = librosa.amplitude_to_db(np.sum(self.fft, axis=0)).max()
         self.crest_factor = self.peak_db / self.rms_db
-        self.lfe = preprocessing.compute_lfe(self.signal, self.order, self.cutoff, self.sr)
+        self.lfe = preprocessing.compute_lfe(self.mono_signal, self.order, self.cutoff, self.sr)
     
     def compute_wp(self, cf_avg): return preprocessing.wp(self.crest_factor, cf_avg, self.std)
 
@@ -176,14 +179,17 @@ class CompressSignal(Signal):
         compress = AudioEffectsChain().compand(attack=params[2], decay=params[3], soft_knee=params[1], 
                     threshold=params[0], db_from=params[0], db_to=params[0])
         y = compress(self.signal)
-        makeup_gain = preprocessing.compute_makeup_gain(self.signal, y, self.sr)
+        mono_y = librosa.to_mono(y)
+        makeup_gain = preprocessing.compute_makeup_gain(self.mono_signal, mono_y, self.sr)
         gain = (AudioEffectsChain().gain(makeup_gain))
-        return gain(y)
+        output = np.array(gain(y))
+        write_output = output.T
+        return write_output
 
 class FaderSignal(Signal):
-    def __init__(self, path, signal, n_fft, window_size, hop_length, peak, audio_type,
+    def __init__(self, path, signal, n_fft, window_size, hop_length, peak, audio_type, sr,
                 decay, step, lead, max_fader, min_fader, B):
-        super().__init__(path, signal, n_fft, window_size, hop_length, peak, audio_type)
+        super().__init__(path, signal, n_fft, window_size, hop_length, peak, audio_type, sr)
         self.decay = decay
         self.step = step
         self.lead = lead
@@ -224,9 +230,9 @@ class FaderSignal(Signal):
     def fader(self, fader_output): return self.signal * fader_output
 
 class PanSignal(Signal):
-    def __init__(self, path, signal, n_fft, window_size, hop_length, peak, audio_type, 
+    def __init__(self, path, signal, n_fft, window_size, hop_length, peak, audio_type, sr, 
                 cutoffs, window, order, btype):
-        super().__init__(path, signal, n_fft, window_size, hop_length, peak, audio_type)
+        super().__init__(path, signal, n_fft, window_size, hop_length, peak, audio_type, sr)
         self.window = window
         self.order = order
         self.btype = btype
@@ -251,9 +257,10 @@ class PanSignal(Signal):
         return np.dstack((left,right))[0]
 
 class DeEsserSignal(Signal):
-    def __init__(self, signal, n_fft, window_size, hop_length, peak, audio_type,
+    # to do: clean up for purpose of stereo signals
+    def __init__(self, signal, n_fft, window_size, hop_length, peak, audio_type, sr,
                 critical_bands, c, sharp_thresh, max_reduction):
-        super().__init__(signal, n_fft, window_size, hop_length, peak, audio_type)
+        super().__init__(signal, n_fft, window_size, hop_length, peak, audio_type, sr)
         self.critical_bands = critical_bands
         self.bark_idx = preprocessing.freq_bark_map(self.freqs, self.critical_bands)
         self.c = c
@@ -318,10 +325,10 @@ class DeEsserSignal(Signal):
 
 
 class ReverbSignal(Signal):
-    def __init__(self, signal, n_fft, window_size, hop_length, peak, audio_type,
+    def __init__(self, signal, n_fft, window_size, hop_length, peak, audio_type, sr,
                 reverbance, hf_damping, room_scale, wet_gain, effect_percent, hp_freq, lp_freq, order,
                 stereo_depth, pre_delay):
-        super().__init__(signal, n_fft, window_size, hop_length, peak, audio_type)
+        super().__init__(signal, n_fft, window_size, hop_length, peak, audio_type, sr)
         self.reverbance = reverbance
         self.hf_damping = hf_damping
         self.room_scale = room_scale
@@ -341,7 +348,8 @@ class ReverbSignal(Signal):
                                         self.pre_delay, self.wet_gain)
         y_fx = fx(self.effect_signal)
         y_out = self.dry_signal + y_fx
-        return y_out
+        write_output = y_out.T
+        return write_output
 
 
 class SignalAggregator:

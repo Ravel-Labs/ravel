@@ -4,10 +4,11 @@ class Compress():
     Creates a new Compressor channel
     """
 
-    def __init__(self, all_trackouts, signal_aggregator):
+    def __init__(self, all_trackouts, signal_aggregator, sr):
         # TODO all of all - main_trackout
         self.all_trackouts = all_trackouts
         self.agg = signal_aggregator
+        self.sr = sr
 
 
     def compress(self):
@@ -30,7 +31,7 @@ class Compress():
         for loaded_np in self.all_trackouts:
             cp = CompressSignal(
                 loaded_np, 1024, 1024, 123,
-                200, audio_type, 0.2, 1, 1000,
+                200, audio_type, self.sr, 0.2, 1, 1000,
                 2, 0.08, 1.0)
             comp_signals.append(cp)
             cp_crest_factor = cp.crest_factor

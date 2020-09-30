@@ -3,7 +3,7 @@ from api.services.effects import reverb, equalizer, compressor, deesser
 from api.models.track_models import Equalizer, Deesser, Compressor, Reverb
 from api.services.orchestration.processing import Processor
 from api.services.email.email import email_proxy
-from api.services.utility import create_trackout_exclusive_list, convert_to_mono_signal
+from api.services.utility import create_trackout_exclusive_list, convert_to_stereo_signal
 from api import db, Q, Job
 from scipy.io.wavfile import write
 from os import remove
@@ -29,9 +29,9 @@ class Orchestrator():
         self.processor = Processor(num_signals)
         self.all_trackouts = all_trackouts
         self.other_trackouts = list()
-        self.sample_rate = 44100
+        self.sample_rate = None
         self.compressed_result = list()
-        self.mono_signal_trackouts = list()
+        self.stereo_signal_trackouts = list()
         # TODO get this from DB model
         self.eq_params = {"freq": "1200", "filter_type": 0, "gain": 1}
         self.co_params = {"ratio": 1.1, "threshold": 1.0,
@@ -54,7 +54,7 @@ class Orchestrator():
     def engage_trackout_effects(self):
         try:
             for i, raw_trackout in enumerate(self.all_trackouts):
-                main_trackout, other_trackouts = create_trackout_exclusive_list(self.mono_signal_trackouts, i)
+                main_trackout, other_trackouts = create_trackout_exclusive_list(self.stereo_signal_trackouts, i)
                 # setup queue parameters and process
                 base_processing_args = [raw_trackout]
                 app.logger.debug(f'toggling fx params: {self.toggle_effects_params}')
@@ -95,7 +95,9 @@ class Orchestrator():
     def orchestrate(self):
         try:
             app.logger.info(f"Orchestrator.orchestrate()")
-            self.mono_signal_trackouts = convert_to_mono_signal(self.all_trackouts, self.sample_rate)
+            self.stereo_signal_trackouts, self.sample_rate = convert_to_stereo_signal(self.all_trackouts)
+            if self.sample_rate != 44100:
+                self.processor.sample_rate = self.sample_rate
             if self.toggle_effects_params.get('co'):
                 self.compress_trackouts()
             self.engage_trackout_effects()
@@ -142,9 +144,9 @@ class Orchestrator():
         """
         try:
             effect_prefix = "co"
-            self.compressed_result = self.processor.compress(self.mono_signal_trackouts)
+            self.compressed_result = self.processor.compress(self.stereo_signal_trackouts)
             app.logger.info(f"compress_and_save: compressed results{len(self.compressed_result)}")
-            app.logger.info(f"compress_and_save: mono_signal_trackouts{len(self.mono_signal_trackouts)}")
+            app.logger.info(f"compress_and_save: stereo_signal_trackouts{len(self.stereo_signal_trackouts)}")
             app.logger.info(f"compress_and_save: all_trackouts{len(all_trackouts)}")
             correlation = zip(all_trackouts, self.compressed_result)
             for index, (raw_trackout, processed_result) in enumerate(correlation):

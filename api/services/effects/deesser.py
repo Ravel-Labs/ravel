@@ -1,7 +1,8 @@
 from ravellib.lib.effects import DeEsserSignal
 class Deesser():
-    def __init__(self, main_trackout):
+    def __init__(self, main_trackout, sr):
         self.main_trackout = main_trackout
+        self.sr = sr
 
     def deess(self):
         # critical bands are the frequencies at which the deesser looks at to
@@ -16,7 +17,7 @@ class Deesser():
 
         # audio type is the track type
         audio_type = "vocal"
-        sig = DeEsserSignal(self.main_trackout, 256, 256, 256, -12, audio_type,
+        sig = DeEsserSignal(self.main_trackout, 256, 256, 256, -12, audio_type, self.sr,
                             critical_bands, c, 1.2, 0.65)
 
         sharpness = sig.compute_sharpness()
