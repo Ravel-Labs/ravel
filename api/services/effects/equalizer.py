@@ -4,11 +4,12 @@ class Equalize():
         Please define Equalize
     """
 
-    def __init__(self, main_trackout, other_trackouts):
+    def __init__(self, main_trackout, other_trackouts, sr):
         # trackout to be processed
         self.main_trackout = main_trackout
         # other trackouts does not contain main_trackout
         self.other_trackouts = other_trackouts
+        self.sr = sr
 
     def equalize(self):
         # List of EQSignals, which contain a mono signal npArray
@@ -16,7 +17,7 @@ class Equalize():
         if len(self.other_trackouts) == 0:
             self.other_trackouts.append(self.main_trackout)
         for loaded_np in self.other_trackouts:
-            _eq = EQSignal(loaded_np, 1024, 1024, 1024, -12, "vocal", 10, 3, -2)
+            _eq = EQSignal(loaded_np, 1024, 1024, 1024, -12, "vocal", self.sr, 10, 3, -2)
             signals.append(_eq)
 
         '''
@@ -25,7 +26,7 @@ class Equalize():
                 3: more to be desired...
         '''
         eq = EQSignal(self.main_trackout, 1024, 1024,
-                      1024, -12, "vocal", 10, 3, -2)
+                      1024, -12, "vocal", self.sr, 10, 3, -2)
 
         # equalize the trackout and return
         params = eq.eq_params(signals)
