@@ -56,16 +56,17 @@ def convert_to_stereo_signal(all_trackouts):
         stereo_signal_trackouts = []
         i = str(1)
         seed_path = all_trackouts[0].path
-        retreive_from_file_store(seed_path, i)
-        with wave.open(f"trackout_{i}.wav", "rb") as wave_file:
+        #  TODO allow rollback
+        retreive_from_file_store(seed_path, all_trackouts[0].id)
+        with wave.open(f"{all_trackouts[0].id}.wav", "rb") as wave_file:
             sample_rate = wave_file.getframerate()
-        trackout_stereo_signal, _ = librosa.load(f"trackout_{i}.wav", sr=sample_rate, mono=False)
+        trackout_stereo_signal, _ = librosa.load(f"{all_trackouts[0].id}.wav", sr=sample_rate, mono=False)
         stereo_signal_trackouts.append(trackout_stereo_signal)
         for index, trackout in enumerate(all_trackouts[1:], 1):   
             i = str(index+1)
             path = trackout.path
-            retreive_from_file_store(path, i)
-            trackout_stereo_signal, _ = librosa.load(f"trackout_{i}.wav", sr=sample_rate, mono=False)
+            retreive_from_file_store(path, trackout.id)
+            trackout_stereo_signal, _ = librosa.load(f"{trackout.id}.wav", sr=sample_rate, mono=False)
             stereo_signal_trackouts.append(trackout_stereo_signal)
         app.logger.info(f"Stereo trackouts length: {len(stereo_signal_trackouts)}")
         return stereo_signal_trackouts, sample_rate

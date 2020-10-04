@@ -1,5 +1,6 @@
 from datetime import datetime
 from api import db
+import uuid
 
 '''
     This file contains the database relational schema
@@ -11,18 +12,21 @@ from api import db
                          Deesser
 '''
 
+def generate_uuid():
+    return str(uuid.uuid4())
 
 class Track(db.Model):
     '''
         Database Generated Fields
     '''
-    id = db.Column(db.Integer, primary_key=True)
+    # id = Column(db.String, name="id", primary_key=True, default=generate_uuid)
     trackouts = db.relationship('TrackOut', backref=db.backref('trackouts', passive_deletes=True), lazy='dynamic')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     '''
         Configurable Fields
     '''
+    id = db.Column(db.String, name="id", primary_key=True, default=generate_uuid)
     user_id = db.Column(db.Integer)
     name = db.Column(db.String(1000))
     artist = db.Column(db.String(200))
@@ -51,7 +55,7 @@ class TrackOut(db.Model):
     '''
         Database Generated Fields
     '''
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String, name="id", primary_key=True, default=generate_uuid)
     track_id = db.Column(db.Integer, db.ForeignKey('track.id', ondelete='CASCADE'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -92,7 +96,7 @@ class Equalizer(db.Model):
     '''
         Database Generated Fields
     '''
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String, name="id", primary_key=True, default=generate_uuid)
     trackout_id = db.Column(db.Integer, db.ForeignKey("track_out.id", ondelete='CASCADE'))
 
     '''
@@ -117,7 +121,7 @@ class Deesser(db.Model):
     '''
         Database Generated Fields
     '''
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String, name="id", primary_key=True, default=generate_uuid)
     trackout_id = db.Column(db.Integer, db.ForeignKey("track_out.id", ondelete='CASCADE'))
 
     '''
@@ -138,7 +142,7 @@ class Reverb(db.Model):
     '''
         Database Generated Fields
     '''
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String, name="id", primary_key=True, default=generate_uuid)
     trackout_id = db.Column(db.Integer, db.ForeignKey("track_out.id", ondelete='CASCADE'))
 
     '''
@@ -157,7 +161,7 @@ class Compressor(db.Model):
     '''
         Database Generated Fields
     '''
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String, name="id", primary_key=True, default=generate_uuid)
     trackout_id = db.Column(db.Integer, db.ForeignKey("track_out.id", ondelete='CASCADE'))
 
     '''

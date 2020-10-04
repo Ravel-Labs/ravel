@@ -36,7 +36,7 @@ def retreive_from_file_store(path, index=""):
         firebase = pyrebase.initialize_app(firebaseConfig)
         storage = firebase.storage()
         # Download wav to disk
-        local_file_name = f"trackout_{index}.wav" if index else "trackout.wav"
+        local_file_name = f"{index}.wav" if index else "trackout.wav"
         file = storage.child(path).download(local_file_name)
         app.logger.info(f"Firebase file: {file}")
         return file
