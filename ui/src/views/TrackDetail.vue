@@ -225,7 +225,7 @@ export default {
       });
 
       // hide add trackout modal
-      this.toggleAddTrackout = false
+      this.addTrackout = false
       this.$store
         .dispatch("tracks/createTrackoutWithoutWav", trackPayload)
         .then(data => {
