@@ -2,6 +2,15 @@ from datetime import datetime
 from api import db
 import uuid
 
+
+''' 
+    generate_uuid returns a new, unique hexadecimal uuid string
+'''
+def generate_uuid():
+    r = uuid.uuid4()
+    return r.hex
+    
+
 '''
     This file contains the database relational schema
     Hierarchy can be followed top down
@@ -20,7 +29,7 @@ class Track(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     trackouts = db.relationship('TrackOut', backref=db.backref('trackouts', passive_deletes=True), lazy='dynamic')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    uuid = db.Column(db.String, default=uuid.uuid4)
+    uuid = db.Column(db.String, default=generate_uuid)
 
     '''
         Configurable Fields
@@ -57,7 +66,7 @@ class TrackOut(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     track_id = db.Column(db.Integer, db.ForeignKey('track.uuid', ondelete='CASCADE'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    uuid = db.Column(db.String, default=uuid.uuid4)
+    uuid = db.Column(db.String, default=generate_uuid)
 
     '''
         Configurable Fields
