@@ -20,7 +20,7 @@
           :key="track.id"
           class="panel-block is-active">
             <router-link
-            :to="{ name: 'trackDetail', params: { id: track.id }}">
+            :to="{ name: 'trackDetail', params: { id: track.uuid }}">
               <span class="panel-icon">
                 <i class="fas fa-ellipsis-v" aria-hidden="true"></i>
               </span>

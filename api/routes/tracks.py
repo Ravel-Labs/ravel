@@ -146,7 +146,7 @@ def get_trackouts_by_track_id(id):
         abort(500, err)
 
 
-@tracks_bp.route('%s/process/<int:id>' % base_tracks_url, methods=['PUT'])
+@tracks_bp.route('%s/process/<id>' % base_tracks_url, methods=['PUT'])
 @jwt_required()
 def process_track(id):
     try:
@@ -159,7 +159,13 @@ def process_track(id):
                 return s
         # Track should contain user
         current_user = User.query.get(current_identity.id)
-        raw_track = Track.query.get(id)
+
+        # Search track by UUID
+        raw_track = Track.query.filter_by(uuid=id).first()
+        if not raw_track:   
+            abort(404, f'No trackout found for {id}')
+
+        app.logger.info(f'raw track for processing {raw_track}')
         raw_toggle_params = request.json.get('toggle_effects_params')
         toggle_effects_params = {key: str_to_bool(val) for key, val in raw_toggle_params.items()}
         # TODO check all values in toggle_effects_params to evaluate to true

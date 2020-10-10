@@ -205,11 +205,13 @@ export default {
   },
   methods: {
     submitFile() {
+      let t = this.trackout
       let formData = new FormData();
       formData.append("file", this.file);
 
       // set payloads up
       const trackPayload = {
+        // NB: track_id refers to the UUID
         track_id: this.$route.params.id,
         name: this.trackout.name,
         type: this.trackout.type
@@ -230,7 +232,7 @@ export default {
         .dispatch("tracks/createTrackoutWithoutWav", trackPayload)
         .then(data => {
           // reset trackout form data
-          this.trackout = { name: "", type: "" };
+          t = { name: "", type: "" };
 
           // try to upload trackout to recently created track
           this.$store
