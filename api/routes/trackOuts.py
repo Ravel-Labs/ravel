@@ -32,7 +32,10 @@ def create_trackout():
         type_of_track = request.json.get('type')
         name = request.json.get('name')
         settings = request.json.get('settings')
-        raw_track = Track.query.get(track_id)
+        raw_track = Track.query.filter_by(uuid=track_id).first()
+        if not raw_track:
+            abort(404, f"failed to find track {track_id}")
+
         if track_id:
             raw_trackouts = TrackOut.query.filter_by(track_id=track_id).all()
             trackouts_names = [rt.name for rt in raw_trackouts]
