@@ -31,14 +31,13 @@ def publish_to_file_store(path, file):
         raise Exception(f"Firebase Publish Error:{e}")
 
 
-def retreive_from_file_store(path, index=""):
+def retreive_from_file_store(path, uuid=""):
     try:
         firebase = pyrebase.initialize_app(firebaseConfig)
         storage = firebase.storage()
         # Download wav to disk
-        local_file_name = f"trackout_{index}.wav" if index else "trackout.wav"
+        local_file_name = f"{uuid}.wav" if uuid else "trackout.wav"
         file = storage.child(path).download(local_file_name)
-        app.logger.info(f"Firebase file: {file}")
         return file
     except Exception as e:
         raise Exception(f"Firebase Retrieve Error: {e}")
