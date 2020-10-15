@@ -95,39 +95,44 @@ class Orchestrator():
                 self.compress_trackouts()
             self.engage_trackout_effects()
             Q.join()
-            storage_name = f"{self.track.uuid}_results.wav"
+            storage_name = f"{self.track.uuid}.wav"
+            print(f"storage_name: {storage_name}")
+            print(f"self.processed_signals: {self.processed_signals}")
+            print(f"self.sample_rate: {self.sample_rate}")
 
             # every track has for settings for all of the equations
             mixer = Mixer(self.processed_signals, storage_name, self.sample_rate)
-            raise Exception("HAHAHA")
-            app.logger.info(f'processed signals')
             app.logger.info(self.processed_signals)
-
             mixed_result = mixer.mix()
-            app.logger.info(f'mixed_results')
             mixer.output_wav(mixed_result)
-            
             firestore_path = f"track/{self.track.uuid}/song/{self.track.uuid}.wav"
             download_url = publish_to_file_store(firestore_path, storage_name)
-            with open(storage_name, 'rb') as fin:
-                data = fin.read()
-            if not data:
-                app.logger.error(f'Error reading result file')
+
+            # This is to read the song in as a wav file to later attach to the email
+            # with open(storage_name, 'rb') as fin:
+            #     data = fin.read()
+            # if not data:
+            #     app.logger.error(f'Error reading result file')
+            
             # email_proxy(
             #     title="Audio Processing Complete",
             #     template_type="status",
             #     user_to_email_address=self.current_user.email,
             #     user_name=self.current_user.name,
             #     button_title="Processed Results",
-            #     button_link=download_url,
+            #     button_link=download_url)
+
+            # This line below is to attach a file to the email
             #     sound_file=data)
             # TODO this needs to happen on exception remove all trackouts stored on disk
-            remove(storage_name)
-            for file in self.files_to_remove:
-                remove(file)
-            for i, _ in enumerate(self.all_trackouts):
-                remove(f"trackout_{i+1}.wav")
-            return True
+
+            print(f"storage_name about to be removed: {storage_name}")
+            # remove(storage_name)
+            # for file in self.files_to_remove:
+            #     remove(file)
+            # for i, _ in enumerate(self.all_trackouts):
+            #     remove(f"trackout_{i+1}.wav")
+            # return True
         except Exception as err:
             remove(storage_name)
             for file in self.files_to_remove:
