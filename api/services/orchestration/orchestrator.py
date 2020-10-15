@@ -42,7 +42,7 @@ class Orchestrator():
     def compress_trackouts(self):
         """ Initiate Compress """
         try:
-            co_args = [self.all_trackouts]
+            co_args = [[trackout.uuid for trackout in self.all_trackouts]]
             processing_job = Job(self.compress_and_save, co_args)
             app.logger.info(f'processing job: {processing_job}')
             Q.put(processing_job) # currently cannot return
@@ -99,6 +99,7 @@ class Orchestrator():
 
             # every track has for settings for all of the equations
             mixer = Mixer(self.processed_signals, storage_name, self.sample_rate)
+            raise Exception("HAHAHA")
             app.logger.info(f'processed signals')
             app.logger.info(self.processed_signals)
 
@@ -112,14 +113,14 @@ class Orchestrator():
                 data = fin.read()
             if not data:
                 app.logger.error(f'Error reading result file')
-            email_proxy(
-                title="Audio Processing Complete",
-                template_type="status",
-                user_to_email_address=self.current_user.email,
-                user_name=self.current_user.name,
-                button_title="Processed Results",
-                button_link=download_url,
-                sound_file=data)
+            # email_proxy(
+            #     title="Audio Processing Complete",
+            #     template_type="status",
+            #     user_to_email_address=self.current_user.email,
+            #     user_name=self.current_user.name,
+            #     button_title="Processed Results",
+            #     button_link=download_url,
+            #     sound_file=data)
             # TODO this needs to happen on exception remove all trackouts stored on disk
             remove(storage_name)
             for file in self.files_to_remove:
@@ -136,23 +137,21 @@ class Orchestrator():
             app.logger.error(f"error in orchestration for trackID {self.track.id}:", err)
             raise Exception(f"Error occurred in orchestration:\n {err}")
 
-    def compress_and_save(self, all_trackouts):
+    def compress_and_save(self, all_trackouts_uuids):
         """
             Seperated method for effects that only needs to run once for all trackouts
         """
         try:
+
             effect_prefix = "co"
             self.compressed_result = self.processor.compress(self.stereo_signal_trackouts)
-            app.logger.info(f"compress_and_save: compressed results{len(self.compressed_result)}")
-            app.logger.info(f"compress_and_save: stereo_signal_trackouts{len(self.stereo_signal_trackouts)}")
-            app.logger.info(f"compress_and_save: all_trackouts{len(all_trackouts)}")
-            correlation = zip(all_trackouts, self.compressed_result)
-            for index, (raw_trackout, processed_result) in enumerate(correlation):
+            correlation = zip(all_trackouts_uuids, self.compressed_result)
+            for index, (raw_trackout_uuid, processed_result) in enumerate(correlation):
+                raw_trackout = TrackOut.query.filter_by(uuid=raw_trackout_uuid).first()
 
                 self.processed_signals.append(processed_result)
                 # TODO add a dict to keep track of each trackouts processed results
-                trackout_id = raw_trackout.id
-                track_uuid = raw_trackout.trackouts.uuid
+                track_uuid = raw_trackout.track_id
                 trackout_uuid = raw_trackout.uuid
                 storage_name = f"{trackout_uuid}.wav"
                 firestore_path = f"track/{track_uuid}/{effect_prefix}/{storage_name}"
@@ -179,7 +178,7 @@ class Orchestrator():
     def process_and_save(self, raw_trackout_id, effect, main_trackout, other_trackouts):
         # def reverb_and_save(main_trackout, other_trackouts, all_trackouts, de_params, raw_trackout):
         try:
-            raw_trackout = TrackOut.query.get(raw_trackout_id)
+            raw_trackout = TrackOut.query.filter_by(uuid=raw_trackout_uuid).first()
             print(f"raw_trackout {raw_trackout}")
             app.logger.info(f"process_and_save: {effect}")
             track_uuid = raw_trackout.trackouts.uuid
