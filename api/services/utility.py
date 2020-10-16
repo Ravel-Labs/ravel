@@ -38,10 +38,9 @@ def convert_to_mono_signal(all_trackouts, sample_rate):
         mono_signal_trackouts = []
         for index, trackout in enumerate(all_trackouts):
             # Fetch wavfile from firebase
-            i = str(index+1)
             path = trackout.path
             retreive_from_file_store(path, i)
-            trackout_mono_signal, sr = librosa.load(f"trackout_{i}.wav", sr=sample_rate)
+            trackout_mono_signal, sr = librosa.load(f"{trackout.uuid}.wav", sr=sample_rate)
             mono_signal_trackouts.append(trackout_mono_signal)
         app.logger.info(f"Mono trackouts length {len(mono_signal_trackouts)}#")
         return mono_signal_trackouts
@@ -57,15 +56,15 @@ def convert_to_stereo_signal(all_trackouts):
         seed_path = all_trackouts[0].path
         main_trackout_uuid = all_trackouts[0].uuid
         retreive_from_file_store(seed_path, main_trackout_uuid)
-        with wave.open(f"{main_trackout_uuid}.wav", "rb") as wave_file:
+        with wave.open(f"wav_tmp/{main_trackout_uuid}.wav", "rb") as wave_file:
             sample_rate = wave_file.getframerate()
-        trackout_stereo_signal, _ = librosa.load(f"{main_trackout_uuid}.wav", sr=sample_rate, mono=False)
+        trackout_stereo_signal, _ = librosa.load(f"wav_tmp/{main_trackout_uuid}.wav", sr=sample_rate, mono=False)
         stereo_signal_trackouts.append(trackout_stereo_signal)
         for index, trackout in enumerate(all_trackouts[1:], 1):   
             path = trackout.path
             trackout_uuid = trackout.uuid
             retreive_from_file_store(path, trackout_uuid)
-            trackout_stereo_signal, _ = librosa.load(f"{trackout_uuid}.wav", sr=sample_rate, mono=False)
+            trackout_stereo_signal, _ = librosa.load(f"wav_tmp/{trackout_uuid}.wav", sr=sample_rate, mono=False)
             stereo_signal_trackouts.append(trackout_stereo_signal)
         app.logger.info(f"Stereo trackouts length: {len(stereo_signal_trackouts)}")
         return stereo_signal_trackouts, sample_rate

@@ -6,7 +6,7 @@ from api.services.email.email import email_proxy
 from api.services.utility import create_trackout_exclusive_list, convert_to_stereo_signal
 from api import db, Q, Job
 from scipy.io.wavfile import write
-from os import remove
+from os import remove, listdir, path
 from ravellib.lib.effects import Mixer
 from flask import current_app as app
 
@@ -94,7 +94,7 @@ class Orchestrator():
                 self.compress_trackouts()
             self.engage_trackout_effects()
             Q.join()
-            storage_name = f"file_tmp/{self.track.uuid}.wav"
+            storage_name = f"wav_tmp/{self.track.uuid}.wav"
             print(f"storage_name: {storage_name}")
             print(f"self.processed_signals: {self.processed_signals}")
             print(f"self.sample_rate: {self.sample_rate}")
@@ -124,14 +124,15 @@ class Orchestrator():
             # This line below is to attach a file to the email
             #     sound_file=data)
 
-            # remove(storage_name)
+            all_wavfiles = listdir("wav_tmp")
+            for wav in all_wavfiles:
+                if wav.endswith(".wav"):
+                    remove(path.join("wav_tmp", wav))
         except Exception as err:
-            # remove(storage_name)
-            for file in self.files_to_remove:
-                print(f"file: {file}")
-                # remove(file)
-            for i, _ in enumerate(self.all_trackouts):
-                remove(f"trackout_{i+1}.wav")
+            all_wavfiles = listdir("wav_tmp")
+            for wav in all_wavfiles:
+                if wav.endswith(".wav"):
+                    remove(path.join("wav_tmp", wav))
             app.logger.error(f"error in orchestration for trackID {self.track.id}:", err)
             raise Exception(f"Error occurred in orchestration:\n {err}")
 
@@ -173,7 +174,7 @@ class Orchestrator():
             app.logger.error(f"error in compress_and_save for trackID {self.track.id}:", err)
             raise Exception(f"Error occurred in compress_and_save:\n {err}") 
 
-    def process_and_save(self, raw_trackout_id, effect, main_trackout, other_trackouts):
+    def process_and_save(self, raw_trackout_uuid, effect, main_trackout, other_trackouts):
         # def reverb_and_save(main_trackout, other_trackouts, all_trackouts, de_params, raw_trackout):
         try:
             raw_trackout = TrackOut.query.filter_by(uuid=raw_trackout_uuid).first()

@@ -37,7 +37,7 @@ def retreive_from_file_store(path, uuid=""):
         storage = firebase.storage()
         # Download wav to disk
         local_file_name = f"{uuid}.wav" if uuid else "trackout.wav"
-        file = storage.child(path).download(local_file_name)
+        file = storage.child(path).download(f"wav_tmp/{local_file_name}")
         return file
     except Exception as e:
         raise Exception(f"Firebase Retrieve Error: {e}")
