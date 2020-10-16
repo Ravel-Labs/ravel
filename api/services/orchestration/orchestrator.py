@@ -87,7 +87,6 @@ class Orchestrator():
 
     def orchestrate(self):
         try:
-            app.logger.info(f"Orchestrator.orchestrate()")
             self.stereo_signal_trackouts, self.sample_rate = convert_to_stereo_signal(self.all_trackouts)
             if self.sample_rate != 44100:
                 self.processor.sample_rate = self.sample_rate
@@ -95,7 +94,7 @@ class Orchestrator():
                 self.compress_trackouts()
             self.engage_trackout_effects()
             Q.join()
-            storage_name = f"{self.track.uuid}.wav"
+            storage_name = f"file_tmp/{self.track.uuid}.wav"
             print(f"storage_name: {storage_name}")
             print(f"self.processed_signals: {self.processed_signals}")
             print(f"self.sample_rate: {self.sample_rate}")
@@ -124,19 +123,13 @@ class Orchestrator():
 
             # This line below is to attach a file to the email
             #     sound_file=data)
-            # TODO this needs to happen on exception remove all trackouts stored on disk
 
-            print(f"storage_name about to be removed: {storage_name}")
             # remove(storage_name)
-            # for file in self.files_to_remove:
-            #     remove(file)
-            # for i, _ in enumerate(self.all_trackouts):
-            #     remove(f"trackout_{i+1}.wav")
-            # return True
         except Exception as err:
-            remove(storage_name)
+            # remove(storage_name)
             for file in self.files_to_remove:
-                remove(file)
+                print(f"file: {file}")
+                # remove(file)
             for i, _ in enumerate(self.all_trackouts):
                 remove(f"trackout_{i+1}.wav")
             app.logger.error(f"error in orchestration for trackID {self.track.id}:", err)
