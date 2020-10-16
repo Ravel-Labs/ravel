@@ -165,20 +165,18 @@ def update_trackout(id):
 @jwt_required()
 def add_update_wavfile(id):
     try:
-        print(f'hit file upload: ', request)
         raw_file = request.files['file']
         raw_trackout = TrackOut.query.get(id)
         if not raw_trackout:
             abort(404, f"There isn't a trackout id {id}")
-        trackout_name = raw_trackout.name
-        track_id = raw_trackout.trackouts.id
-        storage_name = f"{trackout_name}.wav"
-        firestore_path = f"track/{track_id}/trackouts/{storage_name}"
+        trackout_uuid = raw_trackout.uuid
+        track_uuid = raw_trackout.trackouts.uuid
+        storage_name = f"{trackout_uuid}.wav"
+        firestore_path = f"track/{track_uuid}/trackouts/{storage_name}"
         publish_to_file_store(firestore_path, raw_file)
         update_request = {
             "path": firestore_path
         }
-        print(f'add update wavfile id: {id}')
         db.session.query(TrackOut).filter_by(id=id).update(update_request)
         db.session.commit()
         payload = {
