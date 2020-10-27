@@ -106,25 +106,16 @@ class Orchestrator():
             mixer.output_wav(mixed_result)
             firestore_path = f"track/{self.track.uuid}/song/{self.track.uuid}.wav"
             download_url = publish_to_file_store(firestore_path, storage_name)
-
-            # This is to read the song in as a wav file to later attach to the email
-            # with open(storage_name, 'rb') as fin:
-            #     data = fin.read()
-            # if not data:
-            #     app.logger.error(f'Error reading result file')
             
-            # email_proxy(
-            #     title="Audio Processing Complete",
-            #     template_type="status",
-            #     user_to_email_address=self.current_user.email,
-            #     user_name=self.current_user.name,
-            #     button_title="Processed Results",
-            #     button_link=download_url)
+            email_proxy(
+                title="Audio Processing Complete",
+                template_type="status",
+                user_to_email_address=self.current_user.email,
+                user_name=self.current_user.name,
+                button_title="Processed Results",
+                button_link=download_url)
 
-            # This line below is to attach a file to the email
-            #     sound_file=data)
-
-            # remove(storage_name)
+            remove(storage_name)
         except Exception as err:
             # remove(storage_name)
             for file in self.files_to_remove:
