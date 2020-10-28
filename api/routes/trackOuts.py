@@ -41,7 +41,6 @@ def create_trackout():
             trackouts_names = [rt.name for rt in raw_trackouts]
             if name in trackouts_names:
                 abort(400, f"{name} is not a unique trackout name for this track")
-        print(f"raw track id: {raw_track.id}")
         raw_trackout = TrackOut(
             user_id=user_id,
             track_id=track_id,
