@@ -22,8 +22,8 @@ mail = Mail()
 def create_app():
     # Todo: Make this handle environment configs better
     app = Flask(__name__)
-    app.config['FLASK_ENV'] = environ.get('FLASK_ENV')
-    app.config["SECRET_KEY"] = "thisshouldbesetforproduction"
+    app.config["FLASK_ENV"] = environ.get("FLASK_ENV")
+    app.config["SECRET_KEY"] = environ.get("SECRET_KEY") 
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"  # url
     app.config["JWT_AUTH_URL_RULE"] = "/api/auth/login"
     app.config["JWT_SECRET_KEY"] = "thisshouldbesetforproduction"
@@ -47,7 +47,7 @@ def create_app():
     JWT(app, authentication_handler, identity_handler)
 
     # Setup Logging
-    handler = RotatingFileHandler('api.ravel.log', maxBytes=10000, backupCount=1)
+    handler = RotatingFileHandler(environ.get("LOG_FILE"), maxBytes=10000, backupCount=1)
     handler.setLevel(logging.INFO)
     app.logger.addHandler(handler)
     app.logger.info('logger created')
