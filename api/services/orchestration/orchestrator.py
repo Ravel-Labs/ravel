@@ -94,10 +94,7 @@ class Orchestrator():
                 self.compress_trackouts()
             self.engage_trackout_effects()
             Q.join()
-            storage_name = f"file_tmp/{self.track.uuid}.wav"
-            print(f"storage_name: {storage_name}")
-            print(f"self.processed_signals: {self.processed_signals}")
-            print(f"self.sample_rate: {self.sample_rate}")
+            storage_name = f"{self.track.uuid}.wav"
 
             # every track has for settings for all of the equations
             mixer = Mixer(self.processed_signals, storage_name, self.sample_rate)
@@ -118,11 +115,11 @@ class Orchestrator():
             remove(storage_name)
         except Exception as err:
             # remove(storage_name)
-            for file in self.files_to_remove:
-                print(f"file: {file}")
+            # for file in self.files_to_remove:
+            #     print(f"file: {file}")
                 # remove(file)
-            for i, _ in enumerate(self.all_trackouts):
-                remove(f"trackout_{i+1}.wav")
+            # for i, _ in enumerate(self.all_trackouts):
+            #     remove(f"trackout_{i+1}.wav")
             app.logger.error(f"error in orchestration for trackID {self.track.id}:", err)
             raise Exception(f"Error occurred in orchestration:\n {err}")
 
@@ -167,9 +164,7 @@ class Orchestrator():
     def process_and_save(self, raw_trackout_id, effect, main_trackout, other_trackouts):
         # def reverb_and_save(main_trackout, other_trackouts, all_trackouts, de_params, raw_trackout):
         try:
-            raw_trackout = TrackOut.query.filter_by(uuid=raw_trackout_uuid).first()
-            print(f"raw_trackout {raw_trackout}")
-            app.logger.info(f"process_and_save: {effect}")
+            raw_trackout = TrackOut.query.filter_by(id=raw_trackout_id).first()
             track_uuid = raw_trackout.trackouts.uuid
             trackout_uuid = raw_trackout.uuid
             storage_name = f"{trackout_uuid}.wav"
