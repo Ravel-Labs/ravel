@@ -10,7 +10,7 @@ base_users_url = '/api/users'
 
 
 @users_bp.route(base_users_url)
-#@jwt_required()
+@jwt_required()
 def get_users():
     try:
         raw_users = User.query.all()
@@ -24,7 +24,7 @@ def get_users():
 
 
 @users_bp.route('%s/<int:id>' % base_users_url)
-#@jwt_required()
+@jwt_required()
 def get_user_by_id(id):
     try:
         user = User.query.get(id)
@@ -37,7 +37,7 @@ def get_user_by_id(id):
 
 
 @users_bp.route('%s/<int:id>' % base_users_url, methods={'DELETE'})
-#@jwt_required()
+@jwt_required()
 def delete_user_by_id(id):
     try:
         if id is not 1:
@@ -59,7 +59,7 @@ def delete_user_by_id(id):
 
 
 @users_bp.route('%s/<int:id>' % base_users_url, methods=['PUT'])
-#@jwt_required()
+@jwt_required()
 def update_user(id):
     try:
         db.session.query(User).filter_by(id=id).update(request.json)

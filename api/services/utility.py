@@ -1,8 +1,10 @@
 from api.services.firestore import retreive_from_file_store, publish_to_file_store
 from flask import current_app as app
+from os import remove, listdir, path
 import librosa
 import re
 import wave
+
 
 def emailValidator(email):
     regex = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
@@ -80,3 +82,10 @@ def create_trackout_exclusive_list(all_trackouts, index):
     other_trackouts = \
         all_trackouts[:index] + all_trackouts[index+1:]
     return (main_trackout, other_trackouts)
+
+
+def clean_tmp():
+    all_wavfiles = listdir("wav_tmp")
+    for wav in all_wavfiles:
+        if wav.endswith(".wav"):
+            remove(path.join("wav_tmp", wav))

@@ -24,7 +24,7 @@ base_trackouts_url = '/api/trackouts'
 
 
 @trackouts_bp.route(f"{base_trackouts_url}", methods=['POST'])
-#@jwt_required()
+@jwt_required()
 def create_trackout():
     try:
         user_id = 1
@@ -66,7 +66,7 @@ def create_trackout():
 
 
 @trackouts_bp.route(base_trackouts_url, methods={'GET'})
-#@jwt_required()
+@jwt_required()
 def get_trackouts():
     try:
         track_id = request.args.get('track_id')
@@ -95,7 +95,7 @@ def get_trackouts():
     GET by ID
 '''
 @trackouts_bp.route('%s/<id>' % base_trackouts_url, methods={'GET'})
-#@jwt_required()
+@jwt_required()
 def get_trackout_by_id(uuid):
     try:
         raw_trackout = TrackOut.query.filter_by(uuid=uuid).first()
@@ -112,7 +112,7 @@ def get_trackout_by_id(uuid):
     DELETE
 '''
 @trackouts_bp.route('%s/<uuid>' % base_trackouts_url, methods={'DELETE'})
-#@jwt_required()
+@jwt_required()
 def delete_trackout_by_id(uuid):
     try:
         raw_trackout = TrackOut.query.filter_by(uuid=uuid).first()
@@ -138,7 +138,7 @@ def delete_trackout_by_id(uuid):
 
 
 @trackouts_bp.route('%s/<uuid>' % base_trackouts_url, methods=['PUT'])
-#@jwt_required()
+@jwt_required()
 def update_trackout(uuid):
     try:
         # TODO republish a process for a newly updated wavfile
@@ -162,7 +162,7 @@ def update_trackout(uuid):
 
 
 @trackouts_bp.route('%s/wav/<uuid>' % base_trackouts_url, methods=['PUT'])
-#@jwt_required()
+@jwt_required()
 def add_update_wavfile(uuid):
     try:
         raw_file = request.files['file']
@@ -193,7 +193,7 @@ def add_update_wavfile(uuid):
 
 
 @trackouts_bp.route('%s/wav/<uuid>' % base_trackouts_url, methods=['GET'])
-#@jwt_required()
+@jwt_required()
 def get_wav_from_trackout(uuid):
     try:
         # Get wav path from TrackOut then call firebase service
@@ -221,7 +221,7 @@ def get_wav_from_trackout(uuid):
 
 
 @trackouts_bp.route('%s/eq/<uuid>' % base_trackouts_url, methods=['GET'])
-#@jwt_required()
+@jwt_required()
 def get_eq_from_trackout(uuid):
     try:
         # Get wav path from TrackOut then call firebase service
@@ -249,7 +249,7 @@ def get_eq_from_trackout(uuid):
 
 
 @trackouts_bp.route('%s/co/<uuid>' % base_trackouts_url, methods=['GET'])
-#@jwt_required()
+@jwt_required()
 def get_co_from_trackout(uuid):
     try:
         # Get wav path from TrackOut then call firebase service
@@ -278,7 +278,7 @@ def get_co_from_trackout(uuid):
 
 
 @trackouts_bp.route('%s/de/<uuid>' % base_trackouts_url, methods=['GET'])
-#@jwt_required()
+@jwt_required()
 def get_de_from_trackout(uuid):
     try:
         # Get wav path from TrackOut then call firebase service
@@ -307,7 +307,7 @@ def get_de_from_trackout(uuid):
 
 # // TODO maybe turn all of the effect gets into one method and request.body for specific details
 @trackouts_bp.route('%s/re/<uuid>' % base_trackouts_url, methods=['GET'])
-#@jwt_required()
+@jwt_required()
 def get_re_from_trackout(uuid):
     try:
         # Get wav path from TrackOut then call firebase service

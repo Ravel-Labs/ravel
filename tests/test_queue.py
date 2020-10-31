@@ -1,5 +1,5 @@
 import unittest
-from ravel.api.queueWorker import Job, worker
+from api.queueWorker import Job, worker
 
 class TestQueue(unittest.TestCase):
 

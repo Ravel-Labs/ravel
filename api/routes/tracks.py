@@ -21,7 +21,7 @@ base_tracks_url = '/api/tracks'
 
 
 @tracks_bp.route(base_tracks_url, methods=['POST'])
-#@jwt_required()
+@jwt_required()
 def create_track():
     try:
         user_id = 1
@@ -53,7 +53,7 @@ def create_track():
     tracks that belong to the currently logged in user
 '''
 @tracks_bp.route(base_tracks_url, methods={'GET'})
-#@jwt_required()
+@jwt_required()
 def get_tracks():
     try:
         user_id = 1
@@ -78,7 +78,7 @@ def get_tracks():
 
 
 @tracks_bp.route('%s/<int:id>' % base_tracks_url, methods={'GET'})
-#@jwt_required()
+@jwt_required()
 def get_track_by_id(id):
     try:
         raw_track = Track.query.get(id)
@@ -92,7 +92,7 @@ def get_track_by_id(id):
 
 
 @tracks_bp.route('%s/delete/<int:id>' % base_tracks_url, methods={'DELETE'})
-#@jwt_required()
+@jwt_required()
 def delete_track_by_id(id):
     try:
         raw_track = Track.query.get(id)
@@ -113,7 +113,7 @@ def delete_track_by_id(id):
 
 
 @tracks_bp.route('%s/<int:id>' % base_tracks_url, methods=['PUT'])
-#@jwt_required()
+@jwt_required()
 def update_track(id):
     try:
         # TODO Effected by an updated trackout
@@ -131,7 +131,7 @@ def update_track(id):
 
 
 @tracks_bp.route(f'{base_tracks_url}/trackouts/<int:id>', methods={'GET'})
-#@jwt_required()
+@jwt_required()
 def get_trackouts_by_track_id(id):
     try:
         raw_tracks = Track.query.get(id)
@@ -147,7 +147,7 @@ def get_trackouts_by_track_id(id):
 
 
 @tracks_bp.route('%s/process/<id>' % base_tracks_url, methods=['PUT'])
-# #@jwt_required()
+# @jwt_required()
 def process_track(id):
     try:
         def str_to_bool(s):
@@ -175,11 +175,11 @@ def process_track(id):
             abort(404, f"There aren't any trackouts for track {id}")
 
         # Dispatch email processing progress, managed by queueWorker
-        # email_proxy(
-        #     title="Initiating Processing",
-        #     template_type="status",
-        #     user_to_email_address=current_user.email,
-        #     user_name=current_user.name)
+        email_proxy(
+            title="Initiating Processing",
+            template_type="status",
+            user_to_email_address=current_user.email,
+            user_name=current_user.name)
 
         # extract trackout data from track
         raw_trackouts = raw_track.trackouts.all()

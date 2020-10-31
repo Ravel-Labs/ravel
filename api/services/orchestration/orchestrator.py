@@ -3,12 +3,12 @@ from api.services.effects import reverb, equalizer, compressor, deesser
 from api.models.track_models import Equalizer, Deesser, Compressor, Reverb, TrackOut
 from api.services.orchestration.processing import Processor
 from api.services.email.email import email_proxy
-from api.services.utility import create_trackout_exclusive_list, convert_to_stereo_signal
+from api.services.utility import clean_tmp, create_trackout_exclusive_list, convert_to_stereo_signal
 from api import db, Q, Job
 from scipy.io.wavfile import write
-from os import remove, listdir, path
 from ravellib.lib.effects import Mixer
 from flask import current_app as app
+
 
 class Orchestrator():
     """
@@ -49,7 +49,6 @@ class Orchestrator():
             app.logger.error(f"error in process_and_save for trackID {self.track.id}:", err)
             raise Exception(f"Error occurred in process_and_save:\n {err}")
 
-
     def engage_trackout_effects(self):
         try:
             for i, raw_trackout in enumerate(self.all_trackouts):
@@ -86,10 +85,7 @@ class Orchestrator():
 
     def orchestrate(self):
         try:
-            all_wavfiles = listdir("wav_tmp")
-            for wav in all_wavfiles:
-                if wav.endswith(".wav"):
-                    remove(path.join("wav_tmp", wav))
+            clean_tmp()
             self.stereo_signal_trackouts, self.sample_rate = convert_to_stereo_signal(self.all_trackouts)
             if self.sample_rate != 44100:
                 self.processor.sample_rate = self.sample_rate
@@ -98,9 +94,6 @@ class Orchestrator():
             self.engage_trackout_effects()
             Q.join()
             storage_name = f"wav_tmp/{self.track.uuid}.wav"
-            print(f"storage_name: {storage_name}")
-            print(f"self.processed_signals: {self.processed_signals}")
-            print(f"self.sample_rate: {self.sample_rate}")
 
             # every track has for settings for all of the equations
             mixer = Mixer(self.processed_signals, storage_name, self.sample_rate)
@@ -116,26 +109,19 @@ class Orchestrator():
             # if not data:
             #     app.logger.error(f'Error reading result file')
             
-            # email_proxy(
-            #     title="Audio Processing Complete",
-            #     template_type="status",
-            #     user_to_email_address=self.current_user.email,
-            #     user_name=self.current_user.name,
-            #     button_title="Processed Results",
-            #     button_link=download_url)
+            email_proxy(
+                title="Audio Processing Complete",
+                template_type="status",
+                user_to_email_address=self.current_user.email,
+                user_name=self.current_user.name,
+                button_title="Processed Results",
+                button_link=download_url)
 
             # This line below is to attach a file to the email
             #     sound_file=data)
-            # TODO move this to utility
-            all_wavfiles = listdir("wav_tmp")
-            for wav in all_wavfiles:
-                if wav.endswith(".wav"):
-                    remove(path.join("wav_tmp", wav))
+            clean_tmp()
         except Exception as err:
-            all_wavfiles = listdir("wav_tmp")
-            for wav in all_wavfiles:
-                if wav.endswith(".wav"):
-                    remove(path.join("wav_tmp", wav))
+            clean_tmp()
             app.logger.error(f"error in orchestration for trackID {self.track.id}:", err)
             raise Exception(f"Error occurred in orchestration:\n {err}")
 
@@ -160,7 +146,6 @@ class Orchestrator():
                 write(f"wav_tmp/{effect_prefix}_{storage_name}", self.sample_rate, processed_result)
                 # publish_to_file_store and remove
                 publish_to_file_store(firestore_path, f"wav_tmp/{effect_prefix}_{storage_name}")
-                # remove(storage_name)
                 db_model = Compressor(
                     ratio=self.co_params["ratio"],
                     threshold=self.co_params["threshold"],
@@ -178,7 +163,6 @@ class Orchestrator():
             raise Exception(f"Error occurred in compress_and_save:\n {err}") 
 
     def process_and_save(self, raw_trackout_uuid, effect, main_trackout, other_trackouts):
-        # def reverb_and_save(main_trackout, other_trackouts, all_trackouts, de_params, raw_trackout):
         try:
             print(f"UUID {raw_trackout_uuid}")
             raw_trackout = TrackOut.query.filter_by(uuid=raw_trackout_uuid).first()
