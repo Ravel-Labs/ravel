@@ -102,12 +102,6 @@ class Orchestrator():
             mixer.output_wav(mixed_result)
             firestore_path = f"track/{self.track.uuid}/song/{self.track.uuid}.wav"
             download_url = publish_to_file_store(firestore_path, storage_name)
-
-            # This is to read the song in as a wav file to later attach to the email
-            # with open(storage_name, 'rb') as fin:
-            #     data = fin.read()
-            # if not data:
-            #     app.logger.error(f'Error reading result file')
             
             email_proxy(
                 title="Audio Processing Complete",
@@ -164,9 +158,7 @@ class Orchestrator():
 
     def process_and_save(self, raw_trackout_uuid, effect, main_trackout, other_trackouts):
         try:
-            print(f"UUID {raw_trackout_uuid}")
             raw_trackout = TrackOut.query.filter_by(uuid=raw_trackout_uuid).first()
-            print(f"raw_trackout {raw_trackout}")
             app.logger.info(f"process_and_save: {effect}")
             track_uuid = raw_trackout.trackouts.uuid
             trackout_uuid = raw_trackout.uuid
