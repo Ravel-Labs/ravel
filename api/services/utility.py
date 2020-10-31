@@ -40,7 +40,7 @@ def convert_to_mono_signal(all_trackouts, sample_rate):
             # Fetch wavfile from firebase
             path = trackout.path
             retreive_from_file_store(path, i)
-            trackout_mono_signal, sr = librosa.load(f"{trackout.uuid}.wav", sr=sample_rate)
+            trackout_mono_signal, sr = librosa.load(f"wav_tmp/{trackout.uuid}.wav", sr=sample_rate)
             mono_signal_trackouts.append(trackout_mono_signal)
         app.logger.info(f"Mono trackouts length {len(mono_signal_trackouts)}#")
         return mono_signal_trackouts

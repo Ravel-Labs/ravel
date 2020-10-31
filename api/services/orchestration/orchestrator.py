@@ -22,7 +22,6 @@ class Orchestrator():
         """
         self.track = track
         self.current_user = current_user
-        self.files_to_remove = list()
         self.processed_signals = list()
         self.toggle_effects_params = toggle_effects_params
         num_signals = len(all_trackouts)
@@ -56,7 +55,7 @@ class Orchestrator():
             for i, raw_trackout in enumerate(self.all_trackouts):
                 main_trackout, other_trackouts = create_trackout_exclusive_list(self.stereo_signal_trackouts, i)
                 # setup queue parameters and process
-                base_processing_args = [raw_trackout.id]
+                base_processing_args = [raw_trackout.uuid]
                 
                 """Initiate Equalize"""
                 if self.toggle_effects_params.get('eq'):
@@ -87,6 +86,10 @@ class Orchestrator():
 
     def orchestrate(self):
         try:
+            all_wavfiles = listdir("wav_tmp")
+            for wav in all_wavfiles:
+                if wav.endswith(".wav"):
+                    remove(path.join("wav_tmp", wav))
             self.stereo_signal_trackouts, self.sample_rate = convert_to_stereo_signal(self.all_trackouts)
             if self.sample_rate != 44100:
                 self.processor.sample_rate = self.sample_rate
@@ -123,7 +126,7 @@ class Orchestrator():
 
             # This line below is to attach a file to the email
             #     sound_file=data)
-
+            # TODO move this to utility
             all_wavfiles = listdir("wav_tmp")
             for wav in all_wavfiles:
                 if wav.endswith(".wav"):
@@ -154,10 +157,10 @@ class Orchestrator():
                 trackout_uuid = raw_trackout.uuid
                 storage_name = f"{trackout_uuid}.wav"
                 firestore_path = f"track/{track_uuid}/{effect_prefix}/{storage_name}"
-                write(storage_name, self.sample_rate, processed_result)
+                write(f"wav_tmp/{effect_prefix}_{storage_name}", self.sample_rate, processed_result)
                 # publish_to_file_store and remove
-                publish_to_file_store(firestore_path, storage_name)
-                remove(storage_name)
+                publish_to_file_store(firestore_path, f"wav_tmp/{effect_prefix}_{storage_name}")
+                # remove(storage_name)
                 db_model = Compressor(
                     ratio=self.co_params["ratio"],
                     threshold=self.co_params["threshold"],
@@ -177,6 +180,7 @@ class Orchestrator():
     def process_and_save(self, raw_trackout_uuid, effect, main_trackout, other_trackouts):
         # def reverb_and_save(main_trackout, other_trackouts, all_trackouts, de_params, raw_trackout):
         try:
+            print(f"UUID {raw_trackout_uuid}")
             raw_trackout = TrackOut.query.filter_by(uuid=raw_trackout_uuid).first()
             print(f"raw_trackout {raw_trackout}")
             app.logger.info(f"process_and_save: {effect}")
@@ -201,7 +205,6 @@ class Orchestrator():
                     path=firestore_path,
                     de=raw_trackout  # Relationship with raw_trackout
                 )
-            #TODO test subject
             elif effect == "equalize":
                 effect_prefix = "eq"
                 firestore_path = f"track/{track_uuid}/{effect_prefix}/{storage_name}"
@@ -216,15 +219,14 @@ class Orchestrator():
             else:
                 app.logger.info(f"This effect function does not exist")
 
-            write(storage_name, self.sample_rate, processed_result)
+            write(f"wav_tmp/{effect_prefix}_{storage_name}", self.sample_rate, processed_result)
             print(f"Completed processing {effect}: {bool(processed_result.any())}")
             app.logger.info(f'completed processing for {effect}')
             app.logger.info(f'processed result:  {bool(processed_result.any())}')
             # publish_to_file_store and remove
-            publish_to_file_store(firestore_path, storage_name)
+            publish_to_file_store(firestore_path, f"wav_tmp/{effect_prefix}_{storage_name}")
             if bool(processed_result.any()):
                 self.processed_signals.append(processed_result)
-            self.files_to_remove.append(storage_name)
             # save effect results to database
             local_object = db.session.merge(db_model)
             db.session.add(local_object)
