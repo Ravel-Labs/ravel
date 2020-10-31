@@ -40,7 +40,7 @@ def get_user_by_id(id):
 @jwt_required()
 def delete_user_by_id(id):
     try:
-        if id is not 1:
+        if id is not current_identity.id:
             abort(401, "Not authorized")
         user = User.query.get(id)
         if not user:

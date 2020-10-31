@@ -24,7 +24,7 @@ base_tracks_url = '/api/tracks'
 @jwt_required()
 def create_track():
     try:
-        user_id = 1
+        user_id = current_identity.id
         name = request.json.get('name')
         artist = request.json.get('artist')
         info = request.json.get('info')
@@ -56,7 +56,7 @@ def create_track():
 @jwt_required()
 def get_tracks():
     try:
-        user_id = 1
+        user_id = current_identity.id
         raw_tracks = Track.query.filter_by(user_id=user_id).all()
         if not raw_tracks:
             # handle empty raw tracks list
@@ -147,7 +147,7 @@ def get_trackouts_by_track_id(id):
 
 
 @tracks_bp.route('%s/process/<id>' % base_tracks_url, methods=['PUT'])
-# @jwt_required()
+@jwt_required()
 def process_track(id):
     try:
         def str_to_bool(s):
@@ -158,7 +158,7 @@ def process_track(id):
             else:
                 return s
         # Track should contain user
-        current_user = User.query.get(1)
+        current_user = User.query.get(current_identity.id)
 
         # Search track by UUID
         raw_track = Track.query.filter_by(uuid=id).first()

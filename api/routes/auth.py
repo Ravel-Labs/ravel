@@ -74,7 +74,7 @@ def check():
 @auth_bp.route('%s/profile' % base_auth_url)
 @jwt_required()
 def profile():
-    user = User.query.filter_by(id=1).first()
+    user = User.query.filter_by(id=current_identity.id).first()
     if user is None:
         return abort(404, "User not found")
     u = user.to_dict()

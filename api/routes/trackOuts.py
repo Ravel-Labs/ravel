@@ -27,7 +27,7 @@ base_trackouts_url = '/api/trackouts'
 @jwt_required()
 def create_trackout():
     try:
-        user_id = 1
+        user_id = current_identity.id
         track_id = request.json.get('track_id')
         type_of_track = request.json.get('type')
         name = request.json.get('name')
@@ -142,7 +142,7 @@ def delete_trackout_by_id(uuid):
 def update_trackout(uuid):
     try:
         # TODO republish a process for a newly updated wavfile
-        user_id = 1
+        user_id = current_identity.id
         raw_user = db.session.query(User).get(id=user_id)
         user = raw_user.to_dict()
         if not user:
