@@ -246,16 +246,6 @@ const tracks = {
           return err
         }
       },
-
-      // async getWavefile ({ commit }, trackID) {
-      //   try {
-      //    let { data } = await API().get(`/tracks/wav/${trackID}`)
-      //    return data
-      //   } catch (err) {
-      //     console.log('error getting wavefile: ', err) 
-      //     return err
-      //   }
-      // },
       async createTrackoutWithoutWav ({ commit }, trackout) {
         try {
           let payload = {
