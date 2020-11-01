@@ -407,14 +407,6 @@ class Mixer:
         return output.astype(np.float32)
 
     def output_wav(self, mixed_file): 
-        print("output_wav")
-        print(self.output_path)
-        print("self.sr")
-        print(self.sr)
-        print("type(mixed_file)")
-        print(type(mixed_file))
-        print(mixed_file)
-
         write(self.output_path, self.sr, mixed_file)
 
 

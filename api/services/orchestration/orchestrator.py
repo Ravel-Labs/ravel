@@ -3,12 +3,12 @@ from api.services.effects import reverb, equalizer, compressor, deesser
 from api.models.track_models import Equalizer, Deesser, Compressor, Reverb, TrackOut
 from api.services.orchestration.processing import Processor
 from api.services.email.email import email_proxy
-from api.services.utility import create_trackout_exclusive_list, convert_to_stereo_signal
+from api.services.utility import clean_tmp, create_trackout_exclusive_list, convert_to_stereo_signal
 from api import db, Q, Job
 from scipy.io.wavfile import write
-from os import remove
 from ravellib.lib.effects import Mixer
 from flask import current_app as app
+
 
 class Orchestrator():
     """
@@ -22,7 +22,6 @@ class Orchestrator():
         """
         self.track = track
         self.current_user = current_user
-        self.files_to_remove = list()
         self.processed_signals = list()
         self.toggle_effects_params = toggle_effects_params
         num_signals = len(all_trackouts)
@@ -50,13 +49,12 @@ class Orchestrator():
             app.logger.error(f"error in process_and_save for trackID {self.track.id}:", err)
             raise Exception(f"Error occurred in process_and_save:\n {err}")
 
-
     def engage_trackout_effects(self):
         try:
             for i, raw_trackout in enumerate(self.all_trackouts):
                 main_trackout, other_trackouts = create_trackout_exclusive_list(self.stereo_signal_trackouts, i)
                 # setup queue parameters and process
-                base_processing_args = [raw_trackout.id]
+                base_processing_args = [raw_trackout.uuid]
                 
                 """Initiate Equalize"""
                 if self.toggle_effects_params.get('eq'):
@@ -87,6 +85,7 @@ class Orchestrator():
 
     def orchestrate(self):
         try:
+            clean_tmp()
             self.stereo_signal_trackouts, self.sample_rate = convert_to_stereo_signal(self.all_trackouts)
             if self.sample_rate != 44100:
                 self.processor.sample_rate = self.sample_rate
@@ -94,7 +93,7 @@ class Orchestrator():
                 self.compress_trackouts()
             self.engage_trackout_effects()
             Q.join()
-            storage_name = f"{self.track.uuid}.wav"
+            storage_name = f"wav_tmp/{self.track.uuid}.wav"
 
             # every track has for settings for all of the equations
             mixer = Mixer(self.processed_signals, storage_name, self.sample_rate)
@@ -112,14 +111,11 @@ class Orchestrator():
                 button_title="Processed Results",
                 button_link=download_url)
 
-            remove(storage_name)
+            # This line below is to attach a file to the email
+            #     sound_file=data)
+            clean_tmp()
         except Exception as err:
-            # remove(storage_name)
-            # for file in self.files_to_remove:
-            #     print(f"file: {file}")
-                # remove(file)
-            # for i, _ in enumerate(self.all_trackouts):
-            #     remove(f"trackout_{i+1}.wav")
+            clean_tmp()
             app.logger.error(f"error in orchestration for trackID {self.track.id}:", err)
             raise Exception(f"Error occurred in orchestration:\n {err}")
 
@@ -141,10 +137,9 @@ class Orchestrator():
                 trackout_uuid = raw_trackout.uuid
                 storage_name = f"{trackout_uuid}.wav"
                 firestore_path = f"track/{track_uuid}/{effect_prefix}/{storage_name}"
-                write(storage_name, self.sample_rate, processed_result)
+                write(f"wav_tmp/{effect_prefix}_{storage_name}", self.sample_rate, processed_result)
                 # publish_to_file_store and remove
-                publish_to_file_store(firestore_path, storage_name)
-                remove(storage_name)
+                publish_to_file_store(firestore_path, f"wav_tmp/{effect_prefix}_{storage_name}")
                 db_model = Compressor(
                     ratio=self.co_params["ratio"],
                     threshold=self.co_params["threshold"],
@@ -161,10 +156,10 @@ class Orchestrator():
             app.logger.error(f"error in compress_and_save for trackID {self.track.id}:", err)
             raise Exception(f"Error occurred in compress_and_save:\n {err}") 
 
-    def process_and_save(self, raw_trackout_id, effect, main_trackout, other_trackouts):
-        # def reverb_and_save(main_trackout, other_trackouts, all_trackouts, de_params, raw_trackout):
+    def process_and_save(self, raw_trackout_uuid, effect, main_trackout, other_trackouts):
         try:
-            raw_trackout = TrackOut.query.filter_by(id=raw_trackout_id).first()
+            raw_trackout = TrackOut.query.filter_by(uuid=raw_trackout_uuid).first()
+            app.logger.info(f"process_and_save: {effect}")
             track_uuid = raw_trackout.trackouts.uuid
             trackout_uuid = raw_trackout.uuid
             storage_name = f"{trackout_uuid}.wav"
@@ -186,7 +181,6 @@ class Orchestrator():
                     path=firestore_path,
                     de=raw_trackout  # Relationship with raw_trackout
                 )
-            #TODO test subject
             elif effect == "equalize":
                 effect_prefix = "eq"
                 firestore_path = f"track/{track_uuid}/{effect_prefix}/{storage_name}"
@@ -201,15 +195,14 @@ class Orchestrator():
             else:
                 app.logger.info(f"This effect function does not exist")
 
-            write(storage_name, self.sample_rate, processed_result)
+            write(f"wav_tmp/{effect_prefix}_{storage_name}", self.sample_rate, processed_result)
             print(f"Completed processing {effect}: {bool(processed_result.any())}")
             app.logger.info(f'completed processing for {effect}')
             app.logger.info(f'processed result:  {bool(processed_result.any())}')
             # publish_to_file_store and remove
-            publish_to_file_store(firestore_path, storage_name)
+            publish_to_file_store(firestore_path, f"wav_tmp/{effect_prefix}_{storage_name}")
             if bool(processed_result.any()):
                 self.processed_signals.append(processed_result)
-            self.files_to_remove.append(storage_name)
             # save effect results to database
             local_object = db.session.merge(db_model)
             db.session.add(local_object)

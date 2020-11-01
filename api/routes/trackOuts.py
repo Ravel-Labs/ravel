@@ -93,13 +93,13 @@ def get_trackouts():
 '''
     GET by ID
 '''
-@trackouts_bp.route('%s/<int:id>' % base_trackouts_url, methods={'GET'})
+@trackouts_bp.route('%s/<id>' % base_trackouts_url, methods={'GET'})
 @jwt_required()
-def get_trackout_by_id(id):
+def get_trackout_by_id(uuid):
     try:
-        raw_trackout = TrackOut.query.get(id)
+        raw_trackout = TrackOut.query.filter_by(uuid=uuid).first()
         if not raw_trackout:
-            abort(400, "A trackout with id %s does not exist" % id)
+            abort(400, "A trackout with id %s does not exist" % uuid)
         trackout = raw_trackout.to_dict()
         response = APIResponse(trackout, 200).response
         return response
@@ -110,19 +110,19 @@ def get_trackout_by_id(id):
 '''
     DELETE
 '''
-@trackouts_bp.route('%s/<int:id>' % base_trackouts_url, methods={'DELETE'})
+@trackouts_bp.route('%s/<uuid>' % base_trackouts_url, methods={'DELETE'})
 @jwt_required()
-def delete_trackout_by_id(id):
+def delete_trackout_by_id(uuid):
     try:
-        raw_trackout = TrackOut.query.get(id)
+        raw_trackout = TrackOut.query.filter_by(uuid=uuid).first()
         if not raw_trackout:
-            abort(404, "A trackout with id %s does not exist" % id)
+            abort(404, "A trackout with id %s does not exist" % uuid)
         db.session.delete(raw_trackout)
         db.session.commit()
         payload = {
             "action": "delete",
             "table": "trackouts",
-            "id": id
+            "id": uuid
         }
         response = APIResponse(payload, 200).response
         return response
@@ -136,9 +136,9 @@ def delete_trackout_by_id(id):
 '''
 
 
-@trackouts_bp.route('%s/<int:id>' % base_trackouts_url, methods=['PUT'])
+@trackouts_bp.route('%s/<uuid>' % base_trackouts_url, methods=['PUT'])
 @jwt_required()
-def update_trackout(id):
+def update_trackout(uuid):
     try:
         # TODO republish a process for a newly updated wavfile
         user_id = current_identity.id
@@ -147,12 +147,12 @@ def update_trackout(id):
         if not user:
             abort(400, f"A User with this id {user_id} does not exist")
 
-        db.session.query(TrackOut).filter_by(id=id).update(request.json)
+        db.session.query(TrackOut).filter_by(uuid=uuid).update(request.json)
         db.session.commit()
         payload = {
             "action": "update",
             "table": "trackouts",
-            "id": id
+            "id": uuid
         }
         response = APIResponse(payload, 200).response
         return response
@@ -160,14 +160,15 @@ def update_trackout(id):
         abort(500, e)
 
 
-@trackouts_bp.route('%s/wav/<int:id>' % base_trackouts_url, methods=['PUT'])
+@trackouts_bp.route('%s/wav/<uuid>' % base_trackouts_url, methods=['PUT'])
 @jwt_required()
-def add_update_wavfile(id):
+def add_update_wavfile(uuid):
     try:
         raw_file = request.files['file']
-        raw_trackout = TrackOut.query.get(id)
+
+        raw_trackout = TrackOut.query.filter_by(uuid=uuid).first()
         if not raw_trackout:
-            abort(404, f"There isn't a trackout id {id}")
+            abort(404, f"There isn't a trackout id {uuid}")
         trackout_uuid = raw_trackout.uuid
         track_uuid = raw_trackout.trackouts.uuid
         storage_name = f"{trackout_uuid}.wav"
@@ -176,12 +177,12 @@ def add_update_wavfile(id):
         update_request = {
             "path": firestore_path
         }
-        db.session.query(TrackOut).filter_by(id=id).update(update_request)
+        db.session.query(TrackOut).filter_by(uuid=uuid).update(update_request)
         db.session.commit()
         payload = {
             "action": "update",
             "table": "trackout",
-            "id": id
+            "id": uuid
         }
         response = APIResponse(payload, 200).response
         return response
@@ -190,14 +191,14 @@ def add_update_wavfile(id):
         abort(500, err)
 
 
-@trackouts_bp.route('%s/wav/<int:id>' % base_trackouts_url, methods=['GET'])
+@trackouts_bp.route('%s/wav/<uuid>' % base_trackouts_url, methods=['GET'])
 @jwt_required()
-def get_wav_from_trackout(id):
+def get_wav_from_trackout(uuid):
     try:
         # Get wav path from TrackOut then call firebase service
-        raw_trackout = TrackOut.query.get(id)
+        raw_trackout = TrackOut.query.filter_by(uuid=uuid).first()
         if not raw_trackout:
-            abort(404, f"Trackout {id} not found")
+            abort(404, f"Trackout {uuid} not found")
         file_name = f"{raw_trackout.name}.wav"
         firestore_path = raw_trackout.path
         retreive_from_file_store(firestore_path)
@@ -218,14 +219,14 @@ def get_wav_from_trackout(id):
         abort(500, e)
 
 
-@trackouts_bp.route('%s/eq/<int:id>' % base_trackouts_url, methods=['GET'])
+@trackouts_bp.route('%s/eq/<uuid>' % base_trackouts_url, methods=['GET'])
 @jwt_required()
-def get_eq_from_trackout(id):
+def get_eq_from_trackout(uuid):
     try:
         # Get wav path from TrackOut then call firebase service
-        raw_trackout = TrackOut.query.get(id)
+        raw_trackout = TrackOut.query.filter_by(uuid=uuid).first()
         if not raw_trackout:
-            abort(404, f"Trackout {id} not found")
+            abort(404, f"Trackout {uuid} not found")
         eq = raw_trackout.eq
         firestore_path = eq.path
         file_name = f"eq_results.wav"
@@ -246,14 +247,15 @@ def get_eq_from_trackout(id):
         abort(500, e)
 
 
-@trackouts_bp.route('%s/co/<int:id>' % base_trackouts_url, methods=['GET'])
+@trackouts_bp.route('%s/co/<uuid>' % base_trackouts_url, methods=['GET'])
 @jwt_required()
-def get_co_from_trackout(id):
+def get_co_from_trackout(uuid):
     try:
         # Get wav path from TrackOut then call firebase service
-        raw_trackout = TrackOut.query.get(id)
+        raw_trackout = TrackOut.query.filter_by(uuid=uuid).first()
+
         if not raw_trackout:
-            abort(404, f"Trackout {id} not found")
+            abort(404, f"Trackout {uuid} not found")
         co = raw_trackout.co
         firestore_path = co.path
         file_name = f"co_results.wav"
@@ -274,14 +276,14 @@ def get_co_from_trackout(id):
         abort(500, e)
 
 
-@trackouts_bp.route('%s/de/<int:id>' % base_trackouts_url, methods=['GET'])
+@trackouts_bp.route('%s/de/<uuid>' % base_trackouts_url, methods=['GET'])
 @jwt_required()
-def get_de_from_trackout(id):
+def get_de_from_trackout(uuid):
     try:
         # Get wav path from TrackOut then call firebase service
-        raw_trackout = TrackOut.query.get(id)
+        raw_trackout = TrackOut.query.filter_by(uuid=uuid).first()
         if not raw_trackout:
-            abort(404, f"Trackout {id} not found")
+            abort(404, f"Trackout {uuid} not found")
         de = raw_trackout.de
         firestore_path = de.path
         file_name = f"de_results.wav"
@@ -303,14 +305,14 @@ def get_de_from_trackout(id):
 
 
 # // TODO maybe turn all of the effect gets into one method and request.body for specific details
-@trackouts_bp.route('%s/re/<int:id>' % base_trackouts_url, methods=['GET'])
+@trackouts_bp.route('%s/re/<uuid>' % base_trackouts_url, methods=['GET'])
 @jwt_required()
-def get_re_from_trackout(id):
+def get_re_from_trackout(uuid):
     try:
         # Get wav path from TrackOut then call firebase service
-        raw_trackout = TrackOut.query.get(id)
+        raw_trackout = TrackOut.query.filter_by(uuid=uuid).first()
         if not raw_trackout:
-            abort(404, f"Trackout {id} not found")
+            abort(404, f"Trackout {uuid} not found")
         re = raw_trackout.re
         firestore_path = re.path
         print(firestore_path)

@@ -237,7 +237,7 @@ export default {
           // try to upload trackout to recently created track
           this.$store
             .dispatch("tracks/updateTrackoutWithWav", {
-              id: data.payload.id,
+              uuid: data.payload.uuid,
               formData: formData
             })
             .then(data => {

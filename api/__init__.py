@@ -9,6 +9,7 @@ from api.queueWorker import Q, Job, worker
 from flaskthreads import AppContextThread
 from datetime import timedelta
 import logging
+import sys
 from logging.handlers import RotatingFileHandler
 db = SQLAlchemy()
 
@@ -46,11 +47,13 @@ def create_app():
     from .routes.auth import authentication_handler, identity_handler
     JWT(app, authentication_handler, identity_handler)
 
-    # Setup Logging
-    handler = RotatingFileHandler('api.ravel.log', maxBytes=10000, backupCount=1)
+    root = logging.getLogger()
+    root.setLevel(logging.INFO)
+    handler = logging.StreamHandler(sys.stdout)
     handler.setLevel(logging.INFO)
-    app.logger.addHandler(handler)
-    app.logger.info('logger created')
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    root.addHandler(handler)
 
     '''
         # db.drop_all()

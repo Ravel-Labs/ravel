@@ -5,7 +5,6 @@ class Compress():
     """
 
     def __init__(self, all_trackouts, signal_aggregator, sr):
-        # TODO all of all - main_trackout
         self.all_trackouts = all_trackouts
         self.agg = signal_aggregator
         self.sr = sr
@@ -47,8 +46,6 @@ class Compress():
 
         for mono_signal in comp_signals:
             cp = mono_signal.comp_params(cfa, lfa)
-            print(cp)
             compressed = mono_signal.compression(cp)
             compressed_signals.append(compressed)
-        print(f"WOOT {compressed_signals}")
         return compressed_signals

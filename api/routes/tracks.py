@@ -175,11 +175,11 @@ def process_track(id):
             abort(404, f"There aren't any trackouts for track {id}")
 
         # Dispatch email processing progress, managed by queueWorker
-        # email_proxy(
-        #     title="Initiating Processing",
-        #     template_type="status",
-        #     user_to_email_address=current_user.email,
-        #     user_name=current_user.name)
+        email_proxy(
+            title="Initiating Processing",
+            template_type="status",
+            user_to_email_address=current_user.email,
+            user_name=current_user.name)
 
         # extract trackout data from track
         raw_trackouts = raw_track.trackouts.all()
