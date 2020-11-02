@@ -40,6 +40,7 @@ def create_app():
         MAIL_USE_SSL=True,
         MAIL_USERNAME='apikey',
         MAIL_PASSWORD=environ.get("SENDGRID_API_KEY"),
+        MAIL_DEBUG=False,
     ))
     cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
     from .models import User
