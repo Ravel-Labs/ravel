@@ -2,6 +2,7 @@ from api.services.firestore import retreive_from_file_store, publish_to_file_sto
 from flask import current_app as app
 from os import remove, listdir, path
 import librosa
+import numpy as np
 import re
 import wave
 
@@ -69,7 +70,9 @@ def convert_to_stereo_signal(all_trackouts):
             trackout_stereo_signal, _ = librosa.load(f"wav_tmp/{trackout_uuid}.wav", sr=sample_rate, mono=False)
             stereo_signal_trackouts.append(trackout_stereo_signal)
         app.logger.info(f"Stereo trackouts length: {len(stereo_signal_trackouts)}")
-        return stereo_signal_trackouts, sample_rate
+        max_length = find_max_length(stereo_signal_trackouts)
+        padded_stereo_trackouts = pad_trackouts(max_length, stereo_signal_trackouts)
+        return padded_stereo_trackouts, sample_rate
     except Exception as err:
         app.logger.error(f"Error occurred in convert_to_stereo_signal fx: {err}")
         raise Exception(f"Error occurred in convert_to_stereo_signal fx: {err}")           
@@ -89,3 +92,23 @@ def clean_tmp():
     for wav in all_wavfiles:
         if wav.endswith(".wav"):
             remove(path.join("wav_tmp", wav))
+
+def find_max_length(all_trackouts):
+    max_length = 0
+    for trackout in all_trackouts:
+        length = trackout.shape[1]
+        if length > max_length:
+            max_length = length
+    return max_length
+
+def pad_trackouts(max_length, all_trackouts):
+    padded_trackouts = []
+    for trackout in all_trackouts:
+        current_length = trackout.shape[1]
+        if current_length < max_length:
+            padded_trackout = np.zeros([2, max_length])
+            padded_trackout[:, :current_length] = trackout
+            padded_trackouts.append(padded_trackout)
+        else:
+            padded_trackouts.append(trackout)
+    return padded_trackouts
