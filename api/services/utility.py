@@ -1,6 +1,7 @@
 from api.services.firestore import retreive_from_file_store, publish_to_file_store
 from flask import current_app as app
-from os import remove, listdir, path
+from os import remove, listdir, path, getcwd, makedirs
+import shutil
 import librosa
 import re
 import wave
@@ -41,8 +42,8 @@ def convert_to_mono_signal(all_trackouts, sample_rate):
         for index, trackout in enumerate(all_trackouts):
             # Fetch wavfile from firebase
             path = trackout.path
-            retreive_from_file_store(path, i)
-            trackout_mono_signal, sr = librosa.load(f"wav_tmp/{trackout.uuid}.wav", sr=sample_rate)
+            retreive_from_file_store(path, trackout.track_id, trackout.uuid)
+            trackout_mono_signal, sr = librosa.load(f"wav_tmp/{trackout.track_id}/{trackout.uuid}.wav", sr=sample_rate)
             mono_signal_trackouts.append(trackout_mono_signal)
         app.logger.info(f"Mono trackouts length {len(mono_signal_trackouts)}#")
         return mono_signal_trackouts
@@ -54,19 +55,18 @@ def convert_to_mono_signal(all_trackouts, sample_rate):
 def convert_to_stereo_signal(all_trackouts):
     try:
         stereo_signal_trackouts = []
-        i = str(1)
         seed_path = all_trackouts[0].path
         main_trackout_uuid = all_trackouts[0].uuid
-        retreive_from_file_store(seed_path, main_trackout_uuid)
-        with wave.open(f"wav_tmp/{main_trackout_uuid}.wav", "rb") as wave_file:
+        retreive_from_file_store(seed_path, all_trackouts[0].track_id, main_trackout_uuid)
+        with wave.open(f"wav_tmp/{all_trackouts[0].track_id}/{main_trackout_uuid}.wav", "rb") as wave_file:
             sample_rate = wave_file.getframerate()
-        trackout_stereo_signal, _ = librosa.load(f"wav_tmp/{main_trackout_uuid}.wav", sr=sample_rate, mono=False)
+        trackout_stereo_signal, _ = librosa.load(f"wav_tmp/{all_trackouts[0].track_id}/{main_trackout_uuid}.wav", sr=sample_rate, mono=False)
         stereo_signal_trackouts.append(trackout_stereo_signal)
         for index, trackout in enumerate(all_trackouts[1:], 1):   
             path = trackout.path
             trackout_uuid = trackout.uuid
-            retreive_from_file_store(path, trackout_uuid)
-            trackout_stereo_signal, _ = librosa.load(f"wav_tmp/{trackout_uuid}.wav", sr=sample_rate, mono=False)
+            retreive_from_file_store(path, trackout.track_id, trackout_uuid)
+            trackout_stereo_signal, _ = librosa.load(f"wav_tmp/{trackout.track_id}/{trackout_uuid}.wav", sr=sample_rate, mono=False)
             stereo_signal_trackouts.append(trackout_stereo_signal)
         app.logger.info(f"Stereo trackouts length: {len(stereo_signal_trackouts)}")
         return stereo_signal_trackouts, sample_rate
@@ -84,8 +84,15 @@ def create_trackout_exclusive_list(all_trackouts, index):
     return (main_trackout, other_trackouts)
 
 
-def clean_tmp():
+def clean_tmp(track_uuid):
     all_wavfiles = listdir("wav_tmp")
-    for wav in all_wavfiles:
-        if wav.endswith(".wav"):
-            remove(path.join("wav_tmp", wav))
+    for dir_uuid in all_wavfiles:
+        if dir_uuid == track_uuid:
+            shutil.rmtree(path.join("wav_tmp", dir_uuid))
+
+
+def setup_tmp(track_uuid):
+    base = f'{getcwd()}/wav_tmp'
+    track_tmp = f'{base}/{track_uuid}'
+    if path.exists(base) and not path.exists(track_tmp):
+        makedirs(track_tmp, 0o777, exist_ok=False)

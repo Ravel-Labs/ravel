@@ -3,7 +3,7 @@ from api.services.effects import reverb, equalizer, compressor, deesser
 from api.models.track_models import Equalizer, Deesser, Compressor, Reverb, TrackOut
 from api.services.orchestration.processing import Processor
 from api.services.email.email import email_proxy
-from api.services.utility import clean_tmp, create_trackout_exclusive_list, convert_to_stereo_signal
+from api.services.utility import clean_tmp, setup_tmp, create_trackout_exclusive_list, convert_to_stereo_signal
 from api import db, Q, Job
 from scipy.io.wavfile import write
 from ravellib.lib.effects import Mixer
@@ -85,7 +85,7 @@ class Orchestrator():
 
     def orchestrate(self):
         try:
-            clean_tmp()
+            setup_tmp(self.track.uuid)
             self.stereo_signal_trackouts, self.sample_rate = convert_to_stereo_signal(self.all_trackouts)
             if self.sample_rate != 44100:
                 self.processor.sample_rate = self.sample_rate
@@ -93,7 +93,7 @@ class Orchestrator():
                 self.compress_trackouts()
             self.engage_trackout_effects()
             Q.join()
-            storage_name = f"wav_tmp/{self.track.uuid}.wav"
+            storage_name = f"wav_tmp/{self.track.uuid}/{self.track.uuid}.wav"
 
             # every track has for settings for all of the equations
             mixer = Mixer(self.processed_signals, storage_name, self.sample_rate)
@@ -113,9 +113,9 @@ class Orchestrator():
 
             # This line below is to attach a file to the email
             #     sound_file=data)
-            clean_tmp()
+            clean_tmp(self.track.uuid)
         except Exception as err:
-            clean_tmp()
+            clean_tmp(self.track.uuid)
             app.logger.error(f"error in orchestration for trackID {self.track.id}:", err)
             raise Exception(f"Error occurred in orchestration:\n {err}")
 
@@ -137,9 +137,9 @@ class Orchestrator():
                 trackout_uuid = raw_trackout.uuid
                 storage_name = f"{trackout_uuid}.wav"
                 firestore_path = f"track/{track_uuid}/{effect_prefix}/{storage_name}"
-                write(f"wav_tmp/{effect_prefix}_{storage_name}", self.sample_rate, processed_result)
+                write(f"wav_tmp/{track_uuid}/{effect_prefix}_{storage_name}", self.sample_rate, processed_result)
                 # publish_to_file_store and remove
-                publish_to_file_store(firestore_path, f"wav_tmp/{effect_prefix}_{storage_name}")
+                publish_to_file_store(firestore_path, f"wav_tmp/{track_uuid}/{effect_prefix}_{storage_name}")
                 db_model = Compressor(
                     ratio=self.co_params["ratio"],
                     threshold=self.co_params["threshold"],
@@ -195,12 +195,12 @@ class Orchestrator():
             else:
                 app.logger.info(f"This effect function does not exist")
 
-            write(f"wav_tmp/{effect_prefix}_{storage_name}", self.sample_rate, processed_result)
+            write(f"wav_tmp/{track_uuid}/{effect_prefix}_{storage_name}", self.sample_rate, processed_result)
             print(f"Completed processing {effect}: {bool(processed_result.any())}")
             app.logger.info(f'completed processing for {effect}')
             app.logger.info(f'processed result:  {bool(processed_result.any())}')
             # publish_to_file_store and remove
-            publish_to_file_store(firestore_path, f"wav_tmp/{effect_prefix}_{storage_name}")
+            publish_to_file_store(firestore_path, f"wav_tmp/{track_uuid}/{effect_prefix}_{storage_name}")
             if bool(processed_result.any()):
                 self.processed_signals.append(processed_result)
             # save effect results to database

@@ -36,11 +36,12 @@ def create_trackout():
         if not raw_track:
             abort(404, f"failed to find track {track_id}")
 
+        print(f'track_id: {track_id}')
         if track_id:
             raw_trackouts = TrackOut.query.filter_by(track_id=track_id).all()
             trackouts_names = [rt.name for rt in raw_trackouts]
-            if name in trackouts_names:
-                abort(400, f"{name} is not a unique trackout name for this track")
+            # if name in trackouts_names:
+            #     abort(400, f"{name} is not a unique trackout name for this track")
         raw_trackout = TrackOut(
             user_id=user_id,
             track_id=track_id,
@@ -165,12 +166,11 @@ def update_trackout(uuid):
 def add_update_wavfile(uuid):
     try:
         raw_file = request.files['file']
-
         raw_trackout = TrackOut.query.filter_by(uuid=uuid).first()
         if not raw_trackout:
             abort(404, f"There isn't a trackout id {uuid}")
         trackout_uuid = raw_trackout.uuid
-        track_uuid = raw_trackout.trackouts.uuid
+        track_uuid = raw_trackout.track_id
         storage_name = f"{trackout_uuid}.wav"
         firestore_path = f"track/{track_uuid}/trackouts/{storage_name}"
         publish_to_file_store(firestore_path, raw_file)
@@ -187,6 +187,8 @@ def add_update_wavfile(uuid):
         response = APIResponse(payload, 200).response
         return response
     except Exception as err:
+        # TODO: Need to delete trackout if this happens because the path 
+        # isnt' set and thus it causes errors.
         app.logger.error("error updating wav: ", err)
         abort(500, err)
 
@@ -201,7 +203,7 @@ def get_wav_from_trackout(uuid):
             abort(404, f"Trackout {uuid} not found")
         file_name = f"{raw_trackout.name}.wav"
         firestore_path = raw_trackout.path
-        retreive_from_file_store(firestore_path)
+        retreive_from_file_store(firestore_path, raw_trackout.track_id, uuid)
 
         # Get file saved to disk and convert into BytesIO
         sam_rate, data = sio.wavfile.read("trackout.wav")
@@ -229,8 +231,8 @@ def get_eq_from_trackout(uuid):
             abort(404, f"Trackout {uuid} not found")
         eq = raw_trackout.eq
         firestore_path = eq.path
-        file_name = f"eq_results.wav"
-        retreive_from_file_store(firestore_path)
+        file_name = "eq_results.wav"
+        retreive_from_file_store(firestore_path, raw_trackout.track_id, uuid)
 
         # Get file saved to disk and convert into BytesIO
         sam_rate, data = sio.wavfile.read("trackout.wav")
@@ -258,8 +260,8 @@ def get_co_from_trackout(uuid):
             abort(404, f"Trackout {uuid} not found")
         co = raw_trackout.co
         firestore_path = co.path
-        file_name = f"co_results.wav"
-        retreive_from_file_store(firestore_path)
+        file_name = "co_results.wav"
+        retreive_from_file_store(firestore_path, raw_trackout.track_id, uuid)
 
         # Get file saved to disk and convert into BytesIO
         sam_rate, data = sio.wavfile.read("trackout.wav")
@@ -286,8 +288,8 @@ def get_de_from_trackout(uuid):
             abort(404, f"Trackout {uuid} not found")
         de = raw_trackout.de
         firestore_path = de.path
-        file_name = f"de_results.wav"
-        retreive_from_file_store(firestore_path)
+        file_name = "de_results.wav"
+        retreive_from_file_store(firestore_path, raw_trackout.track_id, uuid)
 
         # Get file saved to disk and convert into BytesIO
         sam_rate, data = sio.wavfile.read("trackout.wav")
@@ -316,8 +318,8 @@ def get_re_from_trackout(uuid):
         re = raw_trackout.re
         firestore_path = re.path
         print(firestore_path)
-        file_name = f"re_results.wav"
-        retreive_from_file_store(firestore_path)
+        file_name = "re_results.wav"
+        retreive_from_file_store(firestore_path, raw_trackout.track_id, uuid)
 
         # Get file saved to disk and convert into BytesIO
         sam_rate, data = sio.wavfile.read("trackout.wav")
