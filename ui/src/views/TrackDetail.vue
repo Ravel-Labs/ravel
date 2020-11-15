@@ -235,6 +235,7 @@ export default {
           t = { name: "", type: "" };
 
           // try to upload trackout to recently created track
+          console.log('updating wav file for ', data.payload.uuid)
           this.$store
             .dispatch("tracks/updateTrackoutWithWav", {
               uuid: data.payload.uuid,
