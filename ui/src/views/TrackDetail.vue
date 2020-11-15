@@ -238,7 +238,7 @@ export default {
           console.log('updating wav file for ', data.payload.uuid)
           this.$store
             .dispatch("tracks/updateTrackoutWithWav", {
-              id: data.payload.uuid,
+              uuid: data.payload.uuid,
               formData: formData
             })
             .then(data => {
